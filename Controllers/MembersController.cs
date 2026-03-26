@@ -112,40 +112,62 @@ namespace AdminMembers.Controllers
         [RequirePermission(Permission.Write)]
         public async Task<ActionResult<Member>> CreateMember(Member member)
         {
-            // Auto-generate member number if not provided
-            if (member.MemberNumber == null || member.MemberNumber == 0)
+            _logger.LogInformation("CreateMember called for: {FirstName} {LastName}", member.FirstName, member.LastName);
+            _logger.LogInformation("Member Number provided: {MemberNumber}", member.MemberNumber);
+            
+            // Only validate if member number is provided
+            if (member.MemberNumber.HasValue && member.MemberNumber > 0)
             {
-                // Find the highest member number and add 1
-                var maxMemberNumber = await _context.Members
-                    .Where(m => m.MemberNumber.HasValue)
-                    .MaxAsync(m => (int?)m.MemberNumber) ?? 0;
-                member.MemberNumber = maxMemberNumber + 1;
-            }
-            else
-            {
-                // Check if member number already exists (only if provided)
+                _logger.LogInformation("Checking if member number {MemberNumber} already exists...", member.MemberNumber);
+                // Check if member number already exists
                 if (await _context.Members.AnyAsync(m => m.MemberNumber == member.MemberNumber))
                 {
+                    _logger.LogWarning("Member number {MemberNumber} already in use", member.MemberNumber);
                     return BadRequest(new { error = $"Member number '{member.MemberNumber}' is already in use." });
                 }
             }
+            else
+            {
+                // Leave member number as null - do NOT auto-generate
+                _logger.LogInformation("No member number provided - will remain null");
+                member.MemberNumber = null;
+            }
+            
             member.CreatedAt = DateTime.UtcNow;
             _context.Members.Add(member);
             
             try
             {
+                _logger.LogInformation("Saving member to database...");
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Member saved successfully with ID: {Id}", member.Id);
                 
                 // Add custom field values if provided
                 if (member.CustomFieldValues != null && member.CustomFieldValues.Any())
                 {
-                    foreach (var cfv in member.CustomFieldValues)
+                    try
                     {
-                        cfv.MemberId = member.Id;
-                        cfv.CreatedAt = DateTime.UtcNow;
-                        _context.MemberCustomFields.Add(cfv);
+                        _logger.LogInformation("Saving {Count} custom field values...", member.CustomFieldValues.Count);
+                        foreach (var cfv in member.CustomFieldValues)
+                        {
+                            // Create new instance to avoid ID conflicts
+                            var newCustomFieldValue = new MemberCustomField
+                            {
+                                MemberId = member.Id,
+                                CustomFieldId = cfv.CustomFieldId,
+                                Value = cfv.Value,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _context.MemberCustomFields.Add(newCustomFieldValue);
+                        }
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Custom field values saved successfully");
                     }
-                    await _context.SaveChangesAsync();
+                    catch (Exception cfEx)
+                    {
+                        _logger.LogError(cfEx, "Error saving custom field values, but member was created successfully");
+                        // Don't fail the entire operation - member is already created
+                    }
                 }
 
                 // Log the action
@@ -153,11 +175,15 @@ namespace AdminMembers.Controllers
                 var username = Request.Headers["X-Username"].ToString();
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 await _auditLogService.LogActionAsync(userId, username, "Member Created", "Member", member.Id, $"Created member {member.FirstName} {member.LastName}", ipAddress);
+                
+                _logger.LogInformation("Member creation complete: {FirstName} {LastName} (MemberNumber: {MemberNumber})", 
+                    member.FirstName, member.LastName, member.MemberNumber?.ToString() ?? "null");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating member");
-                return StatusCode(500, new { error = "Failed to create member. Please try again." });
+                _logger.LogError(ex, "Error creating member: {Message}", ex.Message);
+                _logger.LogError("Inner exception: {InnerException}", ex.InnerException?.Message);
+                return StatusCode(500, new { error = "Failed to create member. Please try again.", details = ex.Message });
             }
 
             return CreatedAtAction(nameof(GetMember), new { id = member.Id }, member);
@@ -206,12 +232,19 @@ namespace AdminMembers.Controllers
                     .ToListAsync();
                 _context.MemberCustomFields.RemoveRange(existingValues);
 
-                // Add new custom field values
-                foreach (var cfv in member.CustomFieldValues)
+                // Add new custom field values (create new instances to avoid ID conflicts)
+                // Create a copy of the collection to avoid modification during enumeration
+                var customFieldValuesToAdd = member.CustomFieldValues.ToList();
+                foreach (var cfv in customFieldValuesToAdd)
                 {
-                    cfv.MemberId = id;
-                    cfv.CreatedAt = DateTime.UtcNow;
-                    _context.MemberCustomFields.Add(cfv);
+                    var newCustomFieldValue = new MemberCustomField
+                    {
+                        MemberId = id,
+                        CustomFieldId = cfv.CustomFieldId,
+                        Value = cfv.Value,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.MemberCustomFields.Add(newCustomFieldValue);
                 }
             }
 
@@ -628,7 +661,7 @@ namespace AdminMembers.Controllers
                         // Map CSV fields to Member properties
                         var member = new Member
                         {
-                            MemberNumber = int.TryParse(GetMappedValue(row, mapping, "MemberNumber"), out var memberNum) ? memberNum : 0,
+                            MemberNumber = int.TryParse(GetMappedValue(row, mapping, "MemberNumber"), out var memberNum) && memberNum > 0 ? (int?)memberNum : null,
                             FirstName = GetMappedValue(row, mapping, "FirstName"),
                             LastName = GetMappedValue(row, mapping, "LastName"),
                             Gender = GetMappedValue(row, mapping, "Gender") ?? "Man",
@@ -674,17 +707,18 @@ namespace AdminMembers.Controllers
                         }
 
                         // Validate required fields
-                        if (member.MemberNumber == 0 || 
-                            string.IsNullOrWhiteSpace(member.FirstName) || 
+                        if (string.IsNullOrWhiteSpace(member.FirstName) || 
                             string.IsNullOrWhiteSpace(member.LastName))
                         {
-                            errors.Add($"Row {i + 1}: Missing required fields (Member Number, First Name, or Last Name)");
+                            errors.Add($"Row {i + 1}: Missing required fields (First Name or Last Name)");
                             continue;
                         }
 
-                        // Check if member number already exists
-                        if (await _context.Members.AnyAsync(m => m.MemberNumber == member.MemberNumber))
+                        // Check if member number already exists (only if provided)
+                        if (member.MemberNumber.HasValue && 
+                            await _context.Members.AnyAsync(m => m.MemberNumber == member.MemberNumber))
                         {
+                            errors.Add($"Row {i + 1}: Member number {member.MemberNumber} already exists");
                             skippedCount++;
                             continue;
                         }

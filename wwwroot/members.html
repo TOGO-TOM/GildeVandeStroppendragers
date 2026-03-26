@@ -43,7 +43,7 @@
                         <label for="memberNumber">Member Number</label>
                         <input type="number" id="memberNumber" placeholder="e.g., 1, 2, 3... (optional)" min="1">
                         <span id="memberNumberMessage"></span>
-                        <small>Leave empty to assign automatically</small>
+                        <small>Leave empty if member has no number</small>
                     </div>
 
                     <div class="form-group">
@@ -305,7 +305,7 @@
                 <button class="btn btn-secondary" onclick="closeBackupModal()">Cancel</button>
             </div>
         </div>
-    </div>`
+    </div>
 
     <!-- Restore Modal -->
     <div id="restoreModal" class="modal">

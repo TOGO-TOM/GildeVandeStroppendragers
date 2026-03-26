@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Creation Deep Test</title>
+    <script src="auth.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .info { background: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        h2 { color: #333; margin-top: 0; }
+        h3 { color: #666; margin: 15px 0 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>?? Deep Member Creation Troubleshooting</h1>
+
+    <div class="test-section">
+        <h2>Step 1: Authentication Check</h2>
+        <div id="authCheck"></div>
+        <button onclick="runAuthCheck()">Run Auth Check</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Step 2: Test API Connectivity</h2>
+        <div id="apiCheck"></div>
+        <button onclick="testAPIConnection()">Test API Connection</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Step 3: Test Member Creation (Minimal)</h2>
+        <div id="createMinimal"></div>
+        <button onclick="createMinimalMember()">Create Minimal Member</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Step 4: Test Member Creation (Without Number)</h2>
+        <div id="createNoNumber"></div>
+        <button onclick="createMemberNoNumber()">Create Without Number</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Step 5: Test Member Creation (With Number)</h2>
+        <input type="number" id="testMemberNumber" placeholder="Enter member number" value="9999">
+        <div id="createWithNumber"></div>
+        <button onclick="createMemberWithNumber()">Create With Number</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Step 6: Check Database</h2>
+        <div id="dbCheck"></div>
+        <button onclick="checkDatabase()">Check Member Count</button>
+    </div>
+
+    <script>
+        const API_URL = '/api/members';
+
+        function log(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            el.appendChild(div);
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        // Step 1: Auth Check
+        async function runAuthCheck() {
+            clearLog('authCheck');
+
+            log('authCheck', '<h3>Checking Authentication...</h3>');
+
+            // Check functions
+            log('authCheck', `checkAuth function: ${typeof checkAuth === 'function' ? '?' : '?'}`, 
+                typeof checkAuth === 'function' ? 'success' : 'error');
+            log('authCheck', `fetchWithAuth function: ${typeof fetchWithAuth === 'function' ? '?' : '?'}`,
+                typeof fetchWithAuth === 'function' ? 'success' : 'error');
+
+            // Check storage
+            const token = localStorage.getItem('authToken');
+            const userStr = localStorage.getItem('currentUser');
+
+            log('authCheck', `Token in storage: ${token ? '? Present' : '? Missing'}`,
+                token ? 'success' : 'error');
+
+            if (token) {
+                log('authCheck', `Token preview: ${token.substring(0, 30)}...`, 'info');
+            }
+
+            log('authCheck', `User data in storage: ${userStr ? '? Present' : '? Missing'}`,
+                userStr ? 'success' : 'error');
+
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    log('authCheck', `User: ${user.username} | Roles: ${user.roles.join(', ')}`, 'success');
+                } catch (e) {
+                    log('authCheck', `? Invalid user JSON: ${e.message}`, 'error');
+                }
+            }
+        }
+
+        // Step 2: API Connection
+        async function testAPIConnection() {
+            clearLog('apiCheck');
+            log('apiCheck', '<h3>Testing API Connection...</h3>');
+
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                log('apiCheck', '? No token - please login first!', 'error');
+                return;
+            }
+
+            // Test GET members
+            try {
+                log('apiCheck', 'Testing GET /api/members...', 'info');
+                const response = await fetchWithAuth('/api/members');
+                log('apiCheck', `Response status: ${response.status} ${response.statusText}`,
+                    response.ok ? 'success' : 'error');
+
+                if (response.ok) {
+                    const members = await response.json();
+                    log('apiCheck', `? API working! Found ${members.length} members`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log('apiCheck', `? Error response: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log('apiCheck', `? Network error: ${error.message}`, 'error');
+            }
+        }
+
+        // Step 3: Create Minimal Member
+        async function createMinimalMember() {
+            clearLog('createMinimal');
+            log('createMinimal', '<h3>Creating Minimal Member...</h3>');
+
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                log('createMinimal', '? No token - please login first!', 'error');
+                return;
+            }
+
+            const member = {
+                memberNumber: 1,
+                firstName: "TestMinimal",
+                lastName: "User",
+                gender: "Man",
+                role: "Kandidaat",
+                isAlive: true,
+                address: {
+                    street: "Test Street",
+                    city: "Test City",
+                    postalCode: "12345"
+                }
+            };
+
+            log('createMinimal', `Request payload:<pre>${JSON.stringify(member, null, 2)}</pre>`, 'info');
+
+            try {
+                log('createMinimal', 'Sending POST request...', 'info');
+                const response = await fetchWithAuth(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(member)
+                });
+
+                log('createMinimal', `Response status: ${response.status}`, 
+                    response.ok ? 'success' : 'error');
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    log('createMinimal', `??? SUCCESS!<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                    log('createMinimal', `Member ID: ${data.id} | Member Number: ${data.memberNumber}`, 'success');
+                } else {
+                    log('createMinimal', `? Failed:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                log('createMinimal', `? Exception: ${error.message}`, 'error');
+                log('createMinimal', `Stack trace:<pre>${error.stack}</pre>`, 'error');
+            }
+        }
+
+        // Step 4: Create Member Without Number
+        async function createMemberNoNumber() {
+            clearLog('createNoNumber');
+            log('createNoNumber', '<h3>Creating Member Without Number (Should Stay Null)...</h3>');
+            
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                log('createNoNumber', '? No token - please login first!', 'error');
+                return;
+            }
+            
+            const member = {
+                memberNumber: null,  // Should stay null - NOT auto-generate
+                firstName: "NoNumber",
+                lastName: "Test",
+                gender: "Man",
+                role: "Kandidaat",
+                isAlive: true,
+                address: {
+                    street: "No Number Street",
+                    city: "No Number City",
+                    postalCode: "00000"
+                }
+            };
+            
+            log('createNoNumber', `Request payload:<pre>${JSON.stringify(member, null, 2)}</pre>`, 'info');
+            log('createNoNumber', `memberNumber is: ${member.memberNumber} (should stay null)`, 'info');
+            
+            try {
+                log('createNoNumber', 'Sending POST request...', 'info');
+                const response = await fetchWithAuth(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(member)
+                });
+                
+                log('createNoNumber', `Response status: ${response.status}`, 
+                    response.ok ? 'success' : 'error');
+                
+                const responseText = await response.text();
+                log('createNoNumber', `Raw response: ${responseText.substring(0, 200)}`, 'info');
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    if (response.ok) {
+                        if (data.memberNumber === null) {
+                            log('createNoNumber', `??? SUCCESS! Member number is NULL as expected`, 'success');
+                        } else {
+                            log('createNoNumber', `?? WARNING! Member number was set to: ${data.memberNumber} (should be null)`, 'error');
+                        }
+                        log('createNoNumber', `Full data:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                    } else {
+                        log('createNoNumber', `? Failed:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                    }
+                } catch (parseError) {
+                    log('createNoNumber', `? JSON parse error: ${parseError.message}`, 'error');
+                }
+            } catch (error) {
+                log('createNoNumber', `? Exception: ${error.message}`, 'error');
+                log('createNoNumber', `Stack trace:<pre>${error.stack}</pre>`, 'error');
+            }
+        }
+
+        // Step 5: Create Member With Specific Number
+        async function createMemberWithNumber() {
+            clearLog('createWithNumber');
+            const memberNum = parseInt(document.getElementById('testMemberNumber').value);
+
+            log('createWithNumber', `<h3>Creating Member With Number ${memberNum}...</h3>`);
+
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                log('createWithNumber', '? No token - please login first!', 'error');
+                return;
+            }
+
+            const member = {
+                memberNumber: memberNum,
+                firstName: `Test${memberNum}`,
+                lastName: "Number",
+                gender: "Man",
+                role: "Kandidaat",
+                isAlive: true,
+                address: {
+                    street: `Street ${memberNum}`,
+                    city: "Test City",
+                    postalCode: "11111"
+                }
+            };
+
+            log('createWithNumber', `Request payload:<pre>${JSON.stringify(member, null, 2)}</pre>`, 'info');
+
+            try {
+                const response = await fetchWithAuth(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(member)
+                });
+
+                log('createWithNumber', `Response status: ${response.status}`, 
+                    response.ok ? 'success' : 'error');
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    log('createWithNumber', `? SUCCESS! Member #${data.memberNumber} created`, 'success');
+                    log('createWithNumber', `Full data:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    log('createWithNumber', `? Failed:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                log('createWithNumber', `? Exception: ${error.message}`, 'error');
+            }
+        }
+
+        // Step 6: Check Database
+        async function checkDatabase() {
+            clearLog('dbCheck');
+            log('dbCheck', '<h3>Checking Database...</h3>');
+
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                log('dbCheck', '? No token - please login first!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetchWithAuth('/api/members');
+
+                if (response.ok) {
+                    const members = await response.json();
+                    log('dbCheck', `? Total members in database: ${members.length}`, 'success');
+
+                    if (members.length > 0) {
+                        log('dbCheck', `First member: ${members[0].firstName} ${members[0].lastName} (#${members[0].memberNumber || 'No number'})`, 'info');
+                        log('dbCheck', `Last member: ${members[members.length-1].firstName} ${members[members.length-1].lastName} (#${members[members.length-1].memberNumber || 'No number'})`, 'info');
+
+                        const withNumbers = members.filter(m => m.memberNumber).length;
+                        const withoutNumbers = members.filter(m => !m.memberNumber).length;
+                        log('dbCheck', `With numbers: ${withNumbers} | Without numbers: ${withoutNumbers}`, 'info');
+
+                        const maxNumber = Math.max(...members.filter(m => m.memberNumber).map(m => m.memberNumber), 0);
+                        log('dbCheck', `Highest member number: ${maxNumber}`, 'info');
+                        log('dbCheck', `Next auto-generated would be: ${maxNumber + 1}`, 'info');
+                    } else {
+                        log('dbCheck', 'Database is empty - no members', 'info');
+                        log('dbCheck', 'Next auto-generated number would be: 1', 'info');
+                    }
+                } else {
+                    log('dbCheck', `? Failed to get members: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log('dbCheck', `? Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run auth check on load
+        document.addEventListener('DOMContentLoaded', () => {
+            runAuthCheck();
+        });
+    </script>
+</body>
+</html>
