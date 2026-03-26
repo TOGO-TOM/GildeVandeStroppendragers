@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Members</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .export-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .export-header {
+            margin-bottom: 30px;
+        }
+
+        .export-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .export-header p {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #000;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            background: #f5f5f5;
+        }
+
+        .export-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .export-section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 15px;
+        }
+
+        .role-filter-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .role-filter-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .role-filter-item:hover {
+            border-color: #000;
+            background: #fafafa;
+        }
+
+        .role-filter-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .role-filter-item label {
+            cursor: pointer;
+            user-select: none;
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .field-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .field-item:hover {
+            border-color: #000;
+            background: #fafafa;
+        }
+
+        .field-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .field-item label {
+            cursor: pointer;
+            user-select: none;
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .selection-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .select-btn {
+            padding: 8px 16px;
+            background: #fff;
+            color: #000;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .select-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .info-box {
+            padding: 15px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box strong {
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .export-btn {
+            padding: 16px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .export-excel {
+            background: #217346;
+            color: white;
+        }
+
+        .export-excel:hover {
+            background: #1a5c37;
+        }
+
+        .export-pdf {
+            background: #dc3545;
+            color: white;
+        }
+
+        .export-pdf:hover {
+            background: #c82333;
+        }
+
+        .export-csv {
+            background: #28a745;
+            color: white;
+        }
+
+        .export-csv:hover {
+            background: #218838;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            background: #f9f9f9;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #c62828;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #2e7d32;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .export-container {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            .field-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .role-filter-checkboxes {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <a href="home.html" class="home-link">Home</a>
+                <h1>Export Members</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="export-container">
+        <a href="members.html" class="back-link">? Back to Members</a>
+
+        <div class="export-header">
+            <h1>Export Members</h1>
+            <p>Filter by role and select fields to export in your preferred format.</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <!-- Role Filter Section -->
+        <div class="export-section">
+            <h2>1. Filter by Role (Optional)</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Select which roles to include in the export. Leave all unchecked to export all members.</p>
+            <div class="role-filter-checkboxes">
+                <div class="role-filter-item">
+                    <input type="checkbox" id="role_kandidaat" value="Kandidaat" onchange="updateMemberCount()">
+                    <label for="role_kandidaat">Kandidaat</label>
+                </div>
+                <div class="role-filter-item">
+                    <input type="checkbox" id="role_stappend" value="Stappend lid" onchange="updateMemberCount()">
+                    <label for="role_stappend">Stappend lid</label>
+                </div>
+                <div class="role-filter-item">
+                    <input type="checkbox" id="role_stappend_effectief" value="Stappend lid effectief" onchange="updateMemberCount()">
+                    <label for="role_stappend_effectief">Stappend lid effectief</label>
+                </div>
+                <div class="role-filter-item">
+                    <input type="checkbox" id="role_steunend" value="Steunend lid" onchange="updateMemberCount()">
+                    <label for="role_steunend">Steunend lid</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Field Selection Section -->
+        <div class="export-section">
+            <h2>2. Select Fields to Export</h2>
+
+            <div class="info-box" id="memberCountBox">
+                <strong>Members to export:</strong> <span id="memberCountValue">Loading...</span>
+            </div>
+
+            <div class="selection-controls">
+                <button class="select-btn" onclick="selectAll()">Select All</button>
+                <button class="select-btn" onclick="deselectAll()">Deselect All</button>
+                <button class="select-btn" onclick="selectDefault()">Select Default</button>
+            </div>
+
+            <div class="info-box">
+                <strong>Selected fields:</strong> <span id="countValue">0</span>
+            </div>
+
+            <div class="field-grid" id="fieldGrid">
+                <!-- Fields will be loaded dynamically -->
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <p>Generating export file...</p>
+        </div>
+
+        <!-- Export Format Section -->
+        <div class="export-section">
+            <h2>3. Choose Export Format</h2>
+            <div class="button-group">
+                <button class="export-btn export-excel" onclick="exportData('excel')">
+                    Export to Excel (.xlsx)
+                </button>
+                <button class="export-btn export-csv" onclick="exportData('csv')">
+                    Export to CSV (.csv)
+                </button>
+                <button class="export-btn export-pdf" onclick="exportData('pdf')">
+                    Export to PDF (.pdf)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let availableFields = [];
+        let allMembers = [];
+
+        // Load available fields and members on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadAvailableFields();
+            await loadMembers();
+            selectDefault();
+        });
+
+        async function loadMembers() {
+            try {
+                const response = await fetch('/api/members');
+                if (!response.ok) throw new Error('Failed to load members');
+                allMembers = await response.json();
+                updateMemberCount();
+            } catch (error) {
+                console.error('Error loading members:', error);
+                showError('Failed to load members');
+            }
+        }
+
+        function getSelectedRoles() {
+            const checkboxes = document.querySelectorAll('.role-filter-checkboxes input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        function updateMemberCount() {
+            const selectedRoles = getSelectedRoles();
+            let count = allMembers.length;
+
+            if (selectedRoles.length > 0) {
+                count = allMembers.filter(m => selectedRoles.includes(m.role)).length;
+            }
+
+            document.getElementById('memberCountValue').textContent = `${count} member${count !== 1 ? 's' : ''}`;
+        }
+
+        async function loadAvailableFields() {
+            try {
+                const response = await fetch('/api/members/export/available-fields');
+                if (!response.ok) throw new Error('Failed to load fields');
+
+                availableFields = await response.json();
+                renderFields();
+            } catch (error) {
+                console.error('Error loading fields:', error);
+                showError('Failed to load available fields');
+            }
+        }
+
+        function renderFields() {
+            const grid = document.getElementById('fieldGrid');
+            grid.innerHTML = '';
+
+            availableFields.forEach(field => {
+                const div = document.createElement('div');
+                div.className = 'field-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `field_${field.value}`;
+                checkbox.value = field.value;
+                checkbox.onchange = updateCount;
+
+                const label = document.createElement('label');
+                label.htmlFor = `field_${field.value}`;
+                label.textContent = field.label;
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                grid.appendChild(div);
+            });
+
+            updateCount();
+        }
+
+        function selectAll() {
+            document.querySelectorAll('#fieldGrid input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+            });
+            updateCount();
+        }
+
+        function deselectAll() {
+            document.querySelectorAll('#fieldGrid input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            updateCount();
+        }
+
+        function selectDefault() {
+            const defaultFields = ['MemberNumber', 'FirstName', 'LastName', 'Gender', 'Role', 'Email', 'PhoneNumber', 'IsAlive', 'City'];
+            document.querySelectorAll('#fieldGrid input[type="checkbox"]').forEach(cb => {
+                cb.checked = defaultFields.includes(cb.value);
+            });
+            updateCount();
+        }
+
+        function updateCount() {
+            const count = document.querySelectorAll('#fieldGrid input[type="checkbox"]:checked').length;
+            document.getElementById('countValue').textContent = count;
+        }
+
+        function getSelectedFields() {
+            const checkboxes = document.querySelectorAll('#fieldGrid input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+            setTimeout(() => {
+                errorDiv.classList.remove('active');
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.classList.add('active');
+            setTimeout(() => {
+                successDiv.classList.remove('active');
+            }, 5000);
+        }
+
+        async function exportData(format) {
+            const selectedFields = getSelectedFields();
+            const selectedRoles = getSelectedRoles();
+
+            if (selectedFields.length === 0) {
+                showError('Please select at least one field to export');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            loading.classList.add('active');
+
+            try {
+                let endpoint = '';
+                let extension = '';
+
+                switch(format) {
+                    case 'excel':
+                        endpoint = '/api/members/export/excel';
+                        extension = 'xlsx';
+                        break;
+                    case 'pdf':
+                        endpoint = '/api/members/export/pdf';
+                        extension = 'pdf';
+                        break;
+                    case 'csv':
+                        endpoint = '/api/members/export/csv-custom';
+                        extension = 'csv';
+                        break;
+                }
+
+                const requestBody = {
+                    selectedFields: selectedFields,
+                    filterRoles: selectedRoles.length > 0 ? selectedRoles : null
+                };
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Export failed');
+                }
+
+                // Get the blob from response
+                const blob = await response.blob();
+
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+
+                // Create filename with timestamp
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const filename = `members_export_${timestamp}.${extension}`;
+                a.download = filename;
+
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showSuccess(`Export to ${format.toUpperCase()} completed successfully!`);
+            } catch (error) {
+                console.error('Export error:', error);
+                showError(`Export failed: ${error.message}`);
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

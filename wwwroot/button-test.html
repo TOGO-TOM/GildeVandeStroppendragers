@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Test - AdminMembers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4caf50;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border-left: 4px solid #2196f3;
+        }
+        button {
+            padding: 12px 24px;
+            margin: 10px 5px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #1976d2;
+        }
+        .btn-danger {
+            background: #f44336;
+        }
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+        .info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>?? Button Functionality Test</h1>
+
+        <div class="test-section">
+            <h3>Test 1: Import CSV Button</h3>
+            <p>This button should open the import modal</p>
+            <button onclick="testImportButton()">Test Import CSV</button>
+            <div id="result1"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: Delete All Button</h3>
+            <p>This button should show confirmation dialogs</p>
+            <button class="btn-danger" onclick="testDeleteAllButton()">Test Delete All</button>
+            <div id="result2"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 3: Check All Functions</h3>
+            <p>Verify all functions are loaded</p>
+            <button onclick="checkAllFunctions()">Check Functions</button>
+            <div id="result3"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 4: API Connection</h3>
+            <p>Test backend connection</p>
+            <button onclick="testAPI()">Test API</button>
+            <div id="result4"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Open Real Page</h3>
+            <p>Test on the actual members page</p>
+            <button onclick="window.open('/members.html', '_blank')" style="background: #4caf50;">
+                Open Members Page
+            </button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        function showResult(id, message, type) {
+            const el = document.getElementById(id);
+            el.className = `result ${type}`;
+            el.innerHTML = message;
+        }
+
+        function testImportButton() {
+            console.log('Testing Import button...');
+            try {
+                if (typeof showImportModal !== 'function') {
+                    throw new Error('showImportModal is not defined');
+                }
+
+                // Check if function works
+                showResult('result1', 
+                    '? SUCCESS!<br>Function exists and is callable.<br>Check if modal appeared on the page.', 
+                    'success'
+                );
+
+                // Try to call it
+                showImportModal();
+            } catch (error) {
+                showResult('result1', 
+                    `? ERROR: ${error.message}<br><br>Fix: Refresh page (Ctrl+F5)`, 
+                    'error'
+                );
+            }
+        }
+
+        function testDeleteAllButton() {
+            console.log('Testing Delete All button...');
+            try {
+                if (typeof deleteAllMembers !== 'function') {
+                    throw new Error('deleteAllMembers is not defined');
+                }
+
+                showResult('result2', 
+                    '? SUCCESS!<br>Function exists!<br><br>?? Not calling it (dangerous).<br>The actual function will show 2 confirmation dialogs.', 
+                    'success'
+                );
+            } catch (error) {
+                showResult('result2', 
+                    `? ERROR: ${error.message}<br><br>Fix: Refresh page (Ctrl+F5)`, 
+                    'error'
+                );
+            }
+        }
+
+        function checkAllFunctions() {
+            console.log('Checking all functions...');
+
+            const functions = [
+                'showImportModal',
+                'closeImportModal',
+                'showBackupModal',
+                'closeBackupModal',
+                'showRestoreModal',
+                'closeRestoreModal',
+                'deleteAllMembers',
+                'exportToCSV',
+                'sortMembers',
+                'filterMembers',
+                'loadMembers',
+                'displayMembers'
+            ];
+
+            const results = [];
+            let allGood = true;
+
+            functions.forEach(fn => {
+                const exists = typeof window[fn] === 'function';
+                results.push(`${exists ? '?' : '?'} ${fn}`);
+                if (!exists) allGood = false;
+            });
+
+            if (allGood) {
+                showResult('result3', 
+                    `? ALL FUNCTIONS LOADED!<br><br>${results.join('<br>')}`, 
+                    'success'
+                );
+            } else {
+                showResult('result3', 
+                    `?? SOME FUNCTIONS MISSING<br><br>${results.join('<br>')}<br><br>Fix: Hard refresh (Ctrl+Shift+R)`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testAPI() {
+            console.log('Testing API...');
+            try {
+                if (typeof API_URL === 'undefined') {
+                    throw new Error('API_URL is not defined');
+                }
+
+                showResult('result4', '? Testing API connection...', 'info');
+
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                showResult('result4', 
+                    `? API CONNECTED!<br><br>URL: ${API_URL}<br>Status: ${response.status}<br>Members: ${data.length}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('result4', 
+                    `? API ERROR: ${error.message}<br><br>Fix: Start backend (F5 in Visual Studio)`, 
+                    'error'
+                );
+            }
+        }
+
+        // Auto-run checks on load
+        window.addEventListener('load', () => {
+            console.log('Button test page loaded');
+            console.log('Checking if functions are available...');
+
+            setTimeout(() => {
+                console.log('showImportModal:', typeof showImportModal);
+                console.log('deleteAllMembers:', typeof deleteAllMembers);
+                console.log('API_URL:', typeof API_URL !== 'undefined' ? API_URL : 'undefined');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

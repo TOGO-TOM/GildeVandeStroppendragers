@@ -1,0 +1,8 @@
+Member Number,First Name,Last Name,Gender,Role,Birth Date,Email,Phone Number,Street,House Number,City,Postal Code,Country,Status,Seniority Date
+M001,José,García,Man,Kandidaat,1985-03-15,jose.garcia@example.com,+32 123 456 789,Rue de l'Église,12A,Bruxelles,1000,Belgique,Alive,2020-01-15
+M002,François,Müller,Man,Stappend lid,1990-07-22,francois.muller@example.com,+32 987 654 321,Avenue de la Liberté,45,Liège,4000,Belgique,Alive,2019-06-20
+M003,Anaïs,Lefèvre,Vrouw,Stappend lid effectief,1978-11-05,anais.lefevre@example.com,+32 555 123 456,Chaussée de Waterloo,78B,Bruxelles,1050,Belgique,Alive,2018-03-10
+M004,Björn,Sørensen,Man,Steunend lid,1995-02-28,bjorn.sorensen@example.com,+32 444 888 999,Rue Saint-Laurent,22,Namur,5000,Belgique,Alive,2021-09-05
+M005,Zoë,Van den Berghe,Vrouw,Kandidaat,1988-12-10,zoe.vandenberghe@example.com,+32 333 777 888,Groenplaats,5,Antwerpen,2000,België,Alive,2022-03-12
+M006,René,Dupré,Man,Stappend lid,1982-06-18,rene.dupre@example.com,+32 222 666 555,Rue de l'Étang,33,Charleroi,6000,Belgique,Alive,2017-11-25
+M007,Chloé,Côté,Vrouw,Kandidaat,1993-09-03,chloe.cote@example.com,+32 111 444 222,Avenue des Fleurs,17C,Gent,9000,België,Alive,2020-08-14

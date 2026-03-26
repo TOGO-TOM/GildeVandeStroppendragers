@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdminMembers Desktop Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .emoji {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .steps {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .steps li {
+            counter-increment: step-counter;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            position: relative;
+            padding-left: 60px;
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .button {
+            display: block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .file-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .file-card h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .file-card .filename {
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .urls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .url-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .url-item a {
+            color: #667eea;
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+        }
+
+        .url-item a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">??</div>
+        <h1>AdminMembers Desktop Launcher</h1>
+
+        <div class="success">
+            <strong>? Quick Start:</strong> Copy one of the launcher files below to your desktop and double-click it!
+        </div>
+
+        <div class="section">
+            <h2>?? Recommended Launcher Files</h2>
+            <div class="file-list">
+                <div class="file-card">
+                    <h3>? Best Choice</h3>
+                    <div class="filename">?? START HERE.bat</div>
+                    <p>Simplest launcher with visual feedback</p>
+                    <span class="badge">Recommended</span>
+                </div>
+
+                <div class="file-card">
+                    <h3>?? Standard Launcher</h3>
+                    <div class="filename">Launch-AdminMembers.bat</div>
+                    <p>Traditional batch file launcher</p>
+                </div>
+
+                <div class="file-card">
+                    <h3>?? Clean Interface</h3>
+                    <div class="filename">Launch-AdminMembers.vbs</div>
+                    <p>Visual Basic script with message boxes</p>
+                </div>
+
+                <div class="file-card">
+                    <h3>? PowerShell</h3>
+                    <div class="filename">Launch-AdminMembers.ps1</div>
+                    <p>Advanced launcher with error handling</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>?? How to Use</h2>
+            <ol class="steps">
+                <li>Right-click on <strong>?? START HERE.bat</strong></li>
+                <li>Select "Send to" ? "Desktop (create shortcut)"</li>
+                <li>Double-click the shortcut on your desktop</li>
+                <li>Wait a few seconds for the server to start</li>
+                <li>Browser opens automatically - Start using the app!</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>?? Application URLs</h2>
+            <div class="urls">
+                <div class="url-item">
+                    <span>?? Landing Page:</span>
+                    <a href="https://localhost:7223/index.html" target="_blank">https://localhost:7223/index.html</a>
+                </div>
+                <div class="url-item">
+                    <span>?? Dashboard:</span>
+                    <a href="https://localhost:7223/home.html" target="_blank">https://localhost:7223/home.html</a>
+                </div>
+                <div class="url-item">
+                    <span>?? Members:</span>
+                    <a href="https://localhost:7223/members.html" target="_blank">https://localhost:7223/members.html</a>
+                </div>
+                <div class="url-item">
+                    <span>?? Settings:</span>
+                    <a href="https://localhost:7223/settings.html" target="_blank">https://localhost:7223/settings.html</a>
+                </div>
+                <div class="url-item">
+                    <span>?? Export:</span>
+                    <a href="https://localhost:7223/export.html" target="_blank">https://localhost:7223/export.html</a>
+                </div>
+                <div class="url-item">
+                    <span>?? API Docs:</span>
+                    <a href="https://localhost:7223/swagger" target="_blank">https://localhost:7223/swagger</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>?? Important:</strong> Keep the "AdminMembers Server" window open while using the application. Close it to stop the server.
+        </div>
+
+        <div class="section">
+            <h2>?? How to Stop</h2>
+            <p>To stop the AdminMembers server:</p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li style="margin: 8px 0;">Close the "AdminMembers Server" window</li>
+                <li style="margin: 8px 0;">Or press <strong>Ctrl+C</strong> in that window</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>?? Additional Documentation</h2>
+            <p>For more detailed information, check these files in your project folder:</p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li style="margin: 8px 0;"><strong>README_DESKTOP.md</strong> - Quick desktop guide</li>
+                <li style="margin: 8px 0;"><strong>DESKTOP_LAUNCHER_GUIDE.md</strong> - Complete launcher documentation</li>
+                <li style="margin: 8px 0;"><strong>DEPLOYMENT_GUIDE.md</strong> - Manual deployment steps</li>
+                <li style="margin: 8px 0;"><strong>QUICK_START_GUIDE.md</strong> - Application usage guide</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; color: #666;">
+            <p>?? Enjoy using AdminMembers!</p>
+        </div>
+    </div>
+</body>
+</html>

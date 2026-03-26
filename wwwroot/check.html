@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Check - Member Administration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #000;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ddd;
+        }
+
+        .check-item.checking {
+            border-left-color: #2196F3;
+        }
+
+        .check-item.success {
+            border-left-color: #4CAF50;
+            background: #e8f5e9;
+        }
+
+        .check-item.error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+
+        .check-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            width: 30px;
+        }
+
+        .check-label {
+            flex: 1;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .check-status {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: #000;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #000;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .error-details {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 6px;
+        }
+
+        .error-details h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        .error-details ol {
+            font-size: 13px;
+            color: #856404;
+            padding-left: 20px;
+        }
+
+        .error-details li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>?? System Check</h1>
+        <p>Verifying that all components are running correctly...</p>
+
+        <div id="checks">
+            <div class="check-item checking" id="apiCheck">
+                <div class="check-icon">?</div>
+                <div class="check-label">API Connection</div>
+                <div class="check-status">Checking...</div>
+            </div>
+
+            <div class="check-item checking" id="dbCheck">
+                <div class="check-icon">?</div>
+                <div class="check-label">Database Connection</div>
+                <div class="check-status">Checking...</div>
+            </div>
+
+            <div class="check-item checking" id="dataCheck">
+                <div class="check-icon">?</div>
+                <div class="check-label">Data Access</div>
+                <div class="check-status">Checking...</div>
+            </div>
+        </div>
+
+        <div id="errorDetails" style="display: none;" class="error-details">
+            <h3>?? Quick Fixes:</h3>
+            <ol>
+                <li>Press <strong>F5</strong> in Visual Studio to start the application</li>
+                <li>Or run: <code>dotnet run</code> in the project directory</li>
+                <li>Make sure you're accessing <code>https://localhost:7223</code></li>
+                <li>Check that SQL Server LocalDB is running</li>
+            </ol>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="runCheck()">?? Re-check</button>
+            <button class="btn btn-primary" onclick="goToHome()" id="continueBtn" disabled>Continue to App ?</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/members';
+        let allChecksPassed = false;
+
+        async function runCheck() {
+            // Reset
+            allChecksPassed = false;
+            document.getElementById('continueBtn').disabled = true;
+            document.getElementById('errorDetails').style.display = 'none';
+
+            // Check 1: API Connection
+            await checkAPI();
+
+            // Check 2: Database (via API)
+            await checkDatabase();
+
+            // Check 3: Data Access
+            await checkData();
+
+            // Enable continue if all passed
+            if (allChecksPassed) {
+                document.getElementById('continueBtn').disabled = false;
+            } else {
+                document.getElementById('errorDetails').style.display = 'block';
+            }
+        }
+
+        async function checkAPI() {
+            const item = document.getElementById('apiCheck');
+            const icon = item.querySelector('.check-icon');
+            const status = item.querySelector('.check-status');
+
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    item.className = 'check-item success';
+                    icon.textContent = '?';
+                    status.textContent = 'Connected';
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                item.className = 'check-item error';
+                icon.textContent = '?';
+                status.textContent = error.message === 'Failed to fetch' ? 'Not running' : error.message;
+                return false;
+            }
+        }
+
+        async function checkDatabase() {
+            const item = document.getElementById('dbCheck');
+            const icon = item.querySelector('.check-icon');
+            const status = item.querySelector('.check-status');
+
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    item.className = 'check-item success';
+                    icon.textContent = '?';
+                    status.textContent = 'Ready';
+                    return true;
+                }
+            } catch (error) {
+                item.className = 'check-item error';
+                icon.textContent = '?';
+                status.textContent = 'Cannot connect';
+                return false;
+            }
+        }
+
+        async function checkData() {
+            const item = document.getElementById('dataCheck');
+            const icon = item.querySelector('.check-icon');
+            const status = item.querySelector('.check-status');
+
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    item.className = 'check-item success';
+                    icon.textContent = '?';
+                    status.textContent = `${data.length} members`;
+                    allChecksPassed = true;
+                    return true;
+                }
+            } catch (error) {
+                item.className = 'check-item error';
+                icon.textContent = '?';
+                status.textContent = 'Error';
+                return false;
+            }
+        }
+
+        function goToHome() {
+            window.location.href = 'home.html';
+        }
+
+        // Run check on page load
+        document.addEventListener('DOMContentLoaded', runCheck);
+    </script>
+</body>
+</html>
