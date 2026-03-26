@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnose Test - AdminMembers</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+        .test-section h2 {
+            color: #2196f3;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #1976d2;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+        .info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>?? Diagnose Test - AdminMembers</h1>
+
+        <div class="test-section">
+            <h2>1. API Bereikbaarheid Test</h2>
+            <p>Test of de API endpoint bereikbaar is:</p>
+            <button onclick="testAPIConnection()">Test API Connectie</button>
+            <div id="apiResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Backup Endpoint Test</h2>
+            <p>Test of de backup endpoint werkt:</p>
+            <button onclick="testBackupEndpoint()">Test Backup</button>
+            <div id="backupResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Import CSV Endpoint Test</h2>
+            <p>Test of de import endpoint werkt:</p>
+            <button onclick="testImportEndpoint()">Test Import</button>
+            <div id="importResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Sorteer Functie Test</h2>
+            <p>Test of de sorteer functie correct werkt:</p>
+            <button onclick="testSortFunction()">Test Sorteren</button>
+            <div id="sortResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Browser Console Errors</h2>
+            <p>Check voor JavaScript errors:</p>
+            <button onclick="checkConsoleErrors()">Check Console</button>
+            <div id="consoleResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/members';
+        let testErrors = [];
+
+        // Override console.error to catch errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            testErrors.push(args.join(' '));
+            originalError.apply(console, args);
+        };
+
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.innerHTML = message;
+        }
+
+        async function testAPIConnection() {
+            const resultDiv = document.getElementById('apiResult');
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('apiResult', 
+                        `? SUCCESS<br>
+                        Status: ${response.status}<br>
+                        Members gevonden: ${data.length}<br>
+                        API is bereikbaar!`, 
+                        'success'
+                    );
+                } else {
+                    showResult('apiResult', 
+                        `? ERROR<br>
+                        Status: ${response.status}<br>
+                        ${response.statusText}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('apiResult', 
+                    `? CONNECTION ERROR<br>
+                    ${error.message}<br><br>
+                    Mogelijke oorzaken:<br>
+                    - Backend is niet gestart<br>
+                    - Verkeerde URL<br>
+                    - CORS probleem`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testBackupEndpoint() {
+            const resultDiv = document.getElementById('backupResult');
+            try {
+                showResult('backupResult', '? Testing...', 'info');
+
+                const response = await fetch(`${API_URL}/backup`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    showResult('backupResult', 
+                        `? SUCCESS<br>
+                        Status: ${response.status}<br>
+                        Backup size: ${(blob.size / 1024).toFixed(2)} KB<br>
+                        Backup endpoint werkt correct!`, 
+                        'success'
+                    );
+                } else {
+                    const errorText = await response.text();
+                    showResult('backupResult', 
+                        `? ERROR<br>
+                        Status: ${response.status}<br>
+                        Response: ${errorText}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('backupResult', 
+                    `? ERROR<br>
+                    ${error.message}<br><br>
+                    Check of:<br>
+                    - BackupService correct is geconfigureerd<br>
+                    - Database connectie werkt<br>
+                    - Endpoint bestaat in Controller`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testImportEndpoint() {
+            const resultDiv = document.getElementById('importResult');
+            try {
+                showResult('importResult', '? Testing...', 'info');
+
+                // Create test CSV
+                const csvContent = 'MemberNumber,FirstName,LastName\n999,Test,User';
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const formData = new FormData();
+                formData.append('csvFile', blob, 'test.csv');
+                formData.append('fieldMapping', JSON.stringify({
+                    MemberNumber: 'MemberNumber',
+                    FirstName: 'FirstName',
+                    LastName: 'LastName'
+                }));
+
+                const response = await fetch(`${API_URL}/import/csv`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showResult('importResult', 
+                        `? SUCCESS<br>
+                        Status: ${response.status}<br>
+                        Imported: ${result.importedCount}<br>
+                        Skipped: ${result.skippedCount}<br>
+                        Import endpoint werkt!`, 
+                        'success'
+                    );
+                } else {
+                    const errorText = await response.text();
+                    showResult('importResult', 
+                        `? ERROR<br>
+                        Status: ${response.status}<br>
+                        Response: ${errorText}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('importResult', 
+                    `? ERROR<br>
+                    ${error.message}<br><br>
+                    Check of:<br>
+                    - Import endpoint bestaat<br>
+                    - CSV parsing werkt<br>
+                    - Database toegankelijk is`, 
+                    'error'
+                );
+            }
+        }
+
+        function testSortFunction() {
+            try {
+                // Test data
+                const testMembers = [
+                    { id: 1, memberNumber: 100, firstName: 'Jan', lastName: 'Jansen' },
+                    { id: 2, memberNumber: 1, firstName: 'Piet', lastName: 'Pietersen' },
+                    { id: 3, memberNumber: 50, firstName: 'Klaas', lastName: 'Klaassen' },
+                    { id: 4, memberNumber: 10, firstName: 'Marie', lastName: 'Marissen' },
+                    { id: 5, memberNumber: 5, firstName: 'Hans', lastName: 'Hansen' }
+                ];
+
+                // Test ascending sort
+                let sorted = [...testMembers].sort((a, b) => {
+                    const aNum = parseInt(a.memberNumber, 10);
+                    const bNum = parseInt(b.memberNumber, 10);
+                    if (isNaN(aNum)) return 1;
+                    if (isNaN(bNum)) return -1;
+                    return aNum - bNum;
+                });
+
+                const ascOrder = sorted.map(m => m.memberNumber).join(', ');
+
+                // Test descending sort
+                sorted = [...testMembers].sort((a, b) => {
+                    const aNum = parseInt(a.memberNumber, 10);
+                    const bNum = parseInt(b.memberNumber, 10);
+                    if (isNaN(aNum)) return 1;
+                    if (isNaN(bNum)) return -1;
+                    return bNum - aNum;
+                });
+
+                const descOrder = sorted.map(m => m.memberNumber).join(', ');
+
+                if (ascOrder === '1, 5, 10, 50, 100' && descOrder === '100, 50, 10, 5, 1') {
+                    showResult('sortResult', 
+                        `? SUCCESS<br>
+                        Ascending: ${ascOrder}<br>
+                        Descending: ${descOrder}<br><br>
+                        Sorteer functie werkt correct!`, 
+                        'success'
+                    );
+                } else {
+                    showResult('sortResult', 
+                        `? ERROR<br>
+                        Ascending: ${ascOrder} (verwacht: 1, 5, 10, 50, 100)<br>
+                        Descending: ${descOrder} (verwacht: 100, 50, 10, 5, 1)`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('sortResult', 
+                    `? ERROR<br>
+                    ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        function checkConsoleErrors() {
+            if (testErrors.length === 0) {
+                showResult('consoleResult', 
+                    `? SUCCESS<br>
+                    Geen JavaScript errors gedetecteerd!<br>
+                    Console is schoon.`, 
+                    'success'
+                );
+            } else {
+                showResult('consoleResult', 
+                    `?? ERRORS GEVONDEN<br>
+                    Aantal errors: ${testErrors.length}<br><br>
+                    Errors:<br>
+                    ${testErrors.map(e => `- ${e}`).join('<br>')}`, 
+                    'error'
+                );
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            console.log('?? Diagnose Test geladen');
+            console.log('API_URL:', API_URL);
+        });
+    </script>
+</body>
+</html>

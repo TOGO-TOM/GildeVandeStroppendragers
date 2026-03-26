@@ -1,0 +1,6 @@
+Member Number,First Name,Last Name,Gender,Role,Birth Date,Email,Phone Number,Street,City,Postal Code,Country,Status,Seniority Date
+M001,John,Doe,Man,Kandidaat,1985-03-15,john.doe@example.com,+32 123 456 789,Main Street 123,Brussels,1000,Belgium,Alive,2020-01-15
+M002,Jane,Smith,Vrouw,Stappend lid,1990-07-22,jane.smith@example.com,+32 987 654 321,Park Avenue 45,Antwerp,2000,Belgium,Alive,2019-06-20
+M003,Peter,Johnson,Man,Stappend lid effectief,1978-11-05,peter.j@example.com,+32 555 123 456,Oak Street 78,Ghent,9000,Belgium,Alive,2018-03-10
+M004,Maria,Garcia,Vrouw,Steunend lid,1995-02-28,maria.garcia@example.com,+32 444 888 999,Elm Street 22,Bruges,8000,Belgium,Alive,2021-09-05
+M005,Tom,Williams,Man,Kandidaat,1988-12-10,,,Pine Road 5,Leuven,3000,,Alive,

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Administration</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <a href="home.html" class="home-link">Home</a>
+                <h1>Member Administration</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-icon" onclick="showImportModal()">Import CSV</button>
+                <button class="btn btn-icon" onclick="window.location.href='export.html'">Export</button>
+                <button class="btn btn-icon" onclick="exportToCSV()">Quick CSV</button>
+                <button class="btn btn-icon" onclick="showBackupModal()">Backup</button>
+                <button class="btn btn-icon" onclick="showRestoreModal()">Restore</button>
+                <button class="btn btn-icon" onclick="deleteAllMembers()" style="background: #ffebee; color: #d32f2f; border-color: #d32f2f;">Delete All (Test)</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar Form -->
+        <div class="sidebar">
+            <div class="form-section">
+                <h2 id="formTitle">Add New Member</h2>
+                <form id="memberForm">
+                    <input type="hidden" id="memberId">
+                    <input type="hidden" id="addressId">
+                    
+                    <div class="form-group">
+                        <label for="memberNumber">Member Number *</label>
+                        <input type="number" id="memberNumber" required placeholder="e.g., 1, 2, 3..." min="1">
+                        <span id="memberNumberMessage"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status *</label>
+                        <select id="status" required>
+                            <option value="true">Alive</option>
+                            <option value="false">Deceased</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="seniorityDate">Seniority Date (Ancienniteit)</label>
+                        <input type="date" id="seniorityDate">
+                        <small>Date when member joined</small>
+                    </div>
+
+                    <div class="section-divider">
+                        <div class="section-title">Personal Information</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" required placeholder="John">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" required placeholder="Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Gender *</label>
+                        <select id="gender" required>
+                            <option value="Man">Man</option>
+                            <option value="Vrouw">Vrouw</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">Role *</label>
+                        <select id="role" required>
+                            <option value="Kandidaat">Kandidaat</option>
+                            <option value="Stappend lid">Stappend lid</option>
+                            <option value="Stappend lid effectief">Stappend lid effectief</option>
+                            <option value="Steunend lid">Steunend lid</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthDate">Birth Date</label>
+                        <input type="date" id="birthDate">
+                        <small>Used to calculate age in contact card</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photoUpload">Photo</label>
+                        <input type="file" id="photoUpload" accept="image/*" onchange="handlePhotoUpload(event)" style="display: none;">
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('photoUpload').click()" style="width: 100%; margin-top: 0;">Choose Photo</button>
+                        <small>Upload a photo for the member (shown in contact card, max 5MB)</small>
+                        <div id="photoPreview" style="margin-top: 10px; display: none;">
+                            <img id="photoPreviewImg" style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 2px solid #ddd; display: block; margin: 0 auto;" />
+                            <button type="button" class="btn btn-secondary" onclick="removePhoto()" style="margin-top: 8px; font-size: 12px; padding: 6px 12px; width: auto;">Remove Photo</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="john@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" id="phoneNumber" placeholder="+1 555 123 4567">
+                    </div>
+
+                    <div class="section-divider">
+                        <div class="section-title">Address</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="street">Street Name *</label>
+                        <input type="text" id="street" required placeholder="Main Street">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="houseNumber">House Number</label>
+                        <input type="text" id="houseNumber" placeholder="123">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">City *</label>
+                        <input type="text" id="city" required placeholder="New York">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="postalCode">Postal Code *</label>
+                        <input type="text" id="postalCode" required placeholder="10001">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <input type="text" id="country" placeholder="USA">
+                    </div>
+
+                    <div class="section-divider" id="customFieldsSection" style="display: none;">
+                        <div class="section-title">Custom Fields</div>
+                    </div>
+
+                    <div id="customFieldsContainer"></div>
+
+                    <div style="margin-top: 24px;">
+                        <button type="submit" class="btn btn-primary">Save Member</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content - Member List -->
+        <div class="main-content">
+            <div class="list-header">
+                <h2>Members List</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search members..." onkeyup="filterMembers()">
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <select id="sortBy" onchange="sortMembers()" style="padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: #fff;">
+                            <option value="default">Sorteer op...</option>
+                            <option value="lastName-asc">Achternaam (A-Z)</option>
+                            <option value="lastName-desc">Achternaam (Z-A)</option>
+                            <option value="memberNumber-asc">Lidnummer (Laag → Hoog)</option>
+                            <option value="memberNumber-desc">Lidnummer (Hoog → Laag)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-icon" onclick="showBulkUpdateModal()" style="margin-left: 10px;">Bulk Update</button>
+                </div>
+            </div>
+            <div id="membersList">
+                <div class="loading">Loading members...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Update Modal -->
+    <div id="bulkUpdateModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeBulkUpdateModal()">&times;</span>
+            <div class="modal-header">Bulk Update Members</div>
+            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Update multiple members at once by selecting them and choosing what to update.</p>
+
+            <div class="form-group">
+                <label>Select Members</label>
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 10px; background: #fafafa;">
+                    <div id="bulkMemberList"></div>
+                </div>
+                <small>Select the members you want to update</small>
+            </div>
+
+            <div class="section-divider">
+                <div class="section-title">Update Fields (leave blank to keep unchanged)</div>
+            </div>
+
+            <div class="form-group">
+                <label for="bulkGender">Gender</label>
+                <select id="bulkGender">
+                    <option value="">-- Don't change --</option>
+                    <option value="Man">Man</option>
+                    <option value="Vrouw">Vrouw</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="bulkRole">Role</label>
+                <select id="bulkRole">
+                    <option value="">-- Don't change --</option>
+                    <option value="Kandidaat">Kandidaat</option>
+                    <option value="Stappend lid">Stappend lid</option>
+                    <option value="Stappend lid effectief">Stappend lid effectief</option>
+                    <option value="Steunend lid">Steunend lid</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="bulkStatus">Status</label>
+                <select id="bulkStatus">
+                    <option value="">-- Don't change --</option>
+                    <option value="true">Alive</option>
+                    <option value="false">Deceased</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="applyBulkUpdate()">Update Selected Members</button>
+                <button class="btn btn-secondary" onclick="closeBulkUpdateModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Card Modal -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="modal-close" onclick="closeContactModal()">&times;</span>
+            <div id="contactCardContent"></div>
+        </div>
+    </div>
+
+    <!-- CSV Import Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="modal-close" onclick="closeImportModal()">&times;</span>
+            <div class="modal-header">Import Members from CSV</div>
+            
+            <div id="importStep1" style="display: block;">
+                <div class="form-group">
+                    <label for="csvFile">Select CSV File</label>
+                    <label for="csvFile" class="file-input-label">Choose CSV File</label>
+                    <input type="file" id="csvFile" accept=".csv" onchange="previewCSV(event)">
+                    <div id="csvFileName" style="margin-top: 8px; font-size: 13px; color: #666;"></div>
+                    <small style="margin-top: 8px; display: block;">Supports both comma (,) and semicolon (;) as separators. The separator will be detected automatically.</small>
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="processCSVHeaders()" id="btnNextStep">Next: Map Fields</button>
+                    <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+                </div>
+            </div>
+
+            <div id="importStep2" style="display: none;">
+                <p style="margin-bottom: 20px; color: #666;">Map your CSV columns to the member fields:</p>
+                <div id="fieldMappingContainer"></div>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="importCSVData()">Import Members</button>
+                    <button class="btn btn-secondary" onclick="backToStep1()">Back</button>
+                    <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+                </div>
+            </div>
+
+            <div id="importStep3" style="display: none;">
+                <div id="importResults"></div>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="closeImportModal(); loadMembers();">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Modal -->
+    <div id="backupModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeBackupModal()">&times;</span>
+            <div class="modal-header">Create Encrypted Backup</div>
+            <div class="form-group">
+                <label for="backupPassword">Password (optional)</label>
+                <input type="password" id="backupPassword" placeholder="Leave empty for default password">
+                <small>You'll need this password to restore the backup.</small>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="createBackup()">Create Backup</button>
+                <button class="btn btn-secondary" onclick="closeBackupModal()">Cancel</button>
+            </div>
+        </div>
+    </div>`
+
+    <!-- Restore Modal -->
+    <div id="restoreModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeRestoreModal()">&times;</span>
+            <div class="modal-header">Restore from Backup</div>
+            <div class="form-group">
+                <label for="restoreFile">Select Backup File</label>
+                <label for="restoreFile" class="file-input-label">Choose File</label>
+                <input type="file" id="restoreFile" accept=".bak">
+                <div id="fileName" style="margin-top: 8px; font-size: 13px; color: #666;"></div>
+            </div>
+            <div class="form-group">
+                <label for="restorePassword">Password (optional)</label>
+                <input type="password" id="restorePassword" placeholder="Leave empty if default was used">
+            </div>
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" id="overwriteData">
+                    <span><strong>Overwrite all existing data</strong><br>This will delete all current members!</span>
+                </label>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="restoreBackup()">Restore</button>
+                <button class="btn btn-secondary" onclick="closeRestoreModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="messageBox" class="message-box"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

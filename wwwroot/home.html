@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Administration - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: #ccc;
+            font-weight: 400;
+        }
+
+        .quick-stats {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+
+        .card-icon {
+            font-size: 36px;
+            margin-bottom: 20px;
+            display: block;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #000;
+        }
+
+        .card-description {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card-action {
+            display: inline-block;
+            padding: 10px 24px;
+            background: #000;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .card:hover .card-action {
+            background: #333;
+        }
+
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: #ccc;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Member Administration</h1>
+            <p>Manage your members and their information with ease</p>
+        </div>
+
+        <div class="quick-stats" id="statsContainer">
+            <div class="stat-item">
+                <span class="stat-number" id="totalMembers">-</span>
+                <span class="stat-label">Total Members</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="aliveMembers">-</span>
+                <span class="stat-label">Alive</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="deceasedMembers">-</span>
+                <span class="stat-label">Deceased</span>
+            </div>
+        </div>
+
+        <div class="cards-container">
+            <a href="members.html" class="card">
+                <span class="card-icon">VIEW</span>
+                <h2 class="card-title">View Members</h2>
+                <p class="card-description">Browse and manage all members in the system. View details, edit information, and more.</p>
+                <span class="card-action">Go to Overview &rarr;</span>
+            </a>
+
+            <a href="members.html#add" class="card">
+                <span class="card-icon">ADD</span>
+                <h2 class="card-title">Add Member</h2>
+                <p class="card-description">Register a new member with their personal information and address details.</p>
+                <span class="card-action">Add New Member &rarr;</span>
+            </a>
+
+            <a href="export.html" class="card">
+                <span class="card-icon">EXPORT</span>
+                <h2 class="card-title">Export Data</h2>
+                <p class="card-description">Export members to Excel, PDF, or CSV with custom field selection and filtering.</p>
+                <span class="card-action">Export Members &rarr;</span>
+            </a>
+
+            <a href="members.html#backup" class="card">
+                <span class="card-icon">BACKUP</span>
+                <h2 class="card-title">Backup & Restore</h2>
+                <p class="card-description">Create encrypted backups of your data or restore from previous backup files.</p>
+                <span class="card-action">Manage Backups &rarr;</span>
+            </a>
+
+            <a href="settings.html" class="card">
+                <span class="card-icon">⚙️</span>
+                <h2 class="card-title">Settings</h2>
+                <p class="card-description">Configure company logo, custom fields, and general application settings.</p>
+                <span class="card-action">Go to Settings &rarr;</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Powered by .NET 8 & SQL Server LocalDB</p>
+            <div style="margin-top: 10px;">
+                <a href="members.html">Dashboard</a>
+                <a href="settings.html">Settings</a>
+                <a href="test.html">System Test</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/members';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadStats();
+        });
+
+        async function loadStats() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('API not available');
+                
+                const members = await response.json();
+                const total = members.length;
+                const alive = members.filter(m => m.isAlive).length;
+                const deceased = members.filter(m => !m.isAlive).length;
+                
+                document.getElementById('totalMembers').textContent = total;
+                document.getElementById('aliveMembers').textContent = alive;
+                document.getElementById('deceasedMembers').textContent = deceased;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('totalMembers').textContent = '0';
+                document.getElementById('aliveMembers').textContent = '0';
+                document.getElementById('deceasedMembers').textContent = '0';
+            }
+        }
+    </script>
+</body>
+</html>
