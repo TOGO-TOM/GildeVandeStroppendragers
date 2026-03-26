@@ -4,6 +4,7 @@ using AdminMembers.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdminMembers.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260326124002_AddUserManagementAndRBAC")]
+    partial class AddUserManagementAndRBAC
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -228,7 +231,8 @@ namespace AdminMembers.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("MemberNumber")
+                    b.Property<int>("MemberNumber")
+                        .HasMaxLength(50)
                         .HasColumnType("int");
 
                     b.Property<string>("PhoneNumber")
@@ -252,8 +256,7 @@ namespace AdminMembers.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MemberNumber")
-                        .IsUnique()
-                        .HasFilter("[MemberNumber] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Members");
                 });

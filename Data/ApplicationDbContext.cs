@@ -15,6 +15,10 @@ namespace AdminMembers.Data
         public DbSet<AppSettings> AppSettings { get; set; }
         public DbSet<CustomField> CustomFields { get; set; }
         public DbSet<MemberCustomField> MemberCustomFields { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,7 +27,7 @@ namespace AdminMembers.Data
             modelBuilder.Entity<Member>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.MemberNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.MemberNumber).IsRequired(false);
                 entity.HasIndex(e => e.MemberNumber).IsUnique();
                 entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
@@ -83,6 +87,63 @@ namespace AdminMembers.Data
 
                 entity.HasIndex(e => new { e.MemberId, e.CustomFieldId }).IsUnique();
             });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.Username).IsUnique();
+                entity.Property(e => e.PasswordHash).IsRequired();
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+                entity.HasIndex(e => e.Email).IsUnique();
+            });
+
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.Property(e => e.Description).HasMaxLength(500);
+            });
+
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                entity.HasOne(ur => ur.User)
+                      .WithMany(u => u.UserRoles)
+                      .HasForeignKey(ur => ur.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(ur => ur.Role)
+                      .WithMany(r => r.UserRoles)
+                      .HasForeignKey(ur => ur.RoleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => new { e.UserId, e.RoleId }).IsUnique();
+            });
+
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.EntityType).HasMaxLength(100);
+                entity.Property(e => e.IpAddress).HasMaxLength(50);
+                entity.HasIndex(e => e.Timestamp);
+                entity.HasIndex(e => e.UserId);
+
+                entity.HasOne(al => al.User)
+                      .WithMany()
+                      .HasForeignKey(al => al.UserId)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Seed default roles
+            modelBuilder.Entity<Role>().HasData(
+                new Role { Id = 1, Name = "Admin", Description = "Full access with read and write permissions", Permission = Permission.ReadWrite },
+                new Role { Id = 2, Name = "Editor", Description = "Can read and write data", Permission = Permission.ReadWrite },
+                new Role { Id = 3, Name = "Viewer", Description = "Read-only access", Permission = Permission.Read }
+            );
         }
     }
 }

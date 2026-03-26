@@ -18,6 +18,16 @@ function escapeHtml(text) {
 
 // Load members on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Check authentication first
+    const user = checkAuth();
+    if (!user) return; // Will redirect to login
+    
+    // Initialize auth UI (user info, logout button)
+    initAuthUI();
+    
+    // Show page after auth check
+    document.body.classList.add('loaded');
+    
     loadMembers();
     
     const memberForm = document.getElementById('memberForm');
@@ -63,7 +73,7 @@ async function checkMemberNumber(memberNumber) {
             ? `${API_URL}/check-number/${parseInt(memberNumber)}?excludeId=${memberId}`
             : `${API_URL}/check-number/${parseInt(memberNumber)}`;
             
-        const response = await fetch(url);
+        const response = await fetchWithAuth(url);
         const result = await response.json();
         
         if (result.exists) {
@@ -86,7 +96,7 @@ async function loadMembers() {
     console.log('Loading members from:', API_URL);
     
     try {
-        const response = await fetch(API_URL);
+        const response = await fetchWithAuth(API_URL);
         console.log('Response status:', response.status);
         
         if (!response.ok) {
@@ -171,7 +181,7 @@ function displayMembers(members) {
                             <div class="member-list-details">${details.join(' | ')}</div>
                         </div>
                         <div class="member-list-meta">
-                            <div class="member-list-number">#${escapeHtml(member.memberNumber)}</div>
+                            <div class="member-list-number">${member.memberNumber ? '#' + escapeHtml(member.memberNumber) : 'No #'}</div>
                             <div class="member-list-status ${statusClass}">${statusText}</div>
                         </div>
                     </div>
@@ -205,19 +215,21 @@ function sortMembers() {
             break;
         case 'memberNumber-asc':
             sortedMembers.sort((a, b) => {
-                const aNum = parseInt(a.memberNumber, 10);
-                const bNum = parseInt(b.memberNumber, 10);
-                if (isNaN(aNum)) return 1;
-                if (isNaN(bNum)) return -1;
+                const aNum = a.memberNumber || 0;
+                const bNum = b.memberNumber || 0;
+                if (aNum === 0 && bNum === 0) return 0;
+                if (aNum === 0) return 1; // Null values go to end
+                if (bNum === 0) return -1;
                 return aNum - bNum;
             });
             break;
         case 'memberNumber-desc':
             sortedMembers.sort((a, b) => {
-                const aNum = parseInt(a.memberNumber, 10);
-                const bNum = parseInt(b.memberNumber, 10);
-                if (isNaN(aNum)) return 1;
-                if (isNaN(bNum)) return -1;
+                const aNum = a.memberNumber || 0;
+                const bNum = b.memberNumber || 0;
+                if (aNum === 0 && bNum === 0) return 0;
+                if (aNum === 0) return 1; // Null values go to end
+                if (bNum === 0) return -1;
                 return bNum - aNum;
             });
             break;
@@ -268,7 +280,7 @@ async function showContactCard(id) {
                 <div class="contact-card-header">
                     <div class="contact-card-avatar">${avatarHTML}</div>
                     <div class="contact-card-name">${escapeHtml(member.firstName)} ${escapeHtml(member.lastName)}</div>
-                    <div class="contact-card-number">#${escapeHtml(member.memberNumber)}</div>
+                    <div class="contact-card-number">${member.memberNumber ? '#' + escapeHtml(member.memberNumber) : 'No Member #'}</div>
                     <div class="contact-card-status ${statusClass}">${statusText}</div>
                 </div>
 
@@ -358,6 +370,7 @@ async function showContactCard(id) {
                                         </div>
                                     `;
                                 }).join('')}
+
                             </div>
                         </div>
                     ` : ''}
@@ -447,19 +460,22 @@ async function saveMember() {
     const memberId = document.getElementById('memberId').value;
     const memberNumber = document.getElementById('memberNumber').value;
     
-    // Validate member number is a positive integer
-    const memberNumInt = parseInt(memberNumber);
-    if (!memberNumInt || memberNumInt <= 0) {
-        showMessage('Member number must be a positive number', 'error');
-        return;
-    }
-    
-    // Validate member number before saving
-    if (!memberId) {
-        const isAvailable = await checkMemberNumber(memberNumber);
-        if (!isAvailable) {
-            showMessage('Please use a different member number.', 'error');
+    // Member number is now optional
+    let memberNumInt = null;
+    if (memberNumber && memberNumber.trim() !== '') {
+        memberNumInt = parseInt(memberNumber);
+        if (memberNumInt <= 0) {
+            showMessage('Member number must be a positive number', 'error');
             return;
+        }
+        
+        // Validate member number before saving (only if provided)
+        if (!memberId) {
+            const isAvailable = await checkMemberNumber(memberNumber);
+            if (!isAvailable) {
+                showMessage('Please use a different member number.', 'error');
+                return;
+            }
         }
     }
     
@@ -497,14 +513,14 @@ async function saveMember() {
                 member.address.id = editingAddressId;
                 member.address.memberId = parseInt(memberId);
             }
-            response = await fetch(`${API_URL}/${memberId}`, {
+            response = await fetchWithAuth(`${API_URL}/${memberId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(member)
             });
         } else {
             // Create new member
-            response = await fetch(API_URL, {
+            response = await fetchWithAuth(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(member)
@@ -534,7 +550,7 @@ async function editMember(id) {
         const member = await response.json();
         
         document.getElementById('memberId').value = member.id;
-        document.getElementById('memberNumber').value = member.memberNumber;
+        document.getElementById('memberNumber').value = member.memberNumber || '';
         document.getElementById('firstName').value = member.firstName;
         document.getElementById('lastName').value = member.lastName;
         document.getElementById('gender').value = member.gender || 'Man';
@@ -604,7 +620,7 @@ async function deleteMember(id) {
     if (!confirm('Are you sure you want to delete this member?')) return;
 
     try {
-        const response = await fetch(`${API_URL}/${id}`, {
+        const response = await fetchWithAuth(`${API_URL}/${id}`, {
             method: 'DELETE'
         });
 
@@ -623,7 +639,7 @@ async function exportToCSV() {
     try {
         showMessage('Generating CSV export...', 'success');
         
-        const response = await fetch(`${API_URL}/export/csv`);
+        const response = await fetchWithAuth(`${API_URL}/export/csv`);
         if (!response.ok) throw new Error('Failed to export data');
         
         const blob = await response.blob();
@@ -847,7 +863,7 @@ async function importCSVData() {
         showMessage('Importing members...', 'success');
         
         // Send to server
-        const response = await fetch(`${API_URL}/import/csv`, {
+        const response = await fetchWithAuth(`${API_URL}/import/csv`, {
             method: 'POST',
             body: formData
         });
@@ -979,7 +995,7 @@ let customFieldsCache = [];
 
 async function loadCustomFieldsForForm() {
     try {
-        const response = await fetch('/api/settings/custom-fields');
+        const response = await fetchWithAuth('/api/settings/custom-fields');
         if (!response.ok) return;
         
         const fields = await response.json();
@@ -1021,6 +1037,7 @@ function renderCustomFieldsInForm() {
                     break;
                 case 'Checkbox':
                     inputHTML = `
+
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <input type="checkbox" id="cf_${field.id}" style="width: auto; cursor: pointer;">
                             <label for="cf_${field.id}" style="margin: 0; cursor: pointer;">${escapeHtml(field.fieldLabel)}</label>
@@ -1163,7 +1180,7 @@ async function createBackup() {
         showMessage('Creating backup...', 'success');
         
         const url = password ? `${API_URL}/backup?password=${encodeURIComponent(password)}` : `${API_URL}/backup`;
-        const response = await fetch(url, { method: 'POST' });
+        const response = await fetchWithAuth(url, { method: 'POST' });
         
         if (!response.ok) throw new Error('Failed to create backup');
         
@@ -1208,7 +1225,7 @@ async function restoreBackup() {
             url += `&password=${encodeURIComponent(password)}`;
         }
         
-        const response = await fetch(url, {
+        const response = await fetchWithAuth(url, {
             method: 'POST',
             body: formData
         });
@@ -1241,7 +1258,7 @@ async function deleteAllMembers() {
     try {
         showMessage('Deleting all members...', 'success');
         
-        const response = await fetch(`${API_URL}/delete-all`, {
+        const response = await fetchWithAuth(`${API_URL}/delete-all`, {
             method: 'DELETE'
         });
         
@@ -1320,7 +1337,7 @@ async function applyBulkUpdate() {
         
         showMessage('Updating members...', 'success');
         
-        const response = await fetch(`${API_URL}/bulk-update`, {
+        const response = await fetchWithAuth(`${API_URL}/bulk-update`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updateData)

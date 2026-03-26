@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using AdminMembers.Data;
 using AdminMembers.Models;
 using AdminMembers.Services;
+using AdminMembers.Attributes;
 using System.Text;
 
 namespace AdminMembers.Controllers
@@ -15,16 +16,19 @@ namespace AdminMembers.Controllers
         private readonly ILogger<MembersController> _logger;
         private readonly BackupService _backupService;
         private readonly ExportService _exportService;
+        private readonly AuditLogService _auditLogService;
 
-        public MembersController(ApplicationDbContext context, ILogger<MembersController> logger, BackupService backupService, ExportService exportService)
+        public MembersController(ApplicationDbContext context, ILogger<MembersController> logger, BackupService backupService, ExportService exportService, AuditLogService auditLogService)
         {
             _context = context;
             _logger = logger;
             _backupService = backupService;
             _exportService = exportService;
+            _auditLogService = auditLogService;
         }
 
         [HttpGet]
+        [RequirePermission(Permission.Read)]
         public async Task<ActionResult<IEnumerable<Member>>> GetMembers([FromQuery] string? role = null)
         {
             try
@@ -77,6 +81,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpGet("{id}")]
+        [RequirePermission(Permission.Read)]
         public async Task<ActionResult<Member>> GetMember(int id)
         {
             var member = await _context.Members
@@ -94,6 +99,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpGet("check-number/{memberNumber}")]
+        [RequirePermission(Permission.Read)]
         public async Task<ActionResult<bool>> CheckMemberNumber(int memberNumber, [FromQuery] int? excludeId = null)
         {
             var exists = await _context.Members
@@ -103,14 +109,26 @@ namespace AdminMembers.Controllers
         }
 
         [HttpPost]
+        [RequirePermission(Permission.Write)]
         public async Task<ActionResult<Member>> CreateMember(Member member)
         {
-            // Check if member number already exists
-            if (await _context.Members.AnyAsync(m => m.MemberNumber == member.MemberNumber))
+            // Auto-generate member number if not provided
+            if (member.MemberNumber == null || member.MemberNumber == 0)
             {
-                return BadRequest(new { error = $"Member number '{member.MemberNumber}' is already in use." });
+                // Find the highest member number and add 1
+                var maxMemberNumber = await _context.Members
+                    .Where(m => m.MemberNumber.HasValue)
+                    .MaxAsync(m => (int?)m.MemberNumber) ?? 0;
+                member.MemberNumber = maxMemberNumber + 1;
             }
-
+            else
+            {
+                // Check if member number already exists (only if provided)
+                if (await _context.Members.AnyAsync(m => m.MemberNumber == member.MemberNumber))
+                {
+                    return BadRequest(new { error = $"Member number '{member.MemberNumber}' is already in use." });
+                }
+            }
             member.CreatedAt = DateTime.UtcNow;
             _context.Members.Add(member);
             
@@ -129,6 +147,12 @@ namespace AdminMembers.Controllers
                     }
                     await _context.SaveChangesAsync();
                 }
+
+                // Log the action
+                var userId = int.Parse(Request.Headers["X-User-Id"].ToString());
+                var username = Request.Headers["X-Username"].ToString();
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                await _auditLogService.LogActionAsync(userId, username, "Member Created", "Member", member.Id, $"Created member {member.FirstName} {member.LastName}", ipAddress);
             }
             catch (Exception ex)
             {
@@ -140,6 +164,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpPut("{id}")]
+        [RequirePermission(Permission.Write)]
         public async Task<IActionResult> UpdateMember(int id, Member member)
         {
             if (id != member.Id)
@@ -148,9 +173,13 @@ namespace AdminMembers.Controllers
             }
 
             // Check if member number already exists (excluding current member)
-            if (await _context.Members.AnyAsync(m => m.MemberNumber == member.MemberNumber && m.Id != id))
+            // Only check if member number is provided
+            if (member.MemberNumber.HasValue && member.MemberNumber > 0)
             {
-                return BadRequest(new { error = $"Member number '{member.MemberNumber}' is already in use." });
+                if (await _context.Members.AnyAsync(m => m.MemberNumber == member.MemberNumber && m.Id != id))
+                {
+                    return BadRequest(new { error = $"Member number '{member.MemberNumber}' is already in use." });
+                }
             }
 
             member.UpdatedAt = DateTime.UtcNow;
@@ -189,6 +218,12 @@ namespace AdminMembers.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                // Log the action
+                var userId = int.Parse(Request.Headers["X-User-Id"].ToString());
+                var username = Request.Headers["X-Username"].ToString();
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                await _auditLogService.LogActionAsync(userId, username, "Member Updated", "Member", member.Id, $"Updated member {member.FirstName} {member.LastName}", ipAddress);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -208,6 +243,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpDelete("{id}")]
+        [RequirePermission(Permission.Write)]
         public async Task<IActionResult> DeleteMember(int id)
         {
             var member = await _context.Members.FindAsync(id);
@@ -219,10 +255,17 @@ namespace AdminMembers.Controllers
             _context.Members.Remove(member);
             await _context.SaveChangesAsync();
 
+            // Log the action
+            var userId = int.Parse(Request.Headers["X-User-Id"].ToString());
+            var username = Request.Headers["X-Username"].ToString();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            await _auditLogService.LogActionAsync(userId, username, "Member Deleted", "Member", id, $"Deleted member {member.FirstName} {member.LastName}", ipAddress);
+
             return NoContent();
         }
 
         [HttpDelete("delete-all")]
+        [RequirePermission(Permission.ReadWrite)]
         public async Task<IActionResult> DeleteAllMembers()
         {
             try
@@ -249,6 +292,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpPatch("bulk-update")]
+        [RequirePermission(Permission.Write)]
         public async Task<IActionResult> BulkUpdateMembers([FromBody] BulkUpdateRequest request)
         {
             try
@@ -312,6 +356,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpGet("export/csv")]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> ExportToCsv()
         {
             var members = await _context.Members
@@ -342,6 +387,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpPost("export/excel")]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> ExportToExcel([FromBody] ExportRequest request)
         {
             try
@@ -374,6 +420,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpPost("export/pdf")]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> ExportToPdf([FromBody] ExportRequest request)
         {
             try

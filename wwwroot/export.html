@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Export Members</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="auth.js"></script>
     <style>
+        body { opacity: 0; transition: opacity 0.3s; }
+        body.loaded { opacity: 1; }
+        
         .export-container {
             max-width: 1000px;
             margin: 40px auto;
@@ -288,11 +292,14 @@
                 <a href="home.html" class="home-link">Home</a>
                 <h1>Export Members</h1>
             </div>
+            <div class="header-actions">
+                <div id="userInfo"></div>
+            </div>
         </div>
     </div>
 
     <div class="export-container">
-        <a href="members.html" class="back-link">? Back to Members</a>
+        <a href="members.html" class="back-link">← Back to Members</a>
 
         <div class="export-header">
             <h1>Export Members</h1>
@@ -376,6 +383,16 @@
 
         // Load available fields and members on page load
         document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            const user = checkAuth();
+            if (!user) return; // Will redirect to login
+            
+            // Initialize auth UI
+            initAuthUI();
+            
+            // Show page
+            document.body.classList.add('loaded');
+            
             await loadAvailableFields();
             await loadMembers();
             selectDefault();
@@ -383,7 +400,7 @@
 
         async function loadMembers() {
             try {
-                const response = await fetch('/api/members');
+                const response = await fetchWithAuth('/api/members');
                 if (!response.ok) throw new Error('Failed to load members');
                 allMembers = await response.json();
                 updateMemberCount();
@@ -411,7 +428,7 @@
 
         async function loadAvailableFields() {
             try {
-                const response = await fetch('/api/members/export/available-fields');
+                const response = await fetchWithAuth('/api/members/export/available-fields');
                 if (!response.ok) throw new Error('Failed to load fields');
 
                 availableFields = await response.json();
@@ -534,7 +551,7 @@
                     filterRoles: selectedRoles.length > 0 ? selectedRoles : null
                 };
 
-                const response = await fetch(endpoint, {
+                const response = await fetchWithAuth(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

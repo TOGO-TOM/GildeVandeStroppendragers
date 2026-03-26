@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdminMembers Authentication Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .info {
+            color: blue;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .credentials {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 AdminMembers Authentication Test</h1>
+
+    <div class="section credentials">
+        <h3>🔑 Default Login Credentials</h3>
+        <p><strong>Username:</strong> admin</p>
+        <p><strong>Password:</strong> katoennatie</p>
+    </div>
+
+    <div class="section">
+        <h2>1. Login</h2>
+        <input type="text" id="username" placeholder="Username" value="admin">
+        <input type="password" id="password" placeholder="Password" value="katoennatie">
+        <button onclick="login()">Login</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. Test Members (No Auth)</h2>
+        <button onclick="getMembersNoAuth()">Get Members (No Token)</button>
+        <div id="membersNoAuthResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. Test Members (With Auth)</h2>
+        <button onclick="getMembersWithAuth()">Get Members (With Token)</button>
+        <div id="membersWithAuthResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>4. Current Token</h2>
+        <div id="currentToken" class="info">No token yet. Please login first.</div>
+        <button onclick="clearToken()">Clear Token</button>
+    </div>
+
+    <script>
+        const apiUrl = 'https://localhost:7223/api';
+        let authToken = localStorage.getItem('authToken');
+
+        if (authToken) {
+            displayToken();
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('loginResult');
+
+            resultDiv.innerHTML = '<p>Logging in...</p>';
+
+            try {
+                const response = await fetch(`${apiUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Login Successful!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    displayToken();
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Login Failed</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Error: ${error.message}</p>
+                    <p>Make sure the API is running at ${apiUrl}</p>
+                `;
+            }
+        }
+
+        async function getMembersNoAuth() {
+            const resultDiv = document.getElementById('membersNoAuthResult');
+            resultDiv.innerHTML = '<p>Loading members without authentication...</p>';
+
+            try {
+                const response = await fetch(`${apiUrl}/members`, {
+                    method: 'GET'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Success! Found ${data.length} members</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Failed (Status: ${response.status})</p>
+                        <pre>${JSON.stringify(errorData, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function getMembersWithAuth() {
+            const resultDiv = document.getElementById('membersWithAuthResult');
+
+            if (!authToken) {
+                resultDiv.innerHTML = '<p class="error">⚠️ Please login first</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Loading members with authentication...</p>';
+
+            try {
+                const response = await fetch(`${apiUrl}/members`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Success! Found ${data.length} members</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Failed (Status: ${response.status})</p>
+                        <pre>${JSON.stringify(errorData, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        function displayToken() {
+            const tokenDiv = document.getElementById('currentToken');
+            if (authToken) {
+                try {
+                    const decoded = atob(authToken);
+                    tokenDiv.innerHTML = `
+                        <p class="success">🔑 Token Active</p>
+                        <p><strong>Decoded:</strong> ${decoded}</p>
+                        <p><strong>Token:</strong></p>
+                        <pre style="font-size: 10px; word-break: break-all;">${authToken}</pre>
+                    `;
+                } catch (e) {
+                    tokenDiv.innerHTML = `<p class="info">Token: ${authToken.substring(0, 50)}...</p>`;
+                }
+            } else {
+                tokenDiv.innerHTML = '<p class="info">No token yet. Please login first.</p>';
+            }
+        }
+
+        function clearToken() {
+            authToken = null;
+            localStorage.removeItem('authToken');
+            displayToken();
+            alert('Token cleared! You are now logged out.');
+        }
+    </script>
+</body>
+</html>

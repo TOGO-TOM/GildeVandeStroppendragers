@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using AdminMembers.Data;
 using AdminMembers.Services;
+using AdminMembers.Middleware;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,11 +21,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add BackupService
+// Add services
 builder.Services.AddScoped<BackupService>();
-
-// Add ExportService
 builder.Services.AddScoped<ExportService>();
+builder.Services.AddScoped<AuditLogService>();
+builder.Services.AddScoped<AuthService>();
 
 // Add CORS for frontend
 builder.Services.AddCors(options =>
@@ -54,13 +55,19 @@ app.UseStaticFiles();
 // Enable CORS
 app.UseCors("AllowFrontend");
 
+// Enable custom authentication middleware
+app.UseAuthenticationMiddleware();
+
 app.UseAuthorization();
 
 app.MapControllers();
 
+// Redirect root to login page
+app.MapGet("/", () => Results.Redirect("/login.html"));
+
 // Log startup information
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Application starting...");
-logger.LogInformation("Navigate to: https://localhost:7223/home.html");
+logger.LogInformation("Navigate to: https://localhost:7223/login.html");
 
 app.Run();

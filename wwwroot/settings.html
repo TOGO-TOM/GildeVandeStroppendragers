@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Member Administration</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="auth.js"></script>
     <style>
+        body { opacity: 0; transition: opacity 0.3s; }
+        body.loaded { opacity: 1; }
+        
         .settings-container {
             max-width: 1200px;
             margin: 40px auto;
@@ -261,6 +265,54 @@
             margin-bottom: 20px;
             color: #000;
         }
+
+        .header {
+            background: #2196f3;
+            padding: 10px 0;
+            color: white;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .user-info a {
+            color: #fff;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .user-info a:hover {
+            color: #ffd740;
+        }
     </style>
 </head>
 <body>
@@ -269,6 +321,9 @@
             <div class="header-title">
                 <a href="home.html" class="home-link">Home</a>
                 <h1>Settings</h1>
+            </div>
+            <div class="header-actions">
+                <div id="userInfo"></div>
             </div>
         </div>
     </div>
@@ -309,6 +364,25 @@
             <div style="margin-top: 20px; display: flex; gap: 10px;">
                 <button class="btn btn-primary" onclick="uploadLogo()">Upload Logo</button>
                 <button class="btn btn-secondary" onclick="deleteLogo()" style="background: #f44336; color: white;">Delete Logo</button>
+            </div>
+        </div>
+
+        <!-- User Management Section (Admin Only) -->
+        <div class="settings-section" data-require-permission="ReadWrite">
+            <h2>👥 User Management & Roles</h2>
+            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                Manage system users and their role permissions. Control who can view, edit, or manage members.
+            </p>
+
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="showAddUserModal()">+ Add New User</button>
+            </div>
+
+            <div id="usersList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">👤</div>
+                    <div class="empty-state-text">Loading users...</div>
+                </div>
             </div>
         </div>
 
@@ -386,6 +460,112 @@
         </div>
     </div>
 
+    <!-- Add/Edit User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeUserModal()">&times;</span>
+            <div class="modal-header" id="userModalTitle">Add New User</div>
+
+            <form id="userForm">
+                <input type="hidden" id="userId">
+
+                <div class="form-group">
+                    <label for="newUsername">Username *</label>
+                    <input type="text" id="newUsername" required placeholder="Enter username">
+                </div>
+
+                <div class="form-group">
+                    <label for="userEmail">Email *</label>
+                    <input type="email" id="userEmail" required placeholder="user@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="userPassword">Password *</label>
+                    <input type="password" id="userPassword" required placeholder="Enter password">
+                    <small>Minimum 6 characters</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Roles *</label>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="roles" value="1" class="role-checkbox">
+                            <div>
+                                <div style="font-weight: 600;">Admin</div>
+                                <div style="font-size: 12px; color: #666;">Full access - Can read, write, and manage users</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="roles" value="2" class="role-checkbox">
+                            <div>
+                                <div style="font-weight: 600;">Editor</div>
+                                <div style="font-size: 12px; color: #666;">Can read and edit members</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="roles" value="3" class="role-checkbox">
+                            <div>
+                                <div style="font-weight: 600;">Viewer</div>
+                                <div style="font-size: 12px; color: #666;">Read-only access</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary">Save User</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Roles Modal -->
+    <div id="editRolesModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeEditRolesModal()">&times;</span>
+            <div class="modal-header">Edit User Roles</div>
+
+            <div id="editUserInfo" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;"></div>
+
+            <form id="editRolesForm">
+                <input type="hidden" id="editUserId">
+
+                <div class="form-group">
+                    <label>Roles *</label>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="editRoles" value="1" class="edit-role-checkbox">
+                            <div>
+                                <div style="font-weight: 600;">Admin</div>
+                                <div style="font-size: 12px; color: #666;">Full access - Can read, write, and manage users</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="editRoles" value="2" class="edit-role-checkbox">
+                            <div>
+                                <div style="font-weight: 600;">Editor</div>
+                                <div style="font-size: 12px; color: #666;">Can read and edit members</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="editRoles" value="3" class="edit-role-checkbox">
+                            <div>
+                                <div style="font-weight: 600;">Viewer</div>
+                                <div style="font-size: 12px; color: #666;">Read-only access</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary">Update Roles</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditRolesModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="messageBox" class="message-box"></div>
 
     <script>
@@ -394,14 +574,25 @@
 
         // Load settings on page load
         document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            const user = checkAuth();
+            if (!user) return; // Will redirect to login
+            
+            // Initialize auth UI
+            initAuthUI();
+            
+            // Show page
+            document.body.classList.add('loaded');
+            
             await loadSettings();
             await loadCustomFields();
+            await loadUsers();
         });
 
         // Load general settings
         async function loadSettings() {
             try {
-                const response = await fetch(API_URL);
+                const response = await fetchWithAuth(API_URL);
                 if (!response.ok) throw new Error('Failed to load settings');
 
                 const data = await response.json();
@@ -425,7 +616,7 @@
                 const formData = new FormData();
                 formData.append('companyName', companyName);
 
-                const response = await fetch(API_URL, {
+                const response = await fetchWithAuth(API_URL, {
                     method: 'POST',
                     body: formData
                 });
@@ -483,7 +674,7 @@
                 const formData = new FormData();
                 formData.append('logo', logoFile);
 
-                const response = await fetch(API_URL, {
+                const response = await fetchWithAuth(API_URL, {
                     method: 'POST',
                     body: formData
                 });
@@ -508,7 +699,7 @@
             if (!confirm('Are you sure you want to delete the logo?')) return;
 
             try {
-                const response = await fetch(`${API_URL}/logo`, {
+                const response = await fetchWithAuth(`${API_URL}/logo`, {
                     method: 'DELETE'
                 });
 
@@ -528,7 +719,7 @@
         // Load custom fields
         async function loadCustomFields() {
             try {
-                const response = await fetch(`${API_URL}/custom-fields`);
+                const response = await fetchWithAuth(`${API_URL}/custom-fields`);
                 if (!response.ok) throw new Error('Failed to load custom fields');
 
                 const fields = await response.json();
@@ -608,14 +799,14 @@
                 if (fieldId) {
                     // Update
                     field.id = parseInt(fieldId);
-                    response = await fetch(`${API_URL}/custom-fields/${fieldId}`, {
+                    response = await fetchWithAuth(`${API_URL}/custom-fields/${fieldId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(field)
                     });
                 } else {
                     // Create
-                    response = await fetch(`${API_URL}/custom-fields`, {
+                    response = await fetchWithAuth(`${API_URL}/custom-fields`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(field)
@@ -639,7 +830,7 @@
         // Edit field
         async function editField(id) {
             try {
-                const response = await fetch(`${API_URL}/custom-fields`);
+                const response = await fetchWithAuth(`${API_URL}/custom-fields`);
                 const fields = await response.json();
                 const field = fields.find(f => f.id === id);
 
@@ -662,14 +853,14 @@
         // Toggle field active status
         async function toggleField(id, currentStatus) {
             try {
-                const response = await fetch(`${API_URL}/custom-fields`);
+                const response = await fetchWithAuth(`${API_URL}/custom-fields`);
                 const fields = await response.json();
                 const field = fields.find(f => f.id === id);
 
                 if (field) {
                     field.isActive = !currentStatus;
 
-                    const updateResponse = await fetch(`${API_URL}/custom-fields/${id}`, {
+                    const updateResponse = await fetchWithAuth(`${API_URL}/custom-fields/${id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(field)
@@ -691,7 +882,7 @@
             if (!confirm('Are you sure you want to delete this custom field? This will also delete all data for this field.')) return;
 
             try {
-                const response = await fetch(`${API_URL}/custom-fields/${id}`, {
+                const response = await fetchWithAuth(`${API_URL}/custom-fields/${id}`, {
                     method: 'DELETE'
                 });
 
@@ -703,6 +894,30 @@
                 console.error('Error deleting field:', error);
                 showMessage('Failed to delete field', 'error');
             }
+        }
+
+        // Load user info
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/users/me');
+                if (!response.ok) throw new Error('Failed to load user info');
+
+                const user = await response.json();
+                displayUserInfo(user);
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                document.getElementById('userInfo').textContent = 'Failed to load user info';
+            }
+        }
+
+        // Display user info in header
+        function displayUserInfo(user) {
+            const userInfoDiv = document.getElementById('userInfo');
+            userInfoDiv.innerHTML = `
+                <span class="user-info">Logged in as: <strong>${escapeHtml(user.name)}</strong></span>
+                <a href="profile.html" class="user-profile-link">My Profile</a>
+                <a href="logout.html" class="user-logout-link">Logout</a>
+            `;
         }
 
         // Helper function to escape HTML
@@ -732,11 +947,288 @@
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('customFieldModal');
-            if (event.target === modal) {
+            const customFieldModal = document.getElementById('customFieldModal');
+            const userModal = document.getElementById('userModal');
+            const editRolesModal = document.getElementById('editRolesModal');
+            
+            if (event.target === customFieldModal) {
                 closeFieldModal();
             }
+            if (event.target === userModal) {
+                closeUserModal();
+            }
+            if (event.target === editRolesModal) {
+                closeEditRolesModal();
+            }
         }
+
+        // ========== USER MANAGEMENT FUNCTIONS ==========
+
+        // Load all users
+        async function loadUsers() {
+            try {
+                const response = await fetchWithAuth('/api/auth/users');
+                if (!response.ok) throw new Error('Failed to load users');
+
+                const users = await response.json();
+                displayUsers(users);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                const usersList = document.getElementById('usersList');
+                usersList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div class="empty-state-text">Failed to load users</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Display users list
+        function displayUsers(users) {
+            const usersList = document.getElementById('usersList');
+            
+            if (!users || users.length === 0) {
+                usersList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👤</div>
+                        <div class="empty-state-text">No users found</div>
+                    </div>
+                `;
+                return;
+            }
+
+            usersList.innerHTML = `
+                <div class="custom-fields-list">
+                    ${users.map(user => {
+                        const rolesList = user.roles.join(', ');
+                        const statusBadge = user.isActive 
+                            ? '<span class="custom-field-badge badge-text">Active</span>'
+                            : '<span class="custom-field-badge badge-inactive">Inactive</span>';
+                        
+                        return `
+                            <div class="custom-field-item">
+                                <div class="custom-field-info">
+                                    <div class="custom-field-name">
+                                        ${escapeHtml(user.username)}
+                                        ${statusBadge}
+                                    </div>
+                                    <div class="custom-field-details">
+                                        ${escapeHtml(user.email)} | Roles: ${escapeHtml(rolesList)}
+                                    </div>
+                                    ${user.lastLoginAt ? `<div class="custom-field-details" style="margin-top: 4px;">Last login: ${new Date(user.lastLoginAt).toLocaleString()}</div>` : ''}
+                                </div>
+                                <div class="custom-field-actions">
+                                    <button class="btn-icon-small btn-edit" onclick="editUserRoles(${user.id})">Edit Roles</button>
+                                    <button class="btn-icon-small btn-toggle" onclick="changeUserPassword(${user.id})">Change Password</button>
+                                    ${user.isActive 
+                                        ? `<button class="btn-icon-small btn-delete" onclick="deactivateUser(${user.id})">Deactivate</button>`
+                                        : `<button class="btn-icon-small btn-edit" onclick="reactivateUser(${user.id})">Reactivate</button>`
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Show add user modal
+        function showAddUserModal() {
+            document.getElementById('userModalTitle').textContent = 'Add New User';
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('userModal').style.display = 'block';
+        }
+
+        // Close user modal
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        // Handle user form submission
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('newUsername').value;
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+            
+            const roleCheckboxes = document.querySelectorAll('.role-checkbox:checked');
+            const roleIds = Array.from(roleCheckboxes).map(cb => parseInt(cb.value));
+
+            if (roleIds.length === 0) {
+                showMessage('Please select at least one role', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetchWithAuth('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        password,
+                        roleIds
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to create user');
+                }
+
+                showMessage('User created successfully!', 'success');
+                closeUserModal();
+                await loadUsers();
+            } catch (error) {
+                console.error('Error creating user:', error);
+                showMessage(error.message, 'error');
+            }
+        });
+
+        // Edit user roles
+        async function editUserRoles(userId) {
+            try {
+                const response = await fetchWithAuth(`/api/auth/users/${userId}`);
+                if (!response.ok) throw new Error('Failed to load user');
+
+                const user = await response.json();
+                
+                document.getElementById('editUserId').value = userId;
+                document.getElementById('editUserInfo').innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(user.username)}</div>
+                    <div style="font-size: 13px; color: #666;">${escapeHtml(user.email)}</div>
+                `;
+
+                // Load available roles
+                const rolesResponse = await fetchWithAuth('/api/roles');
+                const roles = await rolesResponse.json();
+
+                // Get role IDs (map role names to IDs)
+                const roleMap = { 'Admin': 1, 'Editor': 2, 'Viewer': 3 };
+                const userRoleIds = user.roles.map(roleName => roleMap[roleName]);
+
+                // Check the appropriate checkboxes
+                document.querySelectorAll('.edit-role-checkbox').forEach(cb => {
+                    cb.checked = userRoleIds.includes(parseInt(cb.value));
+                });
+
+                document.getElementById('editRolesModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading user:', error);
+                showMessage('Failed to load user details', 'error');
+            }
+        }
+
+        // Close edit roles modal
+        function closeEditRolesModal() {
+            document.getElementById('editRolesModal').style.display = 'none';
+        }
+
+        // Handle edit roles form submission
+        document.getElementById('editRolesForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const userId = document.getElementById('editUserId').value;
+            const roleCheckboxes = document.querySelectorAll('.edit-role-checkbox:checked');
+            const roleIds = Array.from(roleCheckboxes).map(cb => parseInt(cb.value));
+
+            if (roleIds.length === 0) {
+                showMessage('Please select at least one role', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetchWithAuth(`/api/auth/users/${userId}/roles`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(roleIds)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to update roles');
+                }
+
+                showMessage('User roles updated successfully!', 'success');
+                closeEditRolesModal();
+                await loadUsers();
+            } catch (error) {
+                console.error('Error updating roles:', error);
+                showMessage(error.message, 'error');
+            }
+        });
+
+        // Change user password
+        async function changeUserPassword(userId) {
+            const newPassword = prompt('Enter new password (minimum 6 characters):');
+            
+            if (!newPassword) return;
+            
+            if (newPassword.length < 6) {
+                showMessage('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to change this user\'s password?')) return;
+
+            try {
+                const response = await fetchWithAuth(`/api/auth/users/${userId}/password`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newPassword)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to change password');
+                }
+
+                showMessage('Password changed successfully!', 'success');
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showMessage(error.message, 'error');
+            }
+        }
+
+        // Deactivate user
+        async function deactivateUser(userId) {
+            if (!confirm('Are you sure you want to deactivate this user? They will no longer be able to login.')) return;
+
+            try {
+                const response = await fetchWithAuth(`/api/auth/users/${userId}/deactivate`, {
+                    method: 'PUT'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to deactivate user');
+                }
+
+                showMessage('User deactivated successfully!', 'success');
+                await loadUsers();
+            } catch (error) {
+                console.error('Error deactivating user:', error);
+                showMessage(error.message, 'error');
+            }
+        }
+
+        // Reactivate user (for future implementation)
+        async function reactivateUser(userId) {
+            showMessage('Reactivation feature coming soon', 'info');
+        }
+
     </script>
 </body>
 </html>
