@@ -63,7 +63,7 @@ namespace AdminMembers.Pages
             }
         }
 
-        protected bool HasPermission(string permission)
+        protected internal bool HasPermission(string permission)
         {
             if (CurrentUser == null || CurrentUser.Roles == null)
                 return false;
