@@ -26,19 +26,18 @@ namespace AdminMembers.Pages
 
         public void OnGet(string? redirect)
         {
-            // Check if already logged in
             var token = HttpContext.Session.GetString("AuthToken");
             var userJson = HttpContext.Session.GetString("CurrentUser");
-            
+
+            var normalizedRedirect = NormalizeRedirectPath(redirect);
+
             if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(userJson))
             {
-                // Already logged in, redirect
-                var redirectPage = redirect ?? "/Home";
-                Response.Redirect(redirectPage);
+                Response.Redirect(normalizedRedirect);
                 return;
             }
 
-            RedirectUrl = redirect;
+            RedirectUrl = normalizedRedirect;
         }
 
         public async Task<IActionResult> OnPostAsync(string? redirect)
@@ -46,48 +45,65 @@ namespace AdminMembers.Pages
             if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
             {
                 ErrorMessage = "Please enter both username and password.";
-                RedirectUrl = redirect;
+                RedirectUrl = NormalizeRedirectPath(redirect);
                 return Page();
             }
 
             try
             {
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-                var loginRequest = new AdminMembers.Models.LoginRequest 
-                { 
-                    Username = Username, 
-                    Password = Password 
+                var loginRequest = new AdminMembers.Models.LoginRequest
+                {
+                    Username = Username,
+                    Password = Password
                 };
-                
+
                 var result = await _authService.LoginAsync(loginRequest, ipAddress);
 
                 if (result.Success && result.User != null)
                 {
-                    // Store authentication data in session
                     HttpContext.Session.SetString("AuthToken", result.Token);
                     HttpContext.Session.SetString("CurrentUser", System.Text.Json.JsonSerializer.Serialize(result.User));
                     HttpContext.Session.SetString("LoginTime", DateTime.UtcNow.ToString("o"));
 
-                    _logger.LogInformation($"User {Username} logged in successfully via Razor Pages");
+                    _logger.LogInformation("User {Username} logged in successfully via Razor Pages", Username);
 
-                    // Redirect to requested page or home
-                    var redirectPage = redirect ?? "/Home";
-                    return RedirectToPage(redirectPage);
+                    var target = NormalizeRedirectPath(redirect);
+                    return LocalRedirect(target);
                 }
-                else
-                {
-                    ErrorMessage = result.Message ?? "Invalid username or password.";
-                    RedirectUrl = redirect;
-                    return Page();
-                }
+
+                ErrorMessage = result.Message ?? "Invalid username or password.";
+                RedirectUrl = NormalizeRedirectPath(redirect);
+                return Page();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during login for user {Username}", Username);
                 ErrorMessage = "An error occurred during login. Please try again.";
-                RedirectUrl = redirect;
+                RedirectUrl = NormalizeRedirectPath(redirect);
                 return Page();
             }
+        }
+
+        private static string NormalizeRedirectPath(string? redirect)
+        {
+            if (string.IsNullOrWhiteSpace(redirect))
+                return "/Home";
+
+            var value = redirect.Trim();
+
+            if (!value.StartsWith('/'))
+                value = "/" + value;
+
+            return value.ToLowerInvariant() switch
+            {
+                "/login.html" => "/Login",
+                "/home.html" => "/Home",
+                "/members.html" => "/Members",
+                "/settings.html" => "/Settings",
+                "/export.html" => "/Home",
+                _ => value
+            };
         }
     }
 }

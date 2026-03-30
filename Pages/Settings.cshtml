@@ -18,20 +18,13 @@
             padding: 0 20px;
         }
 
-        .settings-header {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
+        .settings-header,
         .settings-section {
             background: white;
             padding: 30px;
             border-radius: 8px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .back-link {
@@ -42,13 +35,7 @@
             font-weight: 600;
         }
 
-        .custom-field-item {
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
+        .custom-field-item,
         .user-item {
             padding: 15px;
             background: #f9f9f9;
@@ -65,13 +52,13 @@
                 <h1>Settings</h1>
             </div>
             <div class="header-actions">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="text-align: right;">
-                        <div style="font-weight: 600; font-size: 14px; color: #fff;">@Model.CurrentUser?.Username</div>
-                        <div style="font-size: 12px; color: #ccc;">@string.Join(", ", Model.CurrentUser?.Roles ?? new List<string>())</div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="text-align:right;">
+                        <div style="font-weight:600;font-size:14px;color:#000;">@Model.CurrentUser?.Username</div>
+                        <div style="font-size:12px;color:#666;">@string.Join(", ", Model.CurrentUser?.Roles ?? new List<string>())</div>
                     </div>
-                    <form method="post" asp-page="/Home" asp-page-handler="Logout" style="margin: 0;">
-                        <button type="submit" style="padding: 6px 16px; background: #fff; color: #2196f3; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Logout</button>
+                    <form method="post" asp-page="/Home" asp-page-handler="Logout" style="margin:0;">
+                        <button type="submit" class="home-link" style="cursor:pointer;">Logout</button>
                     </form>
                 </div>
             </div>
@@ -99,9 +86,6 @@
             {
                 <p><strong>Logo:</strong> No logo uploaded</p>
             }
-            <p style="margin-top: 15px; color: #666; font-size: 14px;">
-                <em>Note: Use the API endpoints to update settings and upload logo.</em>
-            </p>
         </div>
 
         <!-- Custom Fields -->
@@ -128,9 +112,6 @@
             {
                 <p style="color: #666;">No custom fields defined.</p>
             }
-            <p style="margin-top: 15px; color: #666; font-size: 14px;">
-                <em>Note: Use the API endpoints to add/edit custom fields.</em>
-            </p>
         </div>
 
         <!-- User Management (Admin Only) -->
@@ -141,41 +122,13 @@
                 @foreach (var user in Model.Users)
                 {
                     <div class="user-item">
-                        <strong>@user.Username</strong> (@user.Email)
-                        <br />
-                        <small>Roles: @string.Join(", ", user.UserRoles.Select(ur => ur.Role.Name))</small>
-                        <br />
+                        <strong>@user.Username</strong> (@user.Email)<br />
+                        <small>Roles: @string.Join(", ", user.UserRoles.Select(ur => ur.Role.Name))</small><br />
                         <small>Status: @(user.IsActive ? "Active" : "Inactive")</small>
-                        @if (user.LastLoginAt.HasValue)
-                        {
-                            <br />
-                            <small>Last login: @user.LastLoginAt.Value.ToString("g")</small>
-                        }
                     </div>
                 }
-                <p style="margin-top: 15px; color: #666; font-size: 14px;">
-                    <em>Note: Use the API endpoints to add/edit users.</em>
-                </p>
             </div>
         }
-
-        <!-- Note about full functionality -->
-        <div class="settings-section" style="background: #fff3cd; border-left: 4px solid #ffc107;">
-            <h3 style="color: #856404;">?? Full Settings Management</h3>
-            <p style="color: #856404;">
-                This is a read-only view of settings. For full management capabilities (add/edit/delete), 
-                you can either:
-            </p>
-            <ul style="color: #856404; margin-left: 20px; margin-top: 10px;">
-                <li>Use the original <a href="/settings.html" style="color: #856404; text-decoration: underline;">settings.html</a> page</li>
-                <li>Use the REST API endpoints directly</li>
-                <li>Implement full CRUD operations in this Razor Page (future enhancement)</li>
-            </ul>
-        </div>
     </div>
-
-    <script>
-        // Simple client-side enhancements if needed
-    </script>
 </body>
 </html>

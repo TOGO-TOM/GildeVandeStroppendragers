@@ -12,184 +12,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Administration - Home</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
         }
-
-        .container {
-            max-width: 1000px;
-            width: 100%;
-        }
-
-        .hero {
-            text-align: center;
-            margin-bottom: 60px;
-            color: white;
-        }
-
-        .hero h1 {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            letter-spacing: -1px;
-        }
-
-        .hero p {
-            font-size: 20px;
-            color: #ccc;
-            font-weight: 400;
-        }
-
-        .cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 40px 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
-        }
-
-        .card-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        .card-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #000;
-        }
-
-        .card-description {
-            font-size: 15px;
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .card-action {
-            display: inline-block;
-            padding: 10px 24px;
-            background: #000;
-            color: white;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        .card:hover .card-action {
-            background: #333;
-        }
-
-        .footer {
-            text-align: center;
-            color: #999;
-            font-size: 14px;
-        }
-
-        .footer a {
-            color: #fff;
-            text-decoration: none;
-            margin: 0 10px;
-            transition: color 0.2s;
-        }
-
-        .footer a:hover {
-            color: #ccc;
-        }
-
-        .user-header {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.95);
-            padding: 12px 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-
-        .user-header-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-info-text {
-            text-align: right;
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 14px;
-            color: #000;
-        }
-
-        .user-role {
-            font-size: 12px;
-            color: #666;
-        }
-
-        .btn-logout {
-            padding: 6px 16px;
-            background: #000;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-logout:hover {
-            background: #333;
-        }
-
-        @@media (max-width: 768px) {
-            .hero h1 {
-                font-size: 32px;
-            }
-
-            .hero p {
-                font-size: 16px;
-            }
-
-            .cards-container {
-                grid-template-columns: 1fr;
-            }
-        }
+        .container { max-width: 1000px; width: 100%; }
+        .hero { text-align: center; margin-bottom: 60px; color: white; }
+        .hero h1 { font-size: 48px; font-weight: 700; margin-bottom: 16px; letter-spacing: -1px; }
+        .hero p { font-size: 20px; color: #ccc; font-weight: 400; }
+        .cards-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 40px; }
+        .card { background: white; border-radius: 16px; padding: 40px 30px; text-align: center; transition: all 0.3s ease; cursor: pointer; text-decoration: none; color: inherit; display: block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
+        .card-icon { font-size: 48px; margin-bottom: 20px; display: block; }
+        .card-title { font-size: 24px; font-weight: 600; margin-bottom: 12px; color: #000; }
+        .card-description { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 20px; }
+        .card-action { display: inline-block; padding: 10px 24px; background: #000; color: white; border-radius: 8px; font-size: 14px; font-weight: 600; transition: background 0.2s; }
+        .card:hover .card-action { background: #333; }
+        .footer { text-align: center; color: #999; font-size: 14px; }
+        .footer a { color: #fff; text-decoration: none; margin: 0 10px; transition: color 0.2s; }
+        .footer a:hover { color: #ccc; }
+        .user-header { position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.95); padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; }
+        .user-header-content { display: flex; align-items: center; gap: 12px; }
+        .user-info-text { text-align: right; }
+        .user-name { font-weight: 600; font-size: 14px; color: #000; }
+        .user-role { font-size: 12px; color: #666; }
+        .btn-logout { padding: 6px 16px; background: #000; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-logout:hover { background: #333; }
     </style>
 </head>
 <body>
@@ -213,37 +63,23 @@
 
         <div class="cards-container">
             <a href="/Members" class="card">
-                <span class="card-icon">??</span>
+                <span class="card-icon">VIEW</span>
                 <h2 class="card-title">View Members</h2>
-                <p class="card-description">Browse and manage all members in the system. View details, edit information, and more.</p>
+                <p class="card-description">Browse and manage all members in the system.</p>
                 <span class="card-action">Go to Overview &rarr;</span>
             </a>
 
-            <a href="/Members#add" class="card">
-                <span class="card-icon">?</span>
+            <a href="/Members" class="card">
+                <span class="card-icon">ADD</span>
                 <h2 class="card-title">Add Member</h2>
-                <p class="card-description">Register a new member with their personal information and address details.</p>
-                <span class="card-action">Add New Member &rarr;</span>
-            </a>
-
-            <a href="/Export" class="card">
-                <span class="card-icon">??</span>
-                <h2 class="card-title">Export Data</h2>
-                <p class="card-description">Export members to Excel, PDF, or CSV with custom field selection and filtering.</p>
-                <span class="card-action">Export Members &rarr;</span>
-            </a>
-
-            <a href="/Members#backup" class="card">
-                <span class="card-icon">??</span>
-                <h2 class="card-title">Backup & Restore</h2>
-                <p class="card-description">Create encrypted backups of your data or restore from previous backup files.</p>
-                <span class="card-action">Manage Backups &rarr;</span>
+                <p class="card-description">Use the members page to add and edit members.</p>
+                <span class="card-action">Open Members &rarr;</span>
             </a>
 
             <a href="/Settings" class="card">
-                <span class="card-icon">??</span>
+                <span class="card-icon">SETUP</span>
                 <h2 class="card-title">Settings</h2>
-                <p class="card-description">Configure company logo, custom fields, and general application settings.</p>
+                <p class="card-description">Configure company logo, custom fields, and application settings.</p>
                 <span class="card-action">Go to Settings &rarr;</span>
             </a>
         </div>

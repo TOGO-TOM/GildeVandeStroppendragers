@@ -182,6 +182,7 @@
             }
 
             <form method="post">
+                @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="RedirectUrl" value="@Model.RedirectUrl" />
                 <input type="hidden" name="redirect" value="@Model.RedirectUrl" />
 

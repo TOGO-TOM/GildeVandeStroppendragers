@@ -151,6 +151,13 @@ app.MapControllers();
 // Redirect root to login page
 app.MapGet("/", () => Results.Redirect("/Login"));
 
+// Legacy route redirects (backward compatibility)
+app.MapGet("/login.html", () => Results.Redirect("/Login"));
+app.MapGet("/home.html", () => Results.Redirect("/Home"));
+app.MapGet("/members.html", () => Results.Redirect("/Members"));
+app.MapGet("/settings.html", () => Results.Redirect("/Settings"));
+app.MapGet("/export.html", () => Results.Redirect("/Home"));
+
 // Log startup information
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Application starting in {Environment} mode", app.Environment.EnvironmentName);
