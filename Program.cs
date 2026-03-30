@@ -108,7 +108,11 @@ else
 }
 
 // Enable response compression (must be before static files)
-app.UseResponseCompression();
+// Only in production — compression in dev breaks BrowserLink and hot reload
+if (!app.Environment.IsDevelopment())
+{
+    app.UseResponseCompression();
+}
 
 app.UseHttpsRedirection();
 

@@ -151,7 +151,7 @@
 
                 <div class="form-group">
                     <label>Country</label>
-                    <input asp-for="Form.Country" placeholder="Country" value="@(string.IsNullOrWhiteSpace(Model.Form.Country) ? "Belgium" : Model.Form.Country)" />
+                    <input asp-for="Form.Country" id="Form_Country" placeholder="Country" />
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="submitBtn">Add Member</button>
@@ -384,8 +384,10 @@
         document.getElementById('formTitle').textContent = 'Add New Member';
         document.getElementById('submitBtn').textContent = 'Add Member';
         document.getElementById('memberForm').reset();
-        document.getElementById('Form_Id').value = '0';
-        document.getElementById('Form_Country').value = 'Belgium';
+        const idEl = document.getElementById('Form_Id');
+        if (idEl) idEl.value = '0';
+        const countryEl = document.getElementById('Form_Country');
+        if (countryEl && !countryEl.value) countryEl.value = 'Belgium';
     }
 
     // ??? Delete confirm ???????????????????????????????????
