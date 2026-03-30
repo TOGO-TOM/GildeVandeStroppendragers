@@ -8,6 +8,9 @@ namespace AdminMembers.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+            // Disable change tracking for read-only queries (improves performance)
+            // Note: Enable it explicitly when needed for updates
+            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
         }
 
         public DbSet<Member> Members { get; set; }
@@ -24,11 +27,20 @@ namespace AdminMembers.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Performance: Add table-level index hints
             modelBuilder.Entity<Member>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("Members");
+                
+                // Indexes for performance
                 entity.Property(e => e.MemberNumber).IsRequired(false);
                 entity.HasIndex(e => e.MemberNumber).IsUnique();
+                entity.HasIndex(e => e.LastName); // For sorting and searching
+                entity.HasIndex(e => e.FirstName); // For searching
+                entity.HasIndex(e => e.Email); // For searching
+                entity.HasIndex(e => e.IsAlive); // For filtering
+                
                 entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Gender).IsRequired().HasMaxLength(10);
@@ -42,6 +54,7 @@ namespace AdminMembers.Data
             modelBuilder.Entity<Address>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("Addresses");
                 entity.Property(e => e.Street).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.City).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.PostalCode).IsRequired().HasMaxLength(20);
@@ -56,6 +69,7 @@ namespace AdminMembers.Data
             modelBuilder.Entity<AppSettings>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("AppSettings");
                 entity.Property(e => e.CompanyName).HasMaxLength(200);
                 entity.Property(e => e.LogoFileName).HasMaxLength(500);
                 entity.Property(e => e.LogoContentType).HasMaxLength(100);
@@ -64,15 +78,19 @@ namespace AdminMembers.Data
             modelBuilder.Entity<CustomField>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("CustomFields");
                 entity.Property(e => e.FieldName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.FieldLabel).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.FieldType).IsRequired().HasMaxLength(50);
                 entity.HasIndex(e => e.FieldName).IsUnique();
+                entity.HasIndex(e => e.DisplayOrder); // For sorting
+                entity.HasIndex(e => e.IsActive); // For filtering
             });
 
             modelBuilder.Entity<MemberCustomField>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("MemberCustomFields");
                 entity.Property(e => e.Value).HasMaxLength(1000);
 
                 entity.HasOne(mcf => mcf.Member)
@@ -91,16 +109,19 @@ namespace AdminMembers.Data
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("Users");
                 entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
                 entity.HasIndex(e => e.Username).IsUnique();
                 entity.Property(e => e.PasswordHash).IsRequired();
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
                 entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.IsActive); // For filtering
             });
 
             modelBuilder.Entity<Role>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("Roles");
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
                 entity.HasIndex(e => e.Name).IsUnique();
                 entity.Property(e => e.Description).HasMaxLength(500);
@@ -109,6 +130,7 @@ namespace AdminMembers.Data
             modelBuilder.Entity<UserRole>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("UserRoles");
                 
                 entity.HasOne(ur => ur.User)
                       .WithMany(u => u.UserRoles)
@@ -126,11 +148,13 @@ namespace AdminMembers.Data
             modelBuilder.Entity<AuditLog>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("AuditLogs");
                 entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.EntityType).HasMaxLength(100);
                 entity.Property(e => e.IpAddress).HasMaxLength(50);
-                entity.HasIndex(e => e.Timestamp);
-                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.Timestamp); // For date range queries
+                entity.HasIndex(e => e.UserId); // For user-specific queries
+                entity.HasIndex(e => e.Action); // For action filtering
 
                 entity.HasOne(al => al.User)
                       .WithMany()
