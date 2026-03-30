@@ -3,93 +3,85 @@
 @{
     Layout = null;
     ViewData["Title"] = "Home";
+    var initials = Model.CurrentUser?.Username?.Substring(0, 1).ToUpper() ?? "?";
+    var roles = string.Join(", ", Model.CurrentUser?.Roles ?? new List<string>());
 }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Administration - Home</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
-            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
-        }
-        .container { max-width: 1000px; width: 100%; }
-        .hero { text-align: center; margin-bottom: 60px; color: white; }
-        .hero h1 { font-size: 48px; font-weight: 700; margin-bottom: 16px; letter-spacing: -1px; }
-        .hero p { font-size: 20px; color: #ccc; font-weight: 400; }
-        .cards-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 40px; }
-        .card { background: white; border-radius: 16px; padding: 40px 30px; text-align: center; transition: all 0.3s ease; cursor: pointer; text-decoration: none; color: inherit; display: block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
-        .card-icon { font-size: 48px; margin-bottom: 20px; display: block; }
-        .card-title { font-size: 24px; font-weight: 600; margin-bottom: 12px; color: #000; }
-        .card-description { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 20px; }
-        .card-action { display: inline-block; padding: 10px 24px; background: #000; color: white; border-radius: 8px; font-size: 14px; font-weight: 600; transition: background 0.2s; }
-        .card:hover .card-action { background: #333; }
-        .footer { text-align: center; color: #999; font-size: 14px; }
-        .footer a { color: #fff; text-decoration: none; margin: 0 10px; transition: color 0.2s; }
-        .footer a:hover { color: #ccc; }
-        .user-header { position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.95); padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; }
-        .user-header-content { display: flex; align-items: center; gap: 12px; }
-        .user-info-text { text-align: right; }
-        .user-name { font-weight: 600; font-size: 14px; color: #000; }
-        .user-role { font-size: 12px; color: #666; }
-        .btn-logout { padding: 6px 16px; background: #000; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .btn-logout:hover { background: #333; }
-    </style>
+    <title>Home — Member Administration</title>
+    <link rel="stylesheet" href="~/styles.css">
 </head>
 <body>
-    <div class="user-header">
-        <div class="user-header-content">
-            <div class="user-info-text">
-                <div class="user-name">@Model.CurrentUser?.Username</div>
-                <div class="user-role">@string.Join(", ", Model.CurrentUser?.Roles ?? new List<string>())</div>
+    <!-- HEADER -->
+    <header class="app-header">
+        <a href="/Home" class="brand">
+            <span class="brand-dot"></span>
+            Gilde Van De Stroppendragers
+        </a>
+        <nav class="nav">
+            <a href="/Home" class="active">Home</a>
+            <a href="/Members">Members</a>
+            <a href="/Settings">Settings</a>
+        </nav>
+        <div class="header-right">
+            <div class="user-pill">
+                <div class="user-avatar">@initials</div>
+                <span>@Model.CurrentUser?.Username</span>
             </div>
-            <form method="post" asp-page-handler="Logout" style="margin: 0;">
-                <button type="submit" class="btn-logout">Logout</button>
+            <form method="post" asp-page-handler="Logout" style="margin:0;">
+                <button class="btn btn-ghost btn-sm">Sign Out</button>
             </form>
         </div>
-    </div>
+    </header>
 
-    <div class="container">
-        <div class="hero">
-            <h1>?? Member Administration</h1>
-            <p>Manage your members and their information with ease</p>
+    <!-- PAGE -->
+    <div class="page-body-full" style="padding-top:32px;">
+
+        <div style="margin-bottom:28px;">
+            <h1 style="font-size:24px;font-weight:800;">Welcome back, @Model.CurrentUser?.Username</h1>
+            <p style="color:var(--text-muted);margin-top:4px;font-size:14px;">@roles &mdash; @DateTime.Now.ToString("dddd, d MMMM yyyy")</p>
         </div>
 
-        <div class="cards-container">
-            <a href="/Members" class="card">
-                <span class="card-icon">VIEW</span>
-                <h2 class="card-title">View Members</h2>
-                <p class="card-description">Browse and manage all members in the system.</p>
-                <span class="card-action">Go to Overview &rarr;</span>
+        <div class="dashboard-grid">
+
+            <a href="/Members" class="dash-card">
+                <div class="dash-icon purple">&#128101;</div>
+                <div class="dash-title">Members</div>
+                <div class="dash-desc">Browse the full member list, add new members, edit details and manage seniority.</div>
+                <div class="dash-arrow">View members &rarr;</div>
             </a>
 
-            <a href="/Members" class="card">
-                <span class="card-icon">ADD</span>
-                <h2 class="card-title">Add Member</h2>
-                <p class="card-description">Use the members page to add and edit members.</p>
-                <span class="card-action">Open Members &rarr;</span>
+            <a href="/Members?action=import" class="dash-card">
+                <div class="dash-icon blue">&#128228;</div>
+                <div class="dash-title">Import CSV</div>
+                <div class="dash-desc">Bulk-import member data from a comma or semicolon-separated CSV file.</div>
+                <div class="dash-arrow">Import data &rarr;</div>
             </a>
 
-            <a href="/Settings" class="card">
-                <span class="card-icon">SETUP</span>
-                <h2 class="card-title">Settings</h2>
-                <p class="card-description">Configure company logo, custom fields, and application settings.</p>
-                <span class="card-action">Go to Settings &rarr;</span>
+            <a href="/Export" class="dash-card">
+                <div class="dash-icon green">&#128229;</div>
+                <div class="dash-title">Export</div>
+                <div class="dash-desc">Export member data to Excel, PDF or CSV with custom field selection.</div>
+                <div class="dash-arrow">Export data &rarr;</div>
             </a>
-        </div>
 
-        <div class="footer">
-            <p>Powered by .NET 8 & SQL Server LocalDB</p>
-            <div style="margin-top: 10px;">
-                <a href="/Members">Dashboard</a>
-                <a href="/Settings">Settings</a>
-            </div>
+            <a href="/Members?action=backup" class="dash-card">
+                <div class="dash-icon orange">&#128190;</div>
+                <div class="dash-title">Backup &amp; Restore</div>
+                <div class="dash-desc">Create encrypted database backups or restore from a previous backup file.</div>
+                <div class="dash-arrow">Manage backups &rarr;</div>
+            </a>
+
+            <a href="/Settings" class="dash-card">
+                <div class="dash-icon slate">&#9881;</div>
+                <div class="dash-title">Settings</div>
+                <div class="dash-desc">Configure company name, logo, custom fields, users and role permissions.</div>
+                <div class="dash-arrow">Open settings &rarr;</div>
+            </a>
+
         </div>
     </div>
 </body>

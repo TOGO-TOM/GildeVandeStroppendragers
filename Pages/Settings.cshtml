@@ -2,133 +2,198 @@
 @model AdminMembers.Pages.SettingsModel
 @{
     ViewData["Title"] = "Settings";
+    var initials = Model.CurrentUser?.Username?.Substring(0, 1).ToUpper() ?? "?";
 }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Member Administration</title>
+    <title>Settings — Member Administration</title>
     <link rel="stylesheet" href="~/styles.css">
-    <style>
-        .settings-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .settings-header,
-        .settings-section {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .back-link {
-            display: inline-block;
-            color: #2196f3;
-            text-decoration: none;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .custom-field-item,
-        .user-item {
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-    </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="header-title">
-                <a href="/Home" class="home-link">Home</a>
-                <h1>Settings</h1>
-            </div>
-            <div class="header-actions">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="text-align:right;">
-                        <div style="font-weight:600;font-size:14px;color:#000;">@Model.CurrentUser?.Username</div>
-                        <div style="font-size:12px;color:#666;">@string.Join(", ", Model.CurrentUser?.Roles ?? new List<string>())</div>
+
+<!-- HEADER -->
+<header class="app-header">
+    <a href="/Home" class="brand">
+        <span class="brand-dot"></span>
+        Gilde Van De Stroppendragers
+    </a>
+    <nav class="nav">
+        <a href="/Home">Home</a>
+        <a href="/Members">Members</a>
+        <a href="/Settings" class="active">Settings</a>
+    </nav>
+    <div class="header-right">
+        <div class="user-pill">
+            <div class="user-avatar">@initials</div>
+            <span>@Model.CurrentUser?.Username</span>
+        </div>
+        <form method="post" asp-page="/Home" asp-page-handler="Logout" style="margin:0;">
+            <button class="btn btn-ghost btn-sm">Sign Out</button>
+        </form>
+    </div>
+</header>
+
+<div class="page-body-full" style="padding-top:32px;">
+
+    <div style="margin-bottom:24px;">
+        <h1 style="font-size:22px;font-weight:800;">Settings</h1>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Manage application configuration, custom fields and users.</p>
+    </div>
+
+    <div class="settings-grid">
+
+        <!-- NAV -->
+        <div class="settings-nav card" style="padding:12px;">
+            <a class="settings-nav-item active" href="#" onclick="showSection('general',this)">General</a>
+            <a class="settings-nav-item" href="#" onclick="showSection('fields',this)">Custom Fields</a>
+            @if (Model.HasPermission("ReadWrite"))
+            {
+                <a class="settings-nav-item" href="#" onclick="showSection('users',this)">Users</a>
+            }
+        </div>
+
+        <!-- CONTENT -->
+        <div>
+
+            <!-- General -->
+            <div id="sec-general" class="settings-section active">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">General Settings</span></div>
+                    <div class="card-body">
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-row-label">Company Name</div>
+                                <div class="settings-row-desc">Displayed in the application header and exports.</div>
+                            </div>
+                            <span style="font-weight:600;">@(Model.GeneralSettings?.CompanyName ?? "Not configured")</span>
+                        </div>
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-row-label">Logo</div>
+                                <div class="settings-row-desc">Company logo used in PDF exports.</div>
+                            </div>
+                            @if (Model.HasLogo)
+                            {
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <img src="/api/settings/logo" alt="Logo" style="height:40px;border-radius:6px;border:1px solid var(--border);" />
+                                    <span class="badge badge-green">Uploaded</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="badge badge-gray">Not set</span>
+                            }
+                        </div>
+                        <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
+                            <div>
+                                <div class="settings-row-label">API Endpoints</div>
+                                <div class="settings-row-desc">Use these to update settings programmatically.</div>
+                            </div>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <span class="badge badge-purple">POST /api/settings</span>
+                                <span class="badge badge-purple">POST /api/settings/logo</span>
+                            </div>
+                        </div>
                     </div>
-                    <form method="post" asp-page="/Home" asp-page-handler="Logout" style="margin:0;">
-                        <button type="submit" class="home-link" style="cursor:pointer;">Logout</button>
-                    </form>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="settings-container">
-        <a href="/Members" class="back-link">? Back to Members</a>
-
-        <div class="settings-header">
-            <h1>?? Settings</h1>
-            <p>Configure application settings, manage users, and customize fields</p>
-        </div>
-
-        <!-- General Settings -->
-        <div class="settings-section">
-            <h2>General Settings</h2>
-            <p><strong>Company Name:</strong> @(Model.GeneralSettings?.CompanyName ?? "Not set")</p>
-            @if (Model.HasLogo)
-            {
-                <p><strong>Logo:</strong> Uploaded ?</p>
-                <img src="/api/settings/logo" alt="Company Logo" style="max-width: 200px; margin-top: 10px;">
-            }
-            else
-            {
-                <p><strong>Logo:</strong> No logo uploaded</p>
-            }
-        </div>
-
-        <!-- Custom Fields -->
-        <div class="settings-section">
-            <h2>?? Custom Fields (@Model.CustomFields.Count)</h2>
-            @if (Model.CustomFields.Any())
-            {
-                @foreach (var field in Model.CustomFields)
-                {
-                    <div class="custom-field-item">
-                        <strong>@field.FieldLabel</strong> (@field.FieldType)
-                        @if (field.IsRequired)
+            <!-- Custom Fields -->
+            <div id="sec-fields" class="settings-section">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Custom Fields <span class="badge badge-gray" style="margin-left:6px;">@Model.CustomFields.Count</span></span>
+                        <span class="badge badge-purple" style="font-size:11px;">POST /api/settings/custom-fields</span>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.CustomFields.Any())
                         {
-                            <span style="color: #d32f2f;">*</span>
+                            @foreach (var f in Model.CustomFields)
+                            {
+                                <div class="settings-row">
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div class="field-tag">
+                                            <span style="font-weight:700;">@f.FieldLabel</span>
+                                            <span class="badge badge-gray">@f.FieldType</span>
+                                            @if (f.IsRequired) { <span class="badge badge-red">Required</span> }
+                                            @if (!f.IsActive)  { <span class="badge badge-gray">Inactive</span> }
+                                        </div>
+                                    </div>
+                                    <span style="font-size:12px;color:var(--text-muted);">Order: @f.DisplayOrder</span>
+                                </div>
+                            }
                         }
-                        @if (!field.IsActive)
+                        else
                         {
-                            <span style="color: #999;">(Inactive)</span>
+                            <div class="empty-state">
+                                <h3>No custom fields</h3>
+                                <p>Use the API to add custom fields to member profiles.</p>
+                            </div>
                         }
                     </div>
-                }
-            }
-            else
-            {
-                <p style="color: #666;">No custom fields defined.</p>
-            }
-        </div>
-
-        <!-- User Management (Admin Only) -->
-        @if (Model.HasPermission("ReadWrite") && Model.Users.Any())
-        {
-            <div class="settings-section">
-                <h2>?? User Management (@Model.Users.Count Users)</h2>
-                @foreach (var user in Model.Users)
-                {
-                    <div class="user-item">
-                        <strong>@user.Username</strong> (@user.Email)<br />
-                        <small>Roles: @string.Join(", ", user.UserRoles.Select(ur => ur.Role.Name))</small><br />
-                        <small>Status: @(user.IsActive ? "Active" : "Inactive")</small>
-                    </div>
-                }
+                </div>
             </div>
-        }
+
+            <!-- Users -->
+            @if (Model.HasPermission("ReadWrite"))
+            {
+                <div id="sec-users" class="settings-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Users <span class="badge badge-gray" style="margin-left:6px;">@Model.Users.Count</span></span>
+                            <span class="badge badge-purple" style="font-size:11px;">POST /api/settings/users</span>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Users.Any())
+                            {
+                                @foreach (var u in Model.Users)
+                                {
+                                    var uInitials = u.Username?.Substring(0, 1).ToUpper() ?? "?";
+                                    <div class="settings-row">
+                                        <div style="display:flex;align-items:center;gap:12px;">
+                                            <div class="user-avatar" style="width:36px;height:36px;font-size:14px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;">@uInitials</div>
+                                            <div>
+                                                <div style="font-weight:600;font-size:14px;">@u.Username</div>
+                                                <div style="font-size:12px;color:var(--text-muted);">@u.Email</div>
+                                            </div>
+                                        </div>
+                                        <div style="text-align:right;display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+                                            @foreach (var ur in u.UserRoles)
+                                            {
+                                                <span class="badge badge-purple">@ur.Role.Name</span>
+                                            }
+                                            @if (!u.IsActive) { <span class="badge badge-gray">Inactive</span> }
+                                            @if (u.LastLoginAt.HasValue) {
+                                                <span style="font-size:11px;color:var(--text-muted);">Last login: @u.LastLoginAt.Value.ToString("d MMM yyyy")</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-state"><h3>No users</h3><p>Use the API to manage users.</p></div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
     </div>
+</div>
+
+<script>
+function showSection(id, el) {
+    event.preventDefault();
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.settings-nav-item').forEach(a => a.classList.remove('active'));
+    document.getElementById('sec-' + id).classList.add('active');
+    el.classList.add('active');
+}
+</script>
 </body>
 </html>
