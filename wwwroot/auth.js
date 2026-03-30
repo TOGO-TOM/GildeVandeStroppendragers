@@ -30,10 +30,10 @@ function checkAuth() {
         const currentPath = window.location.pathname;
         
         // Don't redirect if already on login page
-        if (currentPage !== 'login.html' && currentPage !== 'auth-test.html' && currentPath !== '/login.html') {
+        if (currentPage !== 'Login' && currentPath !== '/Login') {
             isRedirecting = true;
             console.log('No auth token, redirecting to login...');
-            window.location.replace(`/login.html?redirect=${currentPage}`);
+            window.location.replace(`/Login?redirect=${currentPage}`);
         }
         return null;
     }
@@ -67,7 +67,7 @@ function checkAuth() {
         localStorage.removeItem('loginTime');
         if (!isRedirecting) {
             isRedirecting = true;
-            window.location.replace('/login.html');
+            window.location.replace('/Login');
         }
         return null;
     }
@@ -199,7 +199,7 @@ function logout() {
     localStorage.removeItem('loginTime');
     localStorage.removeItem('lastActivityTime');
     
-    window.location.replace('login.html');
+    window.location.replace('/Login');
 }
 
 // Add auth header to fetch requests
