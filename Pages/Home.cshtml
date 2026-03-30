@@ -1,88 +1,72 @@
 @page
 @model AdminMembers.Pages.HomeModel
 @{
-    Layout = null;
+    Layout = "_Layout";
     ViewData["Title"] = "Home";
-    var initials = Model.CurrentUser?.Username?.Substring(0, 1).ToUpper() ?? "?";
+    ViewData["LayoutPage"] = "home";
+    ViewData["LayoutUser"] = Model.CurrentUser;
     var roles = string.Join(", ", Model.CurrentUser?.Roles ?? new List<string>());
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home — Member Administration</title>
-    <link rel="stylesheet" href="~/styles.css">
-</head>
-<body>
-    <!-- HEADER -->
-    <header class="app-header">
-        <a href="/Home" class="brand">
-            <span class="brand-dot"></span>
-            Gilde Van De Stroppendragers
-        </a>
-        <nav class="nav">
-            <a href="/Home" class="active">Home</a>
-            <a href="/Members">Members</a>
-            <a href="/Settings">Settings</a>
-        </nav>
-        <div class="header-right">
-            <div class="user-pill">
-                <div class="user-avatar">@initials</div>
-                <span>@Model.CurrentUser?.Username</span>
-            </div>
-            <form method="post" asp-page-handler="Logout" style="margin:0;">
-                <button class="btn btn-ghost btn-sm">Sign Out</button>
-            </form>
-        </div>
-    </header>
 
-    <!-- PAGE -->
-    <div class="page-body-full" style="padding-top:32px;">
+<div class="page-body-full" style="padding-top:28px;padding-bottom:40px;">
 
-        <div style="margin-bottom:28px;">
-            <h1 style="font-size:24px;font-weight:800;">Welcome back, @Model.CurrentUser?.Username</h1>
-            <p style="color:var(--text-muted);margin-top:4px;font-size:14px;">@roles &mdash; @DateTime.Now.ToString("dddd, d MMMM yyyy")</p>
-        </div>
+    <!-- Welcome strip -->
+    <div style="margin-bottom:28px;">
+        <h1 style="font-size:22px;font-weight:800;line-height:1.2;">
+            Welcome back, @Model.CurrentUser?.Username
+        </h1>
+        <p style="color:var(--text-muted);margin-top:5px;font-size:13px;">
+            @roles &mdash; @DateTime.Now.ToString("dddd, d MMMM yyyy")
+        </p>
+    </div>
 
-        <div class="dashboard-grid">
+    <!-- Dashboard cards -->
+    <div class="dashboard-grid">
 
-            <a href="/Members" class="dash-card">
-                <div class="dash-icon purple">&#128101;</div>
+        <a href="/Members" class="dash-card">
+            <div class="dash-icon purple">&#128101;</div>
+            <div>
                 <div class="dash-title">Members</div>
-                <div class="dash-desc">Browse the full member list, add new members, edit details and manage seniority.</div>
+                <div class="dash-desc">Browse, add and manage all members, addresses and seniority dates.</div>
                 <div class="dash-arrow">View members &rarr;</div>
-            </a>
+            </div>
+        </a>
 
-            <a href="/Members?action=import" class="dash-card">
-                <div class="dash-icon blue">&#128228;</div>
+        <a href="/Members?action=import" class="dash-card">
+            <div class="dash-icon blue">&#128228;</div>
+            <div>
                 <div class="dash-title">Import CSV</div>
                 <div class="dash-desc">Bulk-import member data from a comma or semicolon-separated CSV file.</div>
                 <div class="dash-arrow">Import data &rarr;</div>
-            </a>
+            </div>
+        </a>
 
-            <a href="/Export" class="dash-card">
-                <div class="dash-icon green">&#128229;</div>
-                <div class="dash-title">Export</div>
-                <div class="dash-desc">Export member data to Excel, PDF or CSV with custom field selection.</div>
-                <div class="dash-arrow">Export data &rarr;</div>
-            </a>
+        <a href="/api/members/export/excel" class="dash-card">
+            <div class="dash-icon green">&#128229;</div>
+            <div>
+                <div class="dash-title">Export Excel</div>
+                <div class="dash-desc">Download the full member list as an Excel spreadsheet.</div>
+                <div class="dash-arrow">Download .xlsx &rarr;</div>
+            </div>
+        </a>
 
-            <a href="/Members?action=backup" class="dash-card">
-                <div class="dash-icon orange">&#128190;</div>
+        <a href="/Members?action=backup" class="dash-card">
+            <div class="dash-icon orange">&#128190;</div>
+            <div>
                 <div class="dash-title">Backup &amp; Restore</div>
-                <div class="dash-desc">Create encrypted database backups or restore from a previous backup file.</div>
+                <div class="dash-desc">Create encrypted backups or restore from a previous backup file.</div>
                 <div class="dash-arrow">Manage backups &rarr;</div>
-            </a>
+            </div>
+        </a>
 
-            <a href="/Settings" class="dash-card">
-                <div class="dash-icon slate">&#9881;</div>
+        <a href="/Settings" class="dash-card">
+            <div class="dash-icon slate">&#9881;</div>
+            <div>
                 <div class="dash-title">Settings</div>
-                <div class="dash-desc">Configure company name, logo, custom fields, users and role permissions.</div>
+                <div class="dash-desc">Manage company info, logo, custom fields, users and permissions.</div>
                 <div class="dash-arrow">Open settings &rarr;</div>
-            </a>
+            </div>
+        </a>
 
-        </div>
     </div>
-</body>
-</html>
+</div>

@@ -1,67 +1,40 @@
-@page
+﻿@page
 @model AdminMembers.Pages.Members.IndexModel
 @{
+    Layout = "_Layout";
     ViewData["Title"] = "Members";
+    ViewData["LayoutPage"] = "members";
+    ViewData["LayoutUser"] = Model.CurrentUser;
     var search = (string?)ViewContext.HttpContext.Request.Query["search"];
     var sortBy = (string?)ViewContext.HttpContext.Request.Query["sortBy"];
-    var initials = Model.CurrentUser?.Username?.Substring(0, 1).ToUpper() ?? "?";
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Members � Member Administration</title>
-    <link rel="stylesheet" href="~/styles.css">
-</head>
-<body>
-
-<!-- HEADER -->
-<header class="app-header">
-    <a href="/Home" class="brand">
-        <span class="brand-dot"></span>
-        Gilde Van De Stroppendragers
-    </a>
-    <nav class="nav">
-        <a href="/Home">Home</a>
-        <a href="/Members" class="active">Members</a>
-        <a href="/Settings">Settings</a>
-    </nav>
-    <div class="header-right">
-        <div class="user-pill">
-            <div class="user-avatar">@initials</div>
-            <span>@Model.CurrentUser?.Username</span>
-        </div>
-        <form method="post" asp-page="/Home" asp-page-handler="Logout" style="margin:0;">
-            <button class="btn btn-ghost btn-sm">Sign Out</button>
-        </form>
-    </div>
-</header>
 
 <!-- TOASTS -->
 <div class="toast-wrap" id="toastWrap">
     @if (Model.SuccessMessage != null)
     {
-        <div class="toast success"><span class="toast-icon">&#10003;</span>@Model.SuccessMessage</div>
+        <div class="toast success"><span class="toast-icon">&#10003;</span> @Model.SuccessMessage</div>
     }
     @if (Model.ErrorMessage != null)
     {
-        <div class="toast error"><span class="toast-icon">&#33;</span>@Model.ErrorMessage</div>
+        <div class="toast error"><span class="toast-icon">&#33;</span> @Model.ErrorMessage</div>
     }
 </div>
 
-<!-- MAIN TWO-COLUMN LAYOUT -->
 <div class="page-body">
 
-    <!-- ?? SIDEBAR ?? -->
-    <div class="sidebar">
+    <!-- ── SIDEBAR ── -->
+    <div class="sidebar form-panel" id="formPanel">
         <div class="card">
             <div class="card-header">
                 <span class="card-title" id="formTitle">Add Member</span>
-                <button type="button" class="btn btn-xs btn-icon" onclick="resetForm()">Clear</button>
+                <button type="button" class="btn btn-xs btn-icon" onclick="resetForm()">Reset</button>
             </div>
             <div class="card-body">
-                <form method="post" asp-page-handler="Save" asp-route-search="@search" asp-route-sortBy="@sortBy" id="memberForm">
+                <form method="post" asp-page-handler="Save"
+                      asp-route-search="@search" asp-route-sortBy="@sortBy"
+                      id="memberForm">
+
                     <input type="hidden" asp-for="Form.Id" />
                     <input type="hidden" asp-for="Form.AddressId" />
 
@@ -162,25 +135,27 @@
                         <input asp-for="Form.Country" id="Form_Country" placeholder="Belgium" />
                     </div>
 
-                    <button type="submit" class="btn btn-primary" id="submitBtn" style="margin-top:16px;">Add Member</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" style="margin-top:16px;">
+                        Add Member
+                    </button>
                     <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
                 </form>
             </div>
         </div>
 
-        <!-- Import / Backup card -->
+        <!-- Data management -->
         <div class="card" style="margin-top:16px;">
-            <div class="card-header"><span class="card-title">Data Management</span></div>
+            <div class="card-header"><span class="card-title">Data</span></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
-                <button class="btn btn-icon" onclick="document.getElementById('importModal').style.display='block'">&#128228; Import CSV</button>
+                <button class="btn btn-icon" onclick="showModal('importModal')">&#128228; Import CSV</button>
                 <a href="/api/members/export/excel" class="btn btn-icon">&#128229; Export Excel</a>
-                <a href="/api/members/export/csv" class="btn btn-icon">&#128229; Export CSV</a>
-                <button class="btn btn-icon" onclick="document.getElementById('backupModal').style.display='block'">&#128190; Backup &amp; Restore</button>
+                <a href="/api/members/export/csv"   class="btn btn-icon">&#128229; Export CSV</a>
+                <button class="btn btn-icon" onclick="showModal('backupModal')">&#128190; Backup &amp; Restore</button>
             </div>
         </div>
     </div>
 
-    <!-- ?? MAIN CONTENT ?? -->
+    <!-- ── MAIN CONTENT ── -->
     <div class="main-col">
 
         <!-- Stats -->
@@ -202,47 +177,49 @@
         <!-- Toolbar -->
         <div class="toolbar">
             <form method="get" class="toolbar-search">
-                <input name="search" value="@search" placeholder="Search by name, email or member number..." />
+                <input name="search" value="@search" placeholder="Search name, email, member #..." />
                 <input type="hidden" name="sortBy" value="@sortBy" />
                 <button class="btn btn-accent btn-sm" type="submit">Search</button>
             </form>
             <div class="toolbar-divider"></div>
             <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-asc">A&ndash;Z</a>
             <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-desc">Z&ndash;A</a>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=memberNumber-asc">By #</a>
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=memberNumber-asc">By&nbsp;#</a>
             @if (!string.IsNullOrEmpty(search))
             {
                 <a class="btn btn-icon btn-sm" href="/Members">Clear</a>
             }
         </div>
 
-        <!-- List -->
+        <!-- Member list -->
         @if (Model.Members.Any())
         {
             <div class="member-list">
                 @foreach (var m in Model.Members)
                 {
-                    var av = ((m.FirstName?.Length > 0 ? m.FirstName[0].ToString() : "?") +
-                              (m.LastName?.Length  > 0 ? m.LastName[0].ToString()  : "?")).ToUpper();
+                    var av  = ((m.FirstName?.Length > 0 ? m.FirstName[0].ToString() : "?") +
+                               (m.LastName?.Length  > 0 ? m.LastName[0].ToString()  : "?")).ToUpper();
                     var det = new List<string>();
-                    if (!string.IsNullOrEmpty(m.Email))       det.Add(m.Email);
-                    if (!string.IsNullOrEmpty(m.PhoneNumber)) det.Add(m.PhoneNumber);
-                    if (m.Address?.City?.Length > 0)          det.Add(m.Address.City);
+                    if (!string.IsNullOrEmpty(m.Email))        det.Add(m.Email);
+                    if (!string.IsNullOrEmpty(m.PhoneNumber))  det.Add(m.PhoneNumber);
+                    if (m.Address?.City?.Length > 0)           det.Add(m.Address.City);
 
-                    <div class="member-list-item @(m.IsAlive ? "" : "deceased")" onclick="openCard(this)"
-                         data-id="@m.Id" data-first="@m.FirstName" data-last="@m.LastName"
-                         data-number="@m.MemberNumber" data-gender="@m.Gender" data-role="@m.Role"
-                         data-email="@m.Email" data-phone="@m.PhoneNumber"
-                         data-alive="@m.IsAlive.ToString().ToLower()"
-                         data-street="@m.Address?.Street" data-housenumber="@m.Address?.HouseNumber"
-                         data-city="@m.Address?.City" data-postal="@m.Address?.PostalCode"
+                    <div class="member-list-item @(m.IsAlive ? "" : "deceased")"
+                         onclick="openCard(this)"
+                         data-id="@m.Id"
+                         data-first="@m.FirstName"     data-last="@m.LastName"
+                         data-number="@m.MemberNumber" data-gender="@m.Gender"
+                         data-role="@m.Role"           data-email="@m.Email"
+                         data-phone="@m.PhoneNumber"   data-alive="@m.IsAlive.ToString().ToLower()"
+                         data-street="@m.Address?.Street"      data-housenumber="@m.Address?.HouseNumber"
+                         data-city="@m.Address?.City"          data-postal="@m.Address?.PostalCode"
                          data-country="@m.Address?.Country"
                          data-birth="@m.BirthDate?.ToString("yyyy-MM-dd")"
                          data-seniority="@m.SeniorityDate?.ToString("yyyy-MM-dd")">
                         <div class="member-avatar">@av</div>
                         <div class="member-info">
                             <div class="member-name">@m.FirstName @m.LastName</div>
-                            <div class="member-details">@string.Join(" &bull; ", det)</div>
+                            <div class="member-details">@string.Join(" · ", det)</div>
                         </div>
                         <div class="member-meta">
                             <div class="member-number">@(m.MemberNumber.HasValue ? $"#{m.MemberNumber}" : "No #")</div>
@@ -258,13 +235,16 @@
         {
             <div class="no-members">
                 <h3>No members found</h3>
-                <p>@(string.IsNullOrEmpty(search) ? "Add your first member using the form on the left." : "No results for this search.")</p>
+                <p>@(string.IsNullOrEmpty(search) ? "Use the form to add your first member." : "No results — try a different search.")</p>
             </div>
         }
     </div>
 </div>
 
-<!-- ?? CONTACT CARD MODAL ?? -->
+<!-- FAB for mobile -->
+<button class="fab-add" onclick="toggleFormPanel()" title="Add member">&#43;</button>
+
+<!-- ══ CONTACT CARD MODAL ══ -->
 <div id="contactModal" class="modal" onclick="if(event.target===this)closeCard()">
     <div class="modal-box">
         <div class="modal-head">
@@ -276,7 +256,7 @@
     </div>
 </div>
 
-<!-- ?? DELETE CONFIRM MODAL ?? -->
+<!-- ══ DELETE MODAL ══ -->
 <div id="deleteModal" class="modal" onclick="if(event.target===this)closeDelete()">
     <div class="modal-box modal-box-sm">
         <div class="modal-head">
@@ -284,10 +264,11 @@
             <button class="modal-close-btn" onclick="closeDelete()">&times;</button>
         </div>
         <div class="modal-body">
-            <p style="font-size:14px;">Are you sure you want to delete <strong id="deleteName"></strong>? This cannot be undone.</p>
+            <p style="font-size:14px;">Delete <strong id="deleteName"></strong>? This cannot be undone.</p>
         </div>
         <div class="modal-footer">
-            <form method="post" asp-page-handler="Delete" asp-route-search="@search" asp-route-sortBy="@sortBy">
+            <form method="post" asp-page-handler="Delete"
+                  asp-route-search="@search" asp-route-sortBy="@sortBy">
                 <input type="hidden" name="id" id="deleteId" />
                 <button type="button" class="btn btn-icon" onclick="closeDelete()">Cancel</button>
                 <button type="submit" class="btn btn-danger">Delete</button>
@@ -296,127 +277,130 @@
     </div>
 </div>
 
-<!-- ?? IMPORT MODAL ?? -->
+<!-- ══ IMPORT MODAL ══ -->
 <div id="importModal" class="modal" onclick="if(event.target===this)this.style.display='none'">
     <div class="modal-box modal-box-sm">
         <div class="modal-head">
             <h3>Import CSV</h3>
-            <button class="modal-close-btn" onclick="document.getElementById('importModal').style.display='none'">&times;</button>
+            <button class="modal-close-btn" onclick="this.closest('.modal').style.display='none'">&times;</button>
         </div>
         <div class="modal-body">
-            <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Upload a CSV file. Supported separators: comma or semicolon. First row must be headers.</p>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
+                Supported: comma or semicolon separator. First row = headers.<br/>
+                Required: <strong>FirstName</strong>, <strong>LastName</strong>
+            </p>
             <div class="form-group">
                 <label>CSV File</label>
-                <input type="file" id="csvFile" accept=".csv" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);" />
+                <input type="file" id="csvFile" accept=".csv"
+                       style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);" />
             </div>
-            <p style="font-size:12px;color:var(--text-muted);">Required columns: FirstName, LastName. Optional: MemberNumber, Gender, Role, Email, PhoneNumber, BirthDate, SeniorityDate, Street, HouseNumber, City, PostalCode, Country</p>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-icon" onclick="document.getElementById('importModal').style.display='none'">Cancel</button>
+            <button class="btn btn-icon" onclick="this.closest('.modal').style.display='none'">Cancel</button>
             <button class="btn btn-accent" onclick="importCsv()">Import</button>
         </div>
     </div>
 </div>
 
-<!-- ?? BACKUP MODAL ?? -->
+<!-- ══ BACKUP MODAL ══ -->
 <div id="backupModal" class="modal" onclick="if(event.target===this)this.style.display='none'">
     <div class="modal-box modal-box-sm">
         <div class="modal-head">
             <h3>Backup &amp; Restore</h3>
-            <button class="modal-close-btn" onclick="document.getElementById('backupModal').style.display='none'">&times;</button>
+            <button class="modal-close-btn" onclick="this.closest('.modal').style.display='none'">&times;</button>
         </div>
-        <div class="modal-body" style="display:flex;flex-direction:column;gap:16px;">
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:20px;">
             <div>
-                <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Create Backup</div>
+                <div style="font-size:13px;font-weight:700;margin-bottom:6px;">Create Backup</div>
                 <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Download an encrypted backup of all member data.</p>
                 <a href="/api/backup/create" class="btn btn-accent" style="width:auto;">Download Backup</a>
             </div>
             <hr style="border:none;border-top:1px solid var(--border);">
             <div>
-                <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Restore Backup</div>
-                <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Upload a backup file to restore. This will overwrite current data.</p>
-                <input type="file" id="restoreFile" accept=".bak,.json,.zip" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);font-size:12px;" />
-                <button class="btn btn-danger" style="width:auto;margin-top:10px;" onclick="restoreBackup()">Restore</button>
+                <div style="font-size:13px;font-weight:700;margin-bottom:6px;">Restore Backup</div>
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
+                    Upload a backup file. <strong>This will overwrite all current data.</strong>
+                </p>
+                <input type="file" id="restoreFile" accept=".bak,.json,.zip"
+                       style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:12px;margin-bottom:10px;" />
+                <button class="btn btn-danger" style="width:auto;" onclick="restoreBackup()">Restore</button>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-icon" onclick="document.getElementById('backupModal').style.display='none'">Close</button>
+            <button class="btn btn-icon" onclick="this.closest('.modal').style.display='none'">Close</button>
         </div>
     </div>
 </div>
 
+@section Scripts {
 <script>
-// ?? Contact card ??????????????????????????
+// ── Helpers ───────────────────────────────
+function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
+function hideModal(id) { document.getElementById(id).style.display = 'none';  document.body.style.overflow = ''; }
+
+// ── Mobile FAB + form panel ───────────────
+function toggleFormPanel() {
+    document.getElementById('formPanel').classList.toggle('show');
+}
+
+// ── Contact card ──────────────────────────
 function openCard(el) {
     const d = el.dataset;
-    const alive  = d.alive === 'true';
-    const initials = ((d.first?.[0] ?? '?') + (d.last?.[0] ?? '?')).toUpperCase();
-    const num    = d.number && d.number !== '' ? '#' + d.number : 'No Member #';
-    const addr   = [d.street, d.housenumber].filter(Boolean).join(' ');
-    const years  = d.seniority
+    const alive   = d.alive === 'true';
+    const initials= ((d.first?.[0] ?? '?') + (d.last?.[0] ?? '?')).toUpperCase();
+    const num     = d.number && d.number !== '' ? '#' + d.number : 'No #';
+    const addr    = [d.street, d.housenumber].filter(Boolean).join(' ');
+    const years   = d.seniority
         ? Math.floor((Date.now() - new Date(d.seniority)) / (365.25 * 864e5))
         : null;
 
     document.getElementById('cardTitle').textContent = d.first + ' ' + d.last;
 
     document.getElementById('cardBody').innerHTML = `
-        <div style="text-align:center;padding-bottom:20px;border-bottom:1px solid var(--border);">
+        <div style="text-align:center;padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:18px;">
             <div class="contact-avatar-lg">${initials}</div>
             <div class="contact-name">${d.first} ${d.last}</div>
-            <div class="contact-sub">
-                <span class="badge badge-purple">${d.role || '�'}</span>
+            <div class="contact-sub" style="margin-top:8px;">
+                <span class="badge badge-purple">${d.role || '—'}</span>
                 <span class="badge ${alive ? 'badge-green' : 'badge-gray'}">${alive ? 'Alive' : 'Deceased'}</span>
                 <span class="badge badge-gray">${num}</span>
             </div>
         </div>
         <div class="info-grid">
-            <div class="info-block"><div class="info-label">Gender</div><div class="info-value">${d.gender || '�'}</div></div>
-            <div class="info-block"><div class="info-label">Birth Date</div><div class="info-value">${d.birth || '�'}</div></div>
-            <div class="info-block"><div class="info-label">Email</div><div class="info-value">${d.email || '�'}</div></div>
-            <div class="info-block"><div class="info-label">Phone</div><div class="info-value">${d.phone || '�'}</div></div>
-            <div class="info-block"><div class="info-label">Address</div><div class="info-value">${addr || '�'}</div></div>
-            <div class="info-block"><div class="info-label">City</div><div class="info-value">${[d.postal, d.city].filter(Boolean).join(' ') || '�'}</div></div>
-            <div class="info-block"><div class="info-label">Country</div><div class="info-value">${d.country || '�'}</div></div>
+            <div class="info-block"><div class="info-label">Gender</div><div class="info-value">${d.gender || '—'}</div></div>
+            <div class="info-block"><div class="info-label">Birth Date</div><div class="info-value">${d.birth || '—'}</div></div>
+            <div class="info-block"><div class="info-label">Email</div><div class="info-value">${d.email || '—'}</div></div>
+            <div class="info-block"><div class="info-label">Phone</div><div class="info-value">${d.phone || '—'}</div></div>
+            <div class="info-block"><div class="info-label">Address</div><div class="info-value">${addr || '—'}</div></div>
+            <div class="info-block"><div class="info-label">City</div><div class="info-value">${[d.postal, d.city].filter(Boolean).join(' ') || '—'}</div></div>
+            <div class="info-block"><div class="info-label">Country</div><div class="info-value">${d.country || '—'}</div></div>
         </div>
         ${years !== null ? `<div class="seniority-box"><div class="years">${years} year${years !== 1 ? 's' : ''}</div><div class="label">Member since ${d.seniority}</div></div>` : ''}`;
 
     document.getElementById('cardFooter').innerHTML = `
         <button class="btn btn-icon" onclick="closeCard()">Close</button>
-        <button class="btn btn-accent" onclick="loadEdit(document.querySelector('[data-id=\\'${d.id}\\']'))">Edit</button>
+        <button class="btn btn-accent" onclick="loadEdit(document.querySelector('[data-id=\\'${d.id}\\']'));closeCard()">Edit</button>
         <button class="btn btn-danger" onclick="confirmDelete('${d.id}','${d.first} ${d.last}')">Delete</button>`;
 
-    document.getElementById('contactModal').style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    showModal('contactModal');
 }
 
-function closeCard() {
-    document.getElementById('contactModal').style.display = 'none';
-    document.body.style.overflow = '';
-}
+function closeCard() { hideModal('contactModal'); }
 
-// ?? Edit populate ?????????????????????????
+// ── Populate edit form ────────────────────
 function loadEdit(el) {
-    closeCard();
     const d = el.dataset;
     document.getElementById('formTitle').textContent = 'Edit Member';
     document.getElementById('submitBtn').textContent  = 'Update Member';
-    sv('Form_Id',           d.id);
-    sv('Form_FirstName',    d.first);
-    sv('Form_LastName',     d.last);
-    sv('Form_Gender',       d.gender);
-    sv('Form_IsAlive',      d.alive);
-    sv('Form_Role',         d.role);
-    sv('Form_MemberNumber', d.number);
-    sv('Form_Email',        d.email);
-    sv('Form_PhoneNumber',  d.phone);
-    sv('Form_BirthDate',    d.birth);
-    sv('Form_SeniorityDate',d.seniority);
-    sv('Form_Street',       d.street);
-    sv('Form_HouseNumber',  d.housenumber);
-    sv('Form_City',         d.city);
-    sv('Form_PostalCode',   d.postal);
-    sv('Form_Country',      d.country);
-    document.querySelector('.sidebar').scrollIntoView({ behavior: 'smooth' });
+    sv('Form_Id', d.id); sv('Form_FirstName', d.first); sv('Form_LastName', d.last);
+    sv('Form_Gender', d.gender); sv('Form_IsAlive', d.alive); sv('Form_Role', d.role);
+    sv('Form_MemberNumber', d.number); sv('Form_Email', d.email); sv('Form_PhoneNumber', d.phone);
+    sv('Form_BirthDate', d.birth); sv('Form_SeniorityDate', d.seniority);
+    sv('Form_Street', d.street); sv('Form_HouseNumber', d.housenumber);
+    sv('Form_City', d.city); sv('Form_PostalCode', d.postal); sv('Form_Country', d.country);
+    // Show form panel on mobile
+    document.getElementById('formPanel').classList.add('show');
+    document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
 }
 
 function sv(id, val) {
@@ -432,81 +416,62 @@ function resetForm() {
     if (id) id.value = '0';
     const c = document.getElementById('Form_Country');
     if (c && !c.value) c.value = 'Belgium';
+    document.getElementById('formPanel').classList.remove('show');
 }
 
-// ?? Delete ????????????????????????????????
+// ── Delete ────────────────────────────────
 function confirmDelete(id, name) {
     closeCard();
     document.getElementById('deleteId').value = id;
     document.getElementById('deleteName').textContent = name;
-    document.getElementById('deleteModal').style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    showModal('deleteModal');
 }
+function closeDelete() { hideModal('deleteModal'); }
 
-function closeDelete() {
-    document.getElementById('deleteModal').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-// ?? Import CSV ????????????????????????????
+// ── Import CSV ────────────────────────────
 async function importCsv() {
     const file = document.getElementById('csvFile').files[0];
     if (!file) { alert('Please select a CSV file.'); return; }
-    const fd = new FormData();
-    fd.append('file', file);
+    const fd = new FormData(); fd.append('file', file);
     try {
         const r = await fetch('/api/members/import/csv', { method: 'POST', body: fd });
-        const data = await r.json();
+        const data = await r.json().catch(() => ({}));
         if (r.ok) {
-            document.getElementById('importModal').style.display = 'none';
-            showToast('success', `Imported ${data.imported ?? ''} members successfully.`);
+            hideModal('importModal');
+            showToast('success', `Imported ${data.imported ?? ''} members.`);
             setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast('error', data.error ?? 'Import failed.');
-        }
+        } else { showToast('error', data.error ?? 'Import failed.'); }
     } catch { showToast('error', 'Import request failed.'); }
 }
 
-// ?? Restore backup ????????????????????????
+// ── Restore backup ────────────────────────
 async function restoreBackup() {
     const file = document.getElementById('restoreFile').files[0];
     if (!file) { alert('Please select a backup file.'); return; }
-    if (!confirm('This will overwrite all current data. Are you sure?')) return;
-    const fd = new FormData();
-    fd.append('file', file);
+    if (!confirm('This will overwrite all current data. Continue?')) return;
+    const fd = new FormData(); fd.append('file', file);
     try {
         const r = await fetch('/api/backup/restore', { method: 'POST', body: fd });
-        if (r.ok) {
-            showToast('success', 'Backup restored successfully.');
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            const d = await r.json().catch(() => ({}));
-            showToast('error', d.error ?? 'Restore failed.');
-        }
+        if (r.ok) { showToast('success', 'Backup restored.'); setTimeout(() => location.reload(), 1500); }
+        else { const d = await r.json().catch(() => ({})); showToast('error', d.error ?? 'Restore failed.'); }
     } catch { showToast('error', 'Restore request failed.'); }
 }
 
-// ?? Toast helper ??????????????????????????
+// ── Toast helper ──────────────────────────
 function showToast(type, msg) {
-    const wrap = document.getElementById('toastWrap');
     const t = document.createElement('div');
     t.className = `toast ${type}`;
     t.innerHTML = `<span class="toast-icon">${type === 'success' ? '&#10003;' : '&#33;'}</span>${msg}`;
-    wrap.appendChild(t);
+    document.getElementById('toastWrap').appendChild(t);
     setTimeout(() => t.remove(), 4000);
 }
 
-// ?? Auto-dismiss server-rendered toasts ??
+// ── Init ──────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.toast').forEach(t => setTimeout(() => t.remove(), 4000));
-});
-
-// ?? Handle action param from Home ?????????
-document.addEventListener('DOMContentLoaded', () => {
     const action = new URLSearchParams(location.search).get('action');
-    if (action === 'import')  document.getElementById('importModal').style.display  = 'block';
-    if (action === 'backup')  document.getElementById('backupModal').style.display  = 'block';
+    if (action === 'import') showModal('importModal');
+    if (action === 'backup') showModal('backupModal');
 });
 </script>
-</body>
-</html>
+}

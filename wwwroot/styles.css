@@ -1,4 +1,4 @@
-/* ?????????????????????????????????????????
+/* /* ?????????????????????????????????????????
    DESIGN SYSTEM — Gilde Van De Stroppendragers
    ????????????????????????????????????????? */
 
@@ -588,7 +588,7 @@ body {
 .login-input-group input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--bg); transition: border-color .15s; }
 .login-input-group input:focus { outline: none; border-color: var(--border-focus); background: var(--surface); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
 
-.btn-login { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 700; cursor: pointer; transition: background .15s; }
+.btn-login { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 700, cursor: pointer; transition: background .15s; }
 .btn-login:hover { background: var(--accent-hover); }
 
 .login-error { background: #fee2e2; color: var(--danger); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; margin-bottom: 16px; border-left: 3px solid var(--danger); }
@@ -612,13 +612,53 @@ body {
     .page-body { grid-template-columns: 1fr; }
     .sidebar { position: relative; top: 0; max-height: none; }
     .settings-grid { grid-template-columns: 1fr; }
+    .settings-nav { position: relative; top: 0; display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; }
+    .settings-nav-item { flex: 0 0 auto; }
 }
 
-@media (max-width: 640px) {
-    .app-header .nav { display: none; }
-    .stat-strip { grid-template-columns: 1fr 1fr; }
+@media (max-width: 768px) {
+    .hamburger { display: flex; }
+    .desktop-nav { display: none; }
+    .user-name-label { display: none; }
+    .brand-text { max-width: 160px; font-size: 14px; }
+
+    :root { --sidebar-w: 100%; }
+
+    .stat-strip { grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .stat-item { padding: 10px 12px; }
+    .stat-value { font-size: 20px; }
+
+    .toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+    .toolbar-search { min-width: unset; }
+    .toolbar-divider { display: none; }
+
+    .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
+    .dash-card { padding: 20px 18px; flex-direction: row; align-items: center; gap: 16px; }
+    .dash-icon { margin-bottom: 0; flex-shrink: 0; }
+    .dash-title { font-size: 15px; }
+    .dash-desc  { display: none; }
+    .dash-arrow { margin-top: 4px; font-size: 12px; }
+
     .form-row { grid-template-columns: 1fr; }
-    .toolbar { flex-direction: column; align-items: stretch; }
+
+    .page-body-full { padding: 16px; }
+    .page-body { padding: 16px; gap: 16px; }
+
+    .member-list-item { padding: 12px 14px; gap: 10px; }
+    .member-avatar { width: 36px; height: 36px; font-size: 13px; }
+
+    .modal-box { margin: 20px auto; width: 95%; }
+
+    .info-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .settings-grid { gap: 12px; }
+    .settings-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+@media (max-width: 480px) {
+    .stat-strip { grid-template-columns: 1fr; }
+    .info-grid  { grid-template-columns: 1fr; }
+    .modal-box  { margin: 0; border-radius: 0; width: 100%; min-height: 100vh; }
 }
 
 /* ?? NO-MEMBERS ???????????????????????????? */
@@ -630,3 +670,99 @@ body {
     border-radius: var(--radius);
     box-shadow: var(--shadow-sm);
 }
+
+/* ?? MOBILE NAV & HAMBURGER ???????????????? */
+.brand-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+.hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #9ca3af;
+    border-radius: 2px;
+    transition: all .2s;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 199;
+}
+.mobile-nav-overlay.open { display: block; }
+
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: min(300px, 85vw);
+    height: 100%;
+    background: var(--surface);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    transition: right .25s ease;
+    box-shadow: var(--shadow-lg);
+}
+.mobile-nav.open { right: 0; }
+
+.mobile-nav-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.mobile-nav-item {
+    display: block;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    transition: all .12s;
+}
+.mobile-nav-item:hover,
+.mobile-nav-item.active { background: #f0f0ff; color: var(--accent); }
+
+.user-name-label { font-size: 13px; color: #d1d5db; }
+
+/* ?? MAIN CONTENT wrapper ?????????????????? */
+.main-col { min-width: 0; }
+
+
+/* ?? MEMBERS PAGE — mobile form panel & FAB ?? */
+.fab-add { display: none; }
+
+@media (max-width: 768px) {
+    .form-panel { display: none; }
+    .form-panel.show { display: block; }
+    .fab-add {
+        position: fixed; bottom: 20px; right: 20px;
+        width: 54px; height: 54px; border-radius: 50%;
+        background: var(--accent); color: #fff;
+        font-size: 26px; border: none; cursor: pointer;
+        box-shadow: 0 4px 16px rgba(79,70,229,.4);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 90;
+    }
+}
+

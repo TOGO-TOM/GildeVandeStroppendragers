@@ -2,52 +2,50 @@
 @model AdminMembers.Pages.LoginModel
 @{
     Layout = null;
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Sign In";
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — Member Administration</title>
+    <title>Sign In — Gilde Van De Stroppendragers</title>
     <link rel="stylesheet" href="~/styles.css">
 </head>
 <body class="login-wrap">
     <div class="login-card">
         <div class="login-head">
             <div class="logo-dot"></div>
-            <h1>Member Administration</h1>
-            <p>Gilde Van De Stroppendragers</p>
+            <h1>Gilde Van De Stroppendragers</h1>
+            <p>Member Administration Portal</p>
         </div>
-
         <div class="login-body">
             @if (!string.IsNullOrEmpty(Model.ErrorMessage))
             {
                 <div class="login-error">@Model.ErrorMessage</div>
             }
-
             <form method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="RedirectUrl" />
-
                 <div class="login-input-group">
                     <label for="Username">Username</label>
-                    <input asp-for="Username" type="text" id="Username" placeholder="Enter your username" autocomplete="username" autofocus required />
+                    <input asp-for="Username" type="text" id="Username"
+                           placeholder="Enter your username"
+                           autocomplete="username" autofocus required />
                 </div>
-
                 <div class="login-input-group">
                     <label for="Password">Password</label>
                     <div class="password-wrapper">
-                        <input asp-for="Password" type="password" id="Password" placeholder="Enter your password" autocomplete="current-password" required />
-                        <button type="button" class="pwd-toggle" onclick="togglePwd()" title="Show/hide password">&#128065;</button>
+                        <input asp-for="Password" type="password" id="Password"
+                               placeholder="Enter your password"
+                               autocomplete="current-password" required />
+                        <button type="button" class="pwd-toggle" onclick="togglePwd()">&#128065;</button>
                     </div>
                 </div>
-
-                <button type="submit" class="btn-login" style="margin-top:8px;">Sign In</button>
+                <button type="submit" class="btn-login" style="margin-top:12px;">Sign In</button>
             </form>
         </div>
     </div>
-
     <script>
         function togglePwd() {
             const i = document.getElementById('Password');
