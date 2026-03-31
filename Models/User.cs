@@ -14,6 +14,7 @@ namespace AdminMembers.Models
         // TOTP 2FA
         public string? TotpSecret { get; set; }
         public bool TotpEnabled { get; set; } = false;
+        public bool TotpRequired { get; set; } = false;
 
         // Navigation property
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();

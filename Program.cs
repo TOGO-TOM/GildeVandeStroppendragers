@@ -84,6 +84,13 @@ app.MapRazorPages();
 app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/Login"));
 
+// Auto-apply EF migrations on startup (safe to run multiple times)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Application started in {Environment} mode", app.Environment.EnvironmentName);
 

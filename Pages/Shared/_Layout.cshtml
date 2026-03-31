@@ -25,6 +25,10 @@
     <nav class="nav desktop-nav" aria-label="Main navigation">
         <a href="/Home"     class="@(layoutPage == "home"     ? "active" : "")">Home</a>
         <a href="/Members"  class="@(layoutPage == "members"  ? "active" : "")">Members</a>
+        @if (layoutUser?.Roles?.Contains("Admin") == true)
+        {
+            <a href="/Admin/Users" class="@(layoutPage == "admin-users" ? "active" : "")">Users</a>
+        }
         <a href="/Settings" class="@(layoutPage == "settings" ? "active" : "")">Settings</a>
     </nav>
 
@@ -59,6 +63,10 @@
     </div>
     <a href="/Home"     class="mobile-nav-item @(layoutPage == "home"     ? "active" : "")" onclick="closeMobileMenu()">Home</a>
     <a href="/Members"  class="mobile-nav-item @(layoutPage == "members"  ? "active" : "")" onclick="closeMobileMenu()">Members</a>
+    @if (layoutUser?.Roles?.Contains("Admin") == true)
+    {
+        <a href="/Admin/Users" class="mobile-nav-item @(layoutPage == "admin-users" ? "active" : "")" onclick="closeMobileMenu()">Users</a>
+    }
     <a href="/Settings" class="mobile-nav-item @(layoutPage == "settings" ? "active" : "")" onclick="closeMobileMenu()">Settings</a>
     @if (layoutUser != null)
     {

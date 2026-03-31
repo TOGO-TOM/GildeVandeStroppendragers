@@ -329,6 +329,83 @@ namespace AdminMembers.Services
                 .ToListAsync();
         }
 
+        public async Task<bool> ActivateUserAsync(int userId, int changedByUserId, string changedByUsername, string ipAddress)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null) return false;
+
+                user.IsActive = true;
+                await _context.SaveChangesAsync();
+
+                await _auditLogService.LogActionAsync(changedByUserId, changedByUsername, "User Activated", "User", userId, $"User {user.Username} activated", ipAddress);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error activating user: {UserId}", userId);
+                return false;
+            }
+        }
+
+        public async Task<bool> SetTotpRequiredAsync(int userId, bool required, int changedByUserId, string changedByUsername, string ipAddress)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null) return false;
+
+                user.TotpRequired = required;
+
+                // If forcing 2FA, also wipe existing TOTP so the user must re-enrol
+                if (required && user.TotpEnabled)
+                {
+                    user.TotpSecret  = null;
+                    user.TotpEnabled = false;
+                }
+
+                await _context.SaveChangesAsync();
+
+                var action = required ? "2FA Required" : "2FA Not Required";
+                await _auditLogService.LogActionAsync(changedByUserId, changedByUsername, action, "User", userId,
+                    $"TotpRequired set to {required} for user {user.Username}", ipAddress);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting TotpRequired for user {UserId}", userId);
+                return false;
+            }
+        }
+
+        public async Task<bool> AdminResetPasswordAsync(int userId, string newPassword, int changedByUserId, string changedByUsername, string ipAddress)
+        {
+            return await ChangePasswordAsync(userId, newPassword, changedByUserId, changedByUsername, ipAddress);
+        }
+
+        public async Task<bool> DeleteUserAsync(int userId, int deletedByUserId, string deletedByUsername, string ipAddress)
+        {
+            try
+            {
+                var user = await _context.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null) return false;
+
+                _context.UserRoles.RemoveRange(user.UserRoles);
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+
+                await _auditLogService.LogActionAsync(deletedByUserId, deletedByUsername, "User Deleted", "User", userId, $"User {user.Username} permanently deleted", ipAddress);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting user {UserId}", userId);
+                return false;
+            }
+        }
+
         private string HashPassword(string password)
         {
             using var sha256 = SHA256.Create();
