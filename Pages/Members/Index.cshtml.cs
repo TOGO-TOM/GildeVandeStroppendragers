@@ -109,6 +109,7 @@ namespace AdminMembers.Pages.Members
                     var member = MapFormToMember(new Member());
                     _context.Members.Add(member);
                     await _context.SaveChangesAsync();
+                    await SaveCustomFieldValuesAsync(member.Id);
                     await _auditLogService.LogActionAsync(userId, username, "Member Created", "Member",
                         member.Id, $"Created member {member.FirstName} {member.LastName}", ip);
                     SuccessMessage = $"{member.FirstName} {member.LastName} was added successfully.";
@@ -138,6 +139,7 @@ namespace AdminMembers.Pages.Members
                     MapFormToMember(existing);
                     existing.UpdatedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
+                    await SaveCustomFieldValuesAsync(existing.Id);
                     await _auditLogService.LogActionAsync(userId, username, "Member Updated", "Member",
                         existing.Id, $"Updated member {existing.FirstName} {existing.LastName}", ip);
                     SuccessMessage = $"{existing.FirstName} {existing.LastName} was updated successfully.";
@@ -205,6 +207,7 @@ namespace AdminMembers.Pages.Members
 
             var query = _context.Members
                 .Include(m => m.Address)
+                .Include(m => m.CustomFieldValues)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -263,6 +266,31 @@ namespace AdminMembers.Pages.Members
             m.Address.Country     = Form.Country ?? string.Empty;
 
             return m;
+        }
+
+        private async Task SaveCustomFieldValuesAsync(int memberId)
+        {
+            var existing = await _context.MemberCustomFields
+                .Where(v => v.MemberId == memberId)
+                .ToListAsync();
+            _context.MemberCustomFields.RemoveRange(existing);
+
+            foreach (var key in Request.Form.Keys.Where(k => k.StartsWith("cf_")))
+            {
+                if (!int.TryParse(key[3..], out var cfId)) continue;
+                var value = Request.Form[key].ToString().Trim();
+                if (string.IsNullOrEmpty(value)) continue;
+
+                _context.MemberCustomFields.Add(new MemberCustomField
+                {
+                    MemberId      = memberId,
+                    CustomFieldId = cfId,
+                    Value         = value,
+                    CreatedAt     = DateTime.UtcNow
+                });
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }
