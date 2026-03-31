@@ -43,6 +43,17 @@ $credentialBody = @{
 } | ConvertTo-Json -Compress
 
 az ad app federated-credential create --id $objectId --parameters $credentialBody | Out-Null
+
+# Also add credential for the production environment
+$credentialBodyEnv = @{
+    name        = "github-actions-production"
+    issuer      = "https://token.actions.githubusercontent.com"
+    subject     = "repo:$GitHubOrg/${GitHubRepo}:environment:production"
+    description = "GitHub Actions OIDC for $GitHubRepo production environment"
+    audiences   = @("api://AzureADTokenExchange")
+} | ConvertTo-Json -Compress
+
+az ad app federated-credential create --id $objectId --parameters $credentialBodyEnv | Out-Null
 Write-Host "      Federated credential created." -ForegroundColor Green
 
 Write-Host ""
