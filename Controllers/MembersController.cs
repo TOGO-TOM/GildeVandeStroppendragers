@@ -325,7 +325,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpPatch("bulk-update")]
-        [RequirePermission(Permission.Write)]
+        [RequirePermission(Permission.ReadWrite)]
         public async Task<IActionResult> BulkUpdateMembers([FromBody] BulkUpdateRequest request)
         {
             try

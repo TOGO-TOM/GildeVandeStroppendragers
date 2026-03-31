@@ -784,7 +784,7 @@ async function applyBulkUpdate() {
             setTimeout(() => location.reload(), 1500);
         } else {
             statusEl.textContent = '';
-            showToast('error', data.error ?? 'Bulk update failed.');
+            showToast('error', data.error ?? data.message ?? `Bulk update failed (HTTP ${r.status}).`);
         }
     } catch {
         statusEl.textContent = '';
