@@ -11,12 +11,16 @@ namespace AdminMembers.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<BackupService> _logger;
+        private readonly BlobStorageService? _blobStorageService;
+        private readonly IConfiguration _configuration;
         private const string DefaultPassword = "AdminMembers2024!SecureBackup"; // Change this in production!
 
-        public BackupService(ApplicationDbContext context, ILogger<BackupService> logger)
+        public BackupService(ApplicationDbContext context, ILogger<BackupService> logger, IConfiguration configuration, BlobStorageService? blobStorageService = null)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration;
+            _blobStorageService = blobStorageService;
         }
 
         public async Task<byte[]> CreateEncryptedBackup(string? password = null)
@@ -181,6 +185,115 @@ namespace AdminMembers.Services
             using var srDecrypt = new StreamReader(csDecrypt);
             
             return srDecrypt.ReadToEnd();
+        }
+
+        /// <summary>
+        /// Uploads a backup to Azure Blob Storage
+        /// </summary>
+        public async Task<string> UploadBackupToBlobAsync(byte[] encryptedBackup, string? fileName = null)
+        {
+            if (_blobStorageService == null)
+            {
+                throw new InvalidOperationException("Azure Blob Storage is not configured. Cannot upload backup.");
+            }
+
+            try
+            {
+                var containerName = _configuration.GetValue<string>("AzureStorageBlob:BackupContainerName") ?? "backups";
+                var blobName = fileName ?? $"backup_{DateTime.UtcNow:yyyyMMdd_HHmmss}.bak";
+
+                var blobUri = await _blobStorageService.UploadBlobAsync(containerName, blobName, encryptedBackup, "application/octet-stream");
+
+                _logger.LogInformation($"Backup uploaded to Azure Blob Storage: {blobName}");
+
+                return blobUri;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading backup to Azure Blob Storage");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Lists all available backups from Azure Blob Storage
+        /// </summary>
+        public async Task<List<BlobInfo>> ListBackupsFromBlobAsync()
+        {
+            if (_blobStorageService == null)
+            {
+                throw new InvalidOperationException("Azure Blob Storage is not configured. Cannot list backups.");
+            }
+
+            try
+            {
+                var containerName = _configuration.GetValue<string>("AzureStorageBlob:BackupContainerName") ?? "backups";
+                var blobs = await _blobStorageService.ListBlobsAsync(containerName);
+
+                _logger.LogInformation($"Listed {blobs.Count} backups from Azure Blob Storage");
+
+                return blobs;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error listing backups from Azure Blob Storage");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Downloads a backup from Azure Blob Storage
+        /// </summary>
+        public async Task<byte[]> DownloadBackupFromBlobAsync(string blobName)
+        {
+            if (_blobStorageService == null)
+            {
+                throw new InvalidOperationException("Azure Blob Storage is not configured. Cannot download backup.");
+            }
+
+            try
+            {
+                var containerName = _configuration.GetValue<string>("AzureStorageBlob:BackupContainerName") ?? "backups";
+                var backupData = await _blobStorageService.DownloadBlobAsync(containerName, blobName);
+
+                _logger.LogInformation($"Downloaded backup {blobName} from Azure Blob Storage");
+
+                return backupData;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error downloading backup {blobName} from Azure Blob Storage");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Deletes a backup from Azure Blob Storage
+        /// </summary>
+        public async Task<bool> DeleteBackupFromBlobAsync(string blobName)
+        {
+            if (_blobStorageService == null)
+            {
+                throw new InvalidOperationException("Azure Blob Storage is not configured. Cannot delete backup.");
+            }
+
+            try
+            {
+                var containerName = _configuration.GetValue<string>("AzureStorageBlob:BackupContainerName") ?? "backups";
+                var deleted = await _blobStorageService.DeleteBlobAsync(containerName, blobName);
+
+                if (deleted)
+                {
+                    _logger.LogInformation($"Deleted backup {blobName} from Azure Blob Storage");
+                }
+
+                return deleted;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting backup {blobName} from Azure Blob Storage");
+                throw;
+            }
         }
     }
 

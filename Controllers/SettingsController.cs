@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AdminMembers.Data;
 using AdminMembers.Models;
+using AdminMembers.Services;
 
 namespace AdminMembers.Controllers
 {
@@ -12,12 +13,16 @@ namespace AdminMembers.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<SettingsController> _logger;
         private readonly IWebHostEnvironment _environment;
+        private readonly BlobStorageService? _blobStorageService;
+        private readonly IConfiguration _configuration;
 
-        public SettingsController(ApplicationDbContext context, ILogger<SettingsController> logger, IWebHostEnvironment environment)
+        public SettingsController(ApplicationDbContext context, ILogger<SettingsController> logger, IWebHostEnvironment environment, IConfiguration configuration, BlobStorageService? blobStorageService = null)
         {
             _context = context;
             _logger = logger;
             _environment = environment;
+            _configuration = configuration;
+            _blobStorageService = blobStorageService;
         }
 
         [HttpGet]
@@ -52,6 +57,26 @@ namespace AdminMembers.Controllers
         {
             var settings = await _context.AppSettings.FirstOrDefaultAsync();
             
+            // Try to get from blob storage first if configured
+            if (_blobStorageService != null && settings?.LogoBlobName != null)
+            {
+                try
+                {
+                    var containerName = _configuration.GetValue<string>("AzureStorageBlob:LogoContainerName") ?? "logos";
+                    var logoData = await _blobStorageService.DownloadBlobAsync(containerName, settings.LogoBlobName);
+                    return File(logoData, settings.LogoContentType ?? "image/png");
+                }
+                catch (FileNotFoundException)
+                {
+                    _logger.LogWarning($"Logo blob {settings.LogoBlobName} not found in blob storage, falling back to database");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error retrieving logo from blob storage, falling back to database");
+                }
+            }
+
+            // Fallback to database
             if (settings?.LogoData == null || settings.LogoData.Length == 0)
             {
                 return NotFound();
@@ -95,10 +120,54 @@ namespace AdminMembers.Controllers
 
                     using var memoryStream = new MemoryStream();
                     await logo.CopyToAsync(memoryStream);
-                    
-                    settings.LogoData = memoryStream.ToArray();
-                    settings.LogoFileName = logo.FileName;
-                    settings.LogoContentType = logo.ContentType;
+                    var logoData = memoryStream.ToArray();
+
+                    // Try to upload to blob storage if configured
+                    if (_blobStorageService != null)
+                    {
+                        try
+                        {
+                            var containerName = _configuration.GetValue<string>("AzureStorageBlob:LogoContainerName") ?? "logos";
+                            var blobName = $"logo_{DateTime.UtcNow:yyyyMMdd_HHmmss}{Path.GetExtension(logo.FileName)}";
+                            
+                            await _blobStorageService.UploadBlobAsync(containerName, blobName, logoData, logo.ContentType);
+                            
+                            // Delete old blob if exists
+                            if (!string.IsNullOrEmpty(settings.LogoBlobName))
+                            {
+                                try
+                                {
+                                    await _blobStorageService.DeleteBlobAsync(containerName, settings.LogoBlobName);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogWarning(ex, $"Failed to delete old logo blob {settings.LogoBlobName}");
+                                }
+                            }
+
+                            settings.LogoBlobName = blobName;
+                            settings.LogoFileName = logo.FileName;
+                            settings.LogoContentType = logo.ContentType;
+                            // Keep database copy as fallback
+                            settings.LogoData = logoData;
+                            
+                            _logger.LogInformation($"Logo uploaded to blob storage: {blobName}");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to upload logo to blob storage, storing in database only");
+                            settings.LogoData = logoData;
+                            settings.LogoFileName = logo.FileName;
+                            settings.LogoContentType = logo.ContentType;
+                        }
+                    }
+                    else
+                    {
+                        // Store in database if blob storage not configured
+                        settings.LogoData = logoData;
+                        settings.LogoFileName = logo.FileName;
+                        settings.LogoContentType = logo.ContentType;
+                    }
                 }
 
                 settings.UpdatedAt = DateTime.UtcNow;
@@ -113,7 +182,8 @@ namespace AdminMembers.Controllers
                         settings.Id,
                         settings.CompanyName,
                         settings.LogoFileName,
-                        HasLogo = settings.LogoData != null && settings.LogoData.Length > 0
+                        HasLogo = settings.LogoData != null && settings.LogoData.Length > 0,
+                        IsInBlobStorage = !string.IsNullOrEmpty(settings.LogoBlobName)
                     }
                 });
             }
@@ -133,9 +203,25 @@ namespace AdminMembers.Controllers
 
                 if (settings != null)
                 {
+                    // Delete from blob storage if exists
+                    if (_blobStorageService != null && !string.IsNullOrEmpty(settings.LogoBlobName))
+                    {
+                        try
+                        {
+                            var containerName = _configuration.GetValue<string>("AzureStorageBlob:LogoContainerName") ?? "logos";
+                            await _blobStorageService.DeleteBlobAsync(containerName, settings.LogoBlobName);
+                            _logger.LogInformation($"Deleted logo blob {settings.LogoBlobName}");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Failed to delete logo blob {settings.LogoBlobName}");
+                        }
+                    }
+
                     settings.LogoData = null;
                     settings.LogoFileName = null;
                     settings.LogoContentType = null;
+                    settings.LogoBlobName = null;
                     settings.UpdatedAt = DateTime.UtcNow;
 
                     await _context.SaveChangesAsync();

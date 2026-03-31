@@ -1,3 +1,6 @@
+# Azure provisioning - contains sensitive publish credentials, never commit
+azure/publish-profile.xml
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

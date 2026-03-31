@@ -3,6 +3,8 @@ using AdminMembers.Middleware;
 using AdminMembers.Data;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Azure.Storage.Blobs;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,27 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             sql.CommandTimeout(30);
         });
 });
+
+// Configure Azure Blob Storage
+var blobStorageEndpoint = builder.Configuration.GetValue<string>("AzureStorageBlob:Endpoint");
+if (!string.IsNullOrEmpty(blobStorageEndpoint))
+{
+    builder.Services.AddSingleton(sp =>
+    {
+        return new BlobServiceClient(new Uri(blobStorageEndpoint), new DefaultAzureCredential());
+    });
+    builder.Services.AddScoped<BlobStorageService>();
+}
+else
+{
+    // For local development or when Azure Blob Storage is not configured
+    builder.Services.AddScoped<BlobStorageService>(sp =>
+    {
+        var logger = sp.GetRequiredService<ILogger<BlobStorageService>>();
+        logger.LogWarning("Azure Blob Storage endpoint not configured. BlobStorageService will not be available.");
+        throw new InvalidOperationException("Azure Blob Storage is not configured. Please add 'AzureStorageBlob:Endpoint' to configuration.");
+    });
+}
 
 builder.Services.AddScoped<BackupService>();
 builder.Services.AddScoped<ExportService>();
