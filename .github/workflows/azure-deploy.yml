@@ -14,6 +14,7 @@ concurrency:
 env:
   DOTNET_VERSION: '8.0.x'
   AZURE_WEBAPP_NAME: 'app-gilde-prod'
+  AZURE_RESOURCE_GROUP: 'rg-gilde-prod'
   PROJECT_PATH: 'AdminMembers.csproj'
   PUBLISH_PATH: './publish'
 
@@ -40,11 +41,14 @@ jobs:
       - name: Publish
         run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --no-build --output ${{ env.PUBLISH_PATH }}
 
+      - name: Zip publish output
+        run: zip -r publish.zip ${{ env.PUBLISH_PATH }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: webapp
-          path: ${{ env.PUBLISH_PATH }}
+          path: publish.zip
           retention-days: 1
 
   deploy:
@@ -55,20 +59,30 @@ jobs:
       name: production
       url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
 
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: webapp
-          path: ${{ env.PUBLISH_PATH }}
+
+      - name: Login to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ${{ env.PUBLISH_PATH }}
-          deployment-method: zip
+        run: |
+          az webapp deploy \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --src-path publish.zip \
+            --type zip
 
       - name: Health check
         run: |
