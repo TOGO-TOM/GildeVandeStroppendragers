@@ -604,6 +604,117 @@ namespace AdminMembers.Controllers
             }
         }
 
+        [HttpPost("backup/upload-to-blob")]
+        public async Task<IActionResult> UploadBackupToBlob([FromQuery] string? password = null)
+        {
+            try
+            {
+                // Create backup
+                var encryptedBackup = await _backupService.CreateEncryptedBackup(password);
+                
+                // Upload to blob storage
+                var blobUri = await _backupService.UploadBackupToBlobAsync(encryptedBackup);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Backup uploaded to Azure Blob Storage successfully",
+                    blobUri = blobUri
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading backup to blob storage");
+                return StatusCode(500, new { error = "Failed to upload backup to blob storage" });
+            }
+        }
+
+        [HttpGet("backup/list-from-blob")]
+        public async Task<IActionResult> ListBackupsFromBlob()
+        {
+            try
+            {
+                var backups = await _backupService.ListBackupsFromBlobAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    backups = backups.Select(b => new
+                    {
+                        name = b.Name,
+                        contentType = b.ContentType,
+                        size = b.ContentLength,
+                        createdOn = b.CreatedOn,
+                        lastModified = b.LastModified
+                    })
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error listing backups from blob storage");
+                return StatusCode(500, new { error = "Failed to list backups from blob storage" });
+            }
+        }
+
+        [HttpGet("backup/download-from-blob/{blobName}")]
+        public async Task<IActionResult> DownloadBackupFromBlob(string blobName)
+        {
+            try
+            {
+                var backupData = await _backupService.DownloadBackupFromBlobAsync(blobName);
+
+                return File(backupData, "application/octet-stream", blobName);
+            }
+            catch (FileNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error downloading backup {blobName} from blob storage");
+                return StatusCode(500, new { error = "Failed to download backup from blob storage" });
+            }
+        }
+
+        [HttpDelete("backup/delete-from-blob/{blobName}")]
+        public async Task<IActionResult> DeleteBackupFromBlob(string blobName)
+        {
+            try
+            {
+                var deleted = await _backupService.DeleteBackupFromBlobAsync(blobName);
+
+                if (deleted)
+                {
+                    return Ok(new { success = true, message = $"Backup {blobName} deleted successfully" });
+                }
+                else
+                {
+                    return NotFound(new { error = $"Backup {blobName} not found" });
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting backup {blobName} from blob storage");
+                return StatusCode(500, new { error = "Failed to delete backup from blob storage" });
+            }
+        }
+
         [HttpPost("import/csv")]
         public async Task<IActionResult> ImportFromCsv([FromForm] IFormFile csvFile, [FromForm] string fieldMapping)
         {
