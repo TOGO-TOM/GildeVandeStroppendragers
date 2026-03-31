@@ -28,6 +28,7 @@ namespace AdminMembers.Pages.Members
         public Dictionary<string, int> RoleCounts { get; set; } = new();
         public int AllMembersCount { get; set; }
         public bool CanWrite { get; set; }
+        public string? AuthToken { get; set; }
 
         [TempData] public string? SuccessMessage { get; set; }
         [TempData] public string? ErrorMessage { get; set; }
@@ -63,6 +64,7 @@ namespace AdminMembers.Pages.Members
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
             CanWrite = HasPermission("Write");
+            AuthToken = HttpContext.Session.GetString("AuthToken");
             await LoadPageDataAsync(search, sortBy, filterRole);
             return Page();
         }

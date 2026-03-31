@@ -519,6 +519,7 @@
 @section Scripts {
 <script>
 const canWrite = @(Model.CanWrite ? "true" : "false");
+const pageToken = '@Model.AuthToken';
 
 // ── Helpers ───────────────────────────────
 function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
@@ -640,12 +641,11 @@ async function runExport() {
     const extMap      = { pdf: 'pdf', excel: 'xlsx', csv: 'csv' };
 
     try {
-        const token = localStorage.getItem('authToken');
         const r = await fetch(`/api/members/${endpointMap[format]}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {})
             },
             body: JSON.stringify({ selectedFields: fields, filterRoles: roles.length > 0 ? roles : null })
         });
@@ -767,12 +767,11 @@ async function applyBulkUpdate() {
     statusEl.textContent = 'Updating…';
 
     try {
-        const token = localStorage.getItem('authToken');
         const r = await fetch('/api/members/bulk-update', {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {})
             },
             body: JSON.stringify(body)
         });
