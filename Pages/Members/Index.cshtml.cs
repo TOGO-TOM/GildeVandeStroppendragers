@@ -42,7 +42,7 @@ namespace AdminMembers.Pages.Members
             public string FirstName { get; set; } = string.Empty;
             public string LastName { get; set; } = string.Empty;
             public string Gender { get; set; } = "Man";
-            public string Role { get; set; } = "Kandidaat";
+            public string Role { get; set; } = "Stappend Lid";
             public bool IsAlive { get; set; } = true;
             public string? Email { get; set; }
             public string? PhoneNumber { get; set; }

@@ -7,7 +7,7 @@ namespace AdminMembers.Models
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Gender { get; set; } = "Man";
-        public string Role { get; set; } = "Kandidaat";
+        public string Role { get; set; } = "Stappend Lid";
         public string? PhotoBase64 { get; set; }
         public DateTime? BirthDate { get; set; }
         public string? Email { get; set; }

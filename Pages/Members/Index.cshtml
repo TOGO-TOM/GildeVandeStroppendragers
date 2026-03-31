@@ -9,7 +9,7 @@
     var sortBy     = (string?)ViewContext.HttpContext.Request.Query["sortBy"];
     var filterRole = (string?)ViewContext.HttpContext.Request.Query["filterRole"];
 
-    var roles = new[] { "Kandidaat Stappend Lid", "Kandidaat", "Steunend Lid" };
+    var roles = new[] { "Steunend Lid", "Kandidaat", "Stappend Lid" };
 }
 
 <!-- TOASTS -->
@@ -78,9 +78,9 @@
                         <div class="form-group">
                             <label>Role</label>
                             <select asp-for="Form.Role">
-                                <option value="Kandidaat Stappend Lid">Kandidaat Stappend Lid</option>
-                                <option value="Kandidaat">Kandidaat</option>
                                 <option value="Steunend Lid">Steunend Lid</option>
+                                <option value="Kandidaat">Kandidaat</option>
+                                <option value="Stappend Lid">Stappend Lid</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -153,6 +153,7 @@
                 <button class="btn btn-icon" onclick="showModal('importModal')">&#128228; Import CSV</button>
                 <button class="btn btn-icon" onclick="showModal('exportModal')">&#128229; Export</button>
                 <button class="btn btn-icon" onclick="showModal('backupModal')">&#128190; Backup &amp; Restore</button>
+                <button class="btn btn-icon" onclick="showModal('bulkModal')">&#9998; Bulk Update</button>
             </div>
         </div>
         }
@@ -409,9 +410,9 @@
             <div>
                 <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">Filter by role <span style="font-weight:400;text-transform:none;">(leave all unchecked = export everyone)</span></div>
                 <div class="export-fields-grid">
-                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat Stappend Lid" /> Kandidaat Stappend Lid</label>
-                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat"              /> Kandidaat</label>
-                    <label class="export-field-check"><input type="checkbox" name="er" value="Steunend Lid"           /> Steunend Lid</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Steunend Lid"  /> Steunend Lid</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat"    /> Kandidaat</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Stappend Lid" /> Stappend Lid</label>
                 </div>
             </div>
 
@@ -450,6 +451,67 @@
         </div>
         <div class="modal-footer">
             <button class="btn btn-icon" onclick="this.closest('.modal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ BULK UPDATE MODAL ══ -->
+<div id="bulkModal" class="modal" onclick="if(event.target===this)hideModal('bulkModal')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>&#9998; Bulk Update Members</h3>
+            <button class="modal-close-btn" onclick="hideModal('bulkModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+                Select members below, choose what to update, then click Apply.
+                Only filled fields will be updated.
+            </p>
+
+            <!-- Field selectors -->
+            <div class="form-row" style="margin-bottom:16px;">
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="bulkRole">
+                        <option value="">— no change —</option>
+                        <option value="Steunend Lid">Steunend Lid</option>
+                        <option value="Kandidaat">Kandidaat</option>
+                        <option value="Stappend Lid">Stappend Lid</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="bulkAlive">
+                        <option value="">— no change —</option>
+                        <option value="true">Alive</option>
+                        <option value="false">Deceased</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="bulkGender">
+                        <option value="">— no change —</option>
+                        <option value="Man">Man</option>
+                        <option value="Vrouw">Vrouw</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Member selection -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Members <span id="bulkSelectedCount">(0 selected)</span></span>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" class="btn btn-xs btn-icon" onclick="bulkSelectAll(true)">All</button>
+                    <button type="button" class="btn btn-xs btn-icon" onclick="bulkSelectAll(false)">None</button>
+                </div>
+            </div>
+            <div id="bulkMemberList" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px;"></div>
+        </div>
+        <div class="modal-footer">
+            <span id="bulkStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+            <button class="btn btn-icon" onclick="hideModal('bulkModal')">Cancel</button>
+            <button class="btn btn-accent" onclick="applyBulkUpdate()">&#9998; Apply</button>
         </div>
     </div>
 </div>
@@ -650,12 +712,92 @@ function showToast(type, msg) {
     setTimeout(() => t.remove(), 4000);
 }
 
+// ── Bulk update ──────────────────────────
+function openBulkModal() {
+    // Populate member list from current DOM
+    const items = document.querySelectorAll('.member-list-item');
+    const list  = document.getElementById('bulkMemberList');
+    list.innerHTML = '';
+    items.forEach(el => {
+        const d    = el.dataset;
+        const name = `${d.first} ${d.last}`;
+        const num  = d.number ? `#${d.number}` : '';
+        const row  = document.createElement('label');
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 8px;cursor:pointer;border-radius:4px;font-size:13px;';
+        row.innerHTML = `<input type="checkbox" class="bulk-cb" value="${d.id}" style="width:15px;height:15px;flex-shrink:0;">
+            <span style="flex:1;">${name}</span>
+            <span style="color:var(--text-muted);font-size:12px;">${num} &middot; ${d.role || ''}</span>`;
+        row.querySelector('input').addEventListener('change', updateBulkCount);
+        list.appendChild(row);
+    });
+    updateBulkCount();
+    document.getElementById('bulkRole').value   = '';
+    document.getElementById('bulkAlive').value  = '';
+    document.getElementById('bulkGender').value = '';
+    document.getElementById('bulkStatus').textContent = '';
+}
+
+function updateBulkCount() {
+    const n = document.querySelectorAll('.bulk-cb:checked').length;
+    document.getElementById('bulkSelectedCount').textContent = `(${n} selected)`;
+}
+
+function bulkSelectAll(checked) {
+    document.querySelectorAll('.bulk-cb').forEach(cb => { cb.checked = checked; });
+    updateBulkCount();
+}
+
+async function applyBulkUpdate() {
+    const ids    = [...document.querySelectorAll('.bulk-cb:checked')].map(cb => parseInt(cb.value));
+    const role   = document.getElementById('bulkRole').value   || null;
+    const alive  = document.getElementById('bulkAlive').value;
+    const gender = document.getElementById('bulkGender').value || null;
+
+    if (ids.length === 0) { showToast('error', 'Select at least one member.'); return; }
+    if (!role && alive === '' && !gender) { showToast('error', 'Choose at least one field to update.'); return; }
+
+    const body = {
+        memberIds: ids,
+        ...(role   ? { role }   : {}),
+        ...(gender ? { gender } : {}),
+        ...(alive !== '' ? { isAlive: alive === 'true' } : {})
+    };
+
+    const statusEl = document.getElementById('bulkStatus');
+    statusEl.textContent = 'Updating…';
+
+    try {
+        const r = await fetch('/api/members/bulk-update', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) {
+            statusEl.textContent = '';
+            hideModal('bulkModal');
+            showToast('success', `Updated ${data.updatedCount} member(s).`);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            statusEl.textContent = '';
+            showToast('error', data.error ?? 'Bulk update failed.');
+        }
+    } catch {
+        statusEl.textContent = '';
+        showToast('error', 'Request failed.');
+    }
+}
+
 // ── Init ──────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.toast').forEach(t => setTimeout(() => t.remove(), 4000));
     const action = new URLSearchParams(location.search).get('action');
     if (action === 'import') showModal('importModal');
     if (action === 'backup') showModal('backupModal');
+    // Wire bulk modal to populate on open
+    document.getElementById('bulkModal').addEventListener('show', openBulkModal);
+    const bulkBtn = document.querySelector('[onclick="showModal(\'bulkModal\')"]');
+    if (bulkBtn) bulkBtn.addEventListener('click', openBulkModal);
 });
 </script>
 }
