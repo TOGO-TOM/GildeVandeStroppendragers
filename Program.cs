@@ -54,7 +54,6 @@ else
     builder.Services.AddScoped<BlobStorageService?>(_ => null);
 }
 
-builder.Services.AddScoped<BackupService>();
 builder.Services.AddScoped<ExportService>();
 builder.Services.AddScoped<AuditLogService>();
 builder.Services.AddScoped<AuthService>();
