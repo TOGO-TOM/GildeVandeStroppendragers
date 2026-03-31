@@ -76,6 +76,13 @@
                                 <span class="badge badge-purple">POST /api/settings/logo</span>
                             </div>
                         </div>
+                        <div class="settings-row" style="border-top:1px solid var(--border);margin-top:8px;padding-top:16px;border-bottom:none;padding-bottom:0;">
+                            <div>
+                                <div class="settings-row-label">Export Members</div>
+                                <div class="settings-row-desc">Download all member data in your preferred format.</div>
+                            </div>
+                            <button class="btn btn-accent btn-sm" onclick="showModal('exportModal')">&#128229; Export</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -217,8 +224,128 @@
     </div>
 </div>
 
+<!-- ?? EXPORT MODAL ?? -->
+<div id="exportModal" class="modal" onclick="if(event.target===this)hideModal('exportModal')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>&#128229; Export Members</h3>
+            <button class="modal-close-btn" onclick="hideModal('exportModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Format -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">Format</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <label class="export-format-pill"><input type="radio" name="exportFormat" value="pdf" checked /> PDF</label>
+                    <label class="export-format-pill"><input type="radio" name="exportFormat" value="excel" /> Excel (.xlsx)</label>
+                    <label class="export-format-pill"><input type="radio" name="exportFormat" value="csv" /> CSV</label>
+                </div>
+            </div>
+
+            <!-- Field selection -->
+            <div style="margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Fields to include</div>
+                    <div style="display:flex;gap:8px;">
+                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(true)">All</button>
+                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(false)">None</button>
+                    </div>
+                </div>
+                <div class="export-fields-grid">
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="MemberNumber" checked /> Member #</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="FirstName"    checked /> First Name</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="LastName"     checked /> Last Name</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Gender"       checked /> Gender</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Role"         checked /> Role</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="IsAlive"      checked /> Status</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="BirthDate"           /> Birth Date</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="SeniorityDate"       /> Seniority Date</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Email"               /> Email</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="PhoneNumber"         /> Phone</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Street"              /> Street</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="HouseNumber"         /> House #</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="City"                /> City</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="PostalCode"          /> Postal Code</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Country"             /> Country</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="CreatedAt"           /> Created Date</label>
+                </div>
+            </div>
+
+            <!-- Role filter -->
+            <div>
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">Filter by role <span style="font-weight:400;text-transform:none;">(leave all unchecked = export everyone)</span></div>
+                <div class="export-fields-grid">
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Steunend Lid"  /> Steunend Lid</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat"    /> Kandidaat</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Stappend Lid" /> Stappend Lid</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span id="exportStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+            <button class="btn btn-icon" onclick="hideModal('exportModal')">Cancel</button>
+            <button class="btn btn-accent" onclick="runExport()">&#128229; Download</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 <script>
+function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
+function hideModal(id) { document.getElementById(id).style.display = 'none';  document.body.style.overflow = ''; }
+
+function toggleAllFields(checked) {
+    document.querySelectorAll('#exportModal input[name="ef"]').forEach(cb => cb.checked = checked);
+}
+
+async function runExport() {
+    const format = document.querySelector('input[name="exportFormat"]:checked')?.value ?? 'pdf';
+    const fields  = [...document.querySelectorAll('#exportModal input[name="ef"]:checked')].map(cb => cb.value);
+    const roles   = [...document.querySelectorAll('#exportModal input[name="er"]:checked')].map(cb => cb.value);
+
+    if (fields.length === 0) { alert('Select at least one field to export.'); return; }
+
+    const statusEl = document.getElementById('exportStatus');
+    statusEl.textContent = 'Generating…';
+
+    const endpointMap = { pdf: 'export/pdf', excel: 'export/excel', csv: 'export/csv-custom' };
+    const extMap      = { pdf: 'pdf', excel: 'xlsx', csv: 'csv' };
+
+    try {
+        const token = localStorage.getItem('authToken');
+        const r = await fetch(`/api/members/${endpointMap[format]}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ selectedFields: fields, filterRoles: roles.length > 0 ? roles : null })
+        });
+
+        if (!r.ok) {
+            const err = await r.json().catch(() => ({}));
+            throw new Error(err.error ?? `Server error ${r.status}`);
+        }
+
+        const blob = await r.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = `members_export_${new Date().toISOString().slice(0,10)}.${extMap[format]}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        statusEl.textContent = '';
+        hideModal('exportModal');
+    } catch (e) {
+        statusEl.textContent = '';
+        alert(e.message ?? 'Export failed.');
+    }
+}
+
 function showSection(id, el) {
     event.preventDefault();
     const sections = document.querySelectorAll('.settings-section');

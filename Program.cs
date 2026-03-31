@@ -51,13 +51,7 @@ if (!string.IsNullOrEmpty(blobStorageEndpoint))
 }
 else
 {
-    // For local development or when Azure Blob Storage is not configured
-    builder.Services.AddScoped<BlobStorageService>(sp =>
-    {
-        var logger = sp.GetRequiredService<ILogger<BlobStorageService>>();
-        logger.LogWarning("Azure Blob Storage endpoint not configured. BlobStorageService will not be available.");
-        throw new InvalidOperationException("Azure Blob Storage is not configured. Please add 'AzureStorageBlob:Endpoint' to configuration.");
-    });
+    builder.Services.AddScoped<BlobStorageService?>(_ => null);
 }
 
 builder.Services.AddScoped<BackupService>();
