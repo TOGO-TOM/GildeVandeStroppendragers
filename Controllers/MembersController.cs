@@ -14,15 +14,13 @@ namespace AdminMembers.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<MembersController> _logger;
-        private readonly BackupService _backupService;
         private readonly ExportService _exportService;
         private readonly AuditLogService _auditLogService;
 
-        public MembersController(ApplicationDbContext context, ILogger<MembersController> logger, BackupService backupService, ExportService exportService, AuditLogService auditLogService)
+        public MembersController(ApplicationDbContext context, ILogger<MembersController> logger, ExportService exportService, AuditLogService auditLogService)
         {
             _context = context;
             _logger = logger;
-            _backupService = backupService;
             _exportService = exportService;
             _auditLogService = auditLogService;
         }
@@ -34,7 +32,7 @@ namespace AdminMembers.Controllers
             try
             {
                 _logger.LogInformation("GetMembers called");
-                var query = _context.Members.Include(m => m.Address).AsQueryable();
+                var query = _context.Members.Include(m => m.Address).AsNoTracking().AsQueryable();
 
                 if (!string.IsNullOrEmpty(role))
                 {
@@ -548,171 +546,6 @@ namespace AdminMembers.Controllers
             };
 
             return Ok(fields);
-        }
-
-        [HttpPost("backup")]
-        public async Task<IActionResult> CreateBackup([FromQuery] string? password = null)
-        {
-            try
-            {
-                var encryptedBackup = await _backupService.CreateEncryptedBackup(password);
-                var fileName = $"members_backup_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
-                
-                return File(encryptedBackup, "application/octet-stream", fileName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating backup");
-                return StatusCode(500, new { error = "Failed to create backup" });
-            }
-        }
-
-        [HttpPost("restore")]
-        public async Task<IActionResult> RestoreBackup([FromForm] IFormFile backupFile, [FromQuery] string? password = null, [FromQuery] bool overwrite = false)
-        {
-            try
-            {
-                if (backupFile == null || backupFile.Length == 0)
-                {
-                    return BadRequest(new { error = "No backup file provided" });
-                }
-
-                using var memoryStream = new MemoryStream();
-                await backupFile.CopyToAsync(memoryStream);
-                var encryptedData = memoryStream.ToArray();
-
-                var result = await _backupService.RestoreFromEncryptedBackup(encryptedData, password, overwrite);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = $"Restore completed successfully",
-                    backupDate = result.BackupDate,
-                    totalMembers = result.TotalMembers,
-                    importedMembers = result.ImportedMembers,
-                    skippedMembers = result.SkippedMembers
-                });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error restoring backup");
-                return StatusCode(500, new { error = "Failed to restore backup" });
-            }
-        }
-
-        [HttpPost("backup/upload-to-blob")]
-        public async Task<IActionResult> UploadBackupToBlob([FromQuery] string? password = null)
-        {
-            try
-            {
-                // Create backup
-                var encryptedBackup = await _backupService.CreateEncryptedBackup(password);
-                
-                // Upload to blob storage
-                var blobUri = await _backupService.UploadBackupToBlobAsync(encryptedBackup);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Backup uploaded to Azure Blob Storage successfully",
-                    blobUri = blobUri
-                });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error uploading backup to blob storage");
-                return StatusCode(500, new { error = "Failed to upload backup to blob storage" });
-            }
-        }
-
-        [HttpGet("backup/list-from-blob")]
-        public async Task<IActionResult> ListBackupsFromBlob()
-        {
-            try
-            {
-                var backups = await _backupService.ListBackupsFromBlobAsync();
-
-                return Ok(new
-                {
-                    success = true,
-                    backups = backups.Select(b => new
-                    {
-                        name = b.Name,
-                        contentType = b.ContentType,
-                        size = b.ContentLength,
-                        createdOn = b.CreatedOn,
-                        lastModified = b.LastModified
-                    })
-                });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error listing backups from blob storage");
-                return StatusCode(500, new { error = "Failed to list backups from blob storage" });
-            }
-        }
-
-        [HttpGet("backup/download-from-blob/{blobName}")]
-        public async Task<IActionResult> DownloadBackupFromBlob(string blobName)
-        {
-            try
-            {
-                var backupData = await _backupService.DownloadBackupFromBlobAsync(blobName);
-
-                return File(backupData, "application/octet-stream", blobName);
-            }
-            catch (FileNotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error downloading backup {blobName} from blob storage");
-                return StatusCode(500, new { error = "Failed to download backup from blob storage" });
-            }
-        }
-
-        [HttpDelete("backup/delete-from-blob/{blobName}")]
-        public async Task<IActionResult> DeleteBackupFromBlob(string blobName)
-        {
-            try
-            {
-                var deleted = await _backupService.DeleteBackupFromBlobAsync(blobName);
-
-                if (deleted)
-                {
-                    return Ok(new { success = true, message = $"Backup {blobName} deleted successfully" });
-                }
-                else
-                {
-                    return NotFound(new { error = $"Backup {blobName} not found" });
-                }
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error deleting backup {blobName} from blob storage");
-                return StatusCode(500, new { error = "Failed to delete backup from blob storage" });
-            }
         }
 
         [HttpPost("import/csv")]

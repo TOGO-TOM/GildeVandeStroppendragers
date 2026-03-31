@@ -152,7 +152,6 @@
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
                 <button class="btn btn-icon" onclick="showModal('importModal')">&#128228; Import CSV</button>
                 <button class="btn btn-icon" onclick="showModal('exportModal')">&#128229; Export</button>
-                <button class="btn btn-icon" onclick="showModal('backupModal')">&#128190; Backup &amp; Restore</button>
                 <button class="btn btn-icon" onclick="showModal('bulkModal')">&#9998; Bulk Update</button>
             </div>
         </div>
@@ -425,36 +424,6 @@
     </div>
 </div>
 
-<!-- ══ BACKUP MODAL ══ -->
-<div id="backupModal" class="modal" onclick="if(event.target===this)this.style.display='none'">
-    <div class="modal-box modal-box-sm">
-        <div class="modal-head">
-            <h3>Backup &amp; Restore</h3>
-            <button class="modal-close-btn" onclick="this.closest('.modal').style.display='none'">&times;</button>
-        </div>
-        <div class="modal-body" style="display:flex;flex-direction:column;gap:20px;">
-            <div>
-                <div style="font-size:13px;font-weight:700;margin-bottom:6px;">Create Backup</div>
-                <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Download an encrypted backup of all member data.</p>
-                <a href="/api/backup/create" class="btn btn-accent" style="width:auto;">Download Backup</a>
-            </div>
-            <hr style="border:none;border-top:1px solid var(--border);">
-            <div>
-                <div style="font-size:13px;font-weight:700;margin-bottom:6px;">Restore Backup</div>
-                <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
-                    Upload a backup file. <strong>This will overwrite all current data.</strong>
-                </p>
-                <input type="file" id="restoreFile" accept=".bak,.json,.zip"
-                       style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:12px;margin-bottom:10px;" />
-                <button class="btn btn-danger" style="width:auto;" onclick="restoreBackup()">Restore</button>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-icon" onclick="this.closest('.modal').style.display='none'">Close</button>
-        </div>
-    </div>
-</div>
-
 <!-- ══ BULK UPDATE MODAL ══ -->
 <div id="bulkModal" class="modal" onclick="if(event.target===this)hideModal('bulkModal')">
     <div class="modal-box">
@@ -690,19 +659,6 @@ async function importCsv() {
     } catch { showToast('error', 'Import request failed.'); }
 }
 
-// ── Restore backup ────────────────────────
-async function restoreBackup() {
-    const file = document.getElementById('restoreFile').files[0];
-    if (!file) { alert('Please select a backup file.'); return; }
-    if (!confirm('This will overwrite all current data. Continue?')) return;
-    const fd = new FormData(); fd.append('file', file);
-    try {
-        const r = await fetch('/api/backup/restore', { method: 'POST', body: fd });
-        if (r.ok) { showToast('success', 'Backup restored.'); setTimeout(() => location.reload(), 1500); }
-        else { const d = await r.json().catch(() => ({})); showToast('error', d.error ?? 'Restore failed.'); }
-    } catch { showToast('error', 'Restore request failed.'); }
-}
-
 // ── Toast helper ──────────────────────────
 function showToast(type, msg) {
     const t = document.createElement('div');
@@ -796,7 +752,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.toast').forEach(t => setTimeout(() => t.remove(), 4000));
     const action = new URLSearchParams(location.search).get('action');
     if (action === 'import') showModal('importModal');
-    if (action === 'backup') showModal('backupModal');
     // Wire bulk modal to populate on open
     document.getElementById('bulkModal').addEventListener('show', openBulkModal);
     const bulkBtn = document.querySelector('[onclick="showModal(\'bulkModal\')"]');

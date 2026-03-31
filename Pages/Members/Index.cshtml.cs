@@ -193,25 +193,28 @@ namespace AdminMembers.Pages.Members
         // ?? Helpers ????????????????????????????????????????????
         private async Task LoadPageDataAsync(string? search, string? sortBy, string? filterRole)
         {
-            // Always load full unfiltered set for accurate role counts
-            var allMembers = await _context.Members.AsNoTracking().ToListAsync();
-            AllMembersCount = allMembers.Count;
-            RoleCounts = allMembers
+            // Single query for role counts and total — no need to load full entities
+            var roleCounts = await _context.Members
+                .AsNoTracking()
                 .GroupBy(m => m.Role)
-                .ToDictionary(g => g.Key, g => g.Count());
+                .Select(g => new { Role = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            AllMembersCount = roleCounts.Sum(r => r.Count);
+            RoleCounts = roleCounts.ToDictionary(g => g.Role, g => g.Count);
 
             var query = _context.Members
                 .Include(m => m.Address)
+                .AsNoTracking()
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                var s = search.ToLower();
                 query = query.Where(m =>
-                    m.FirstName.ToLower().Contains(s) ||
-                    m.LastName.ToLower().Contains(s) ||
-                    (m.Email != null && m.Email.ToLower().Contains(s)) ||
-                    (m.MemberNumber != null && m.MemberNumber.ToString()!.Contains(s)));
+                    m.FirstName.Contains(search) ||
+                    m.LastName.Contains(search) ||
+                    (m.Email != null && m.Email.Contains(search)) ||
+                    (m.MemberNumber != null && m.MemberNumber.ToString()!.Contains(search)));
             }
 
             if (!string.IsNullOrWhiteSpace(filterRole) && filterRole != "all")
@@ -234,6 +237,7 @@ namespace AdminMembers.Pages.Members
             CustomFields = await _context.CustomFields
                 .Where(cf => cf.IsActive)
                 .OrderBy(cf => cf.DisplayOrder)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
