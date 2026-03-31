@@ -767,9 +767,13 @@ async function applyBulkUpdate() {
     statusEl.textContent = 'Updating…';
 
     try {
+        const token = localStorage.getItem('authToken');
         const r = await fetch('/api/members/bulk-update', {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
             body: JSON.stringify(body)
         });
         const data = await r.json().catch(() => ({}));
