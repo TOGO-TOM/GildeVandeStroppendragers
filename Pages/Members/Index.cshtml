@@ -138,6 +138,37 @@
                         <input asp-for="Form.Country" id="Form_Country" placeholder="Belgium" />
                     </div>
 
+                    @if (Model.CustomFields.Any())
+                    {
+                        <div class="form-section-title">Custom Fields</div>
+                        @foreach (var cf in Model.CustomFields)
+                        {
+                            <div class="form-group">
+                                <label>@cf.FieldLabel@(cf.IsRequired ? " *" : "")</label>
+                                @if (cf.FieldType == "Boolean")
+                                {
+                                    <select id="cf_@cf.Id" name="cf_@cf.Id">
+                                        <option value="">— select —</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                }
+                                else if (cf.FieldType == "Date")
+                                {
+                                    <input type="date" id="cf_@cf.Id" name="cf_@cf.Id" />
+                                }
+                                else if (cf.FieldType == "Number")
+                                {
+                                    <input type="number" id="cf_@cf.Id" name="cf_@cf.Id" />
+                                }
+                                else
+                                {
+                                    <input type="text" id="cf_@cf.Id" name="cf_@cf.Id" />
+                                }
+                            </div>
+                        }
+                    }
+
                     <button type="submit" class="btn btn-primary" id="submitBtn" style="margin-top:16px;">
                         Add Member
                     </button>
@@ -264,7 +295,12 @@
                          data-city="@m.Address?.City"          data-postal="@m.Address?.PostalCode"
                          data-country="@m.Address?.Country"
                          data-birth="@m.BirthDate?.ToString("yyyy-MM-dd")"
-                         data-seniority="@m.SeniorityDate?.ToString("yyyy-MM-dd")">
+                         data-seniority="@m.SeniorityDate?.ToString("yyyy-MM-dd")"
+                         @foreach (var cf in Model.CustomFields)
+                         {
+                             var cfVal = m.CustomFieldValues?.FirstOrDefault(v => v.CustomFieldId == cf.Id)?.Value ?? "";
+                             @:data-cf-@cf.Id="@cfVal" data-cflabel-@cf.Id="@cf.FieldLabel"
+                         }>
                         <div class="member-avatar">@av</div>
                         <div class="member-info">
                             <div class="member-name">@m.FirstName @m.LastName</div>
@@ -499,6 +535,20 @@ function toggleFormPanel() {
     document.getElementById('formPanel').classList.toggle('show');
 }
 
+// ── Custom field helpers ──────────────────
+function buildCustomFieldBlocks(d) {
+    let html = '';
+    Object.keys(d).forEach(key => {
+        if (key.startsWith('cf') && !key.startsWith('cflabel')) {
+            const id    = key.slice(2); // strip 'cf'
+            const label = d[`cflabel${id}`];
+            const value = d[key];
+            if (label) html += `<div class="info-block"><div class="info-label">${label}</div><div class="info-value">${value || '—'}</div></div>`;
+        }
+    });
+    return html;
+}
+
 // ── Contact card ──────────────────────────
 function openCard(el) {
     const d = el.dataset;
@@ -530,6 +580,7 @@ function openCard(el) {
             <div class="info-block"><div class="info-label">Address</div><div class="info-value">${addr || '—'}</div></div>
             <div class="info-block"><div class="info-label">City</div><div class="info-value">${[d.postal, d.city].filter(Boolean).join(' ') || '—'}</div></div>
             <div class="info-block"><div class="info-label">Country</div><div class="info-value">${d.country || '—'}</div></div>
+            ${buildCustomFieldBlocks(d)}
         </div>
         ${years !== null ? `<div class="seniority-box"><div class="years">${years} year${years !== 1 ? 's' : ''}</div><div class="label">Member since ${d.seniority}</div></div>` : ''}`;
 
@@ -557,6 +608,14 @@ function loadEdit(el) {
     sv('Form_BirthDate', d.birth); sv('Form_SeniorityDate', d.seniority);
     sv('Form_Street', d.street); sv('Form_HouseNumber', d.housenumber);
     sv('Form_City', d.city); sv('Form_PostalCode', d.postal); sv('Form_Country', d.country);
+    // Populate custom field inputs
+    Object.keys(d).forEach(key => {
+        if (key.startsWith('cf') && !key.startsWith('cflabel')) {
+            const id = key.slice(2);
+            const input = document.getElementById(`cf_${id}`);
+            if (input) input.value = d[key] ?? '';
+        }
+    });
     // Show form panel on mobile
     document.getElementById('formPanel').classList.add('show');
     document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
