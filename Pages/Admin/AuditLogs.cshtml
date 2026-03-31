@@ -1,0 +1,117 @@
+@page
+@model AdminMembers.Pages.Admin.AuditLogsModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Audit Logs";
+    ViewData["LayoutPage"] = "admin-audit";
+    ViewData["LayoutUser"] = Model.CurrentUser;
+}
+
+<div class="page-body-full">
+
+    <div class="page-heading">
+        <h1>&#128220; Audit Logs</h1>
+        <p>All user activity — logins, member changes, settings updates and more.</p>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="card" style="margin-bottom:16px;">
+        <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+            <div class="form-group" style="margin:0;flex:1;min-width:140px;">
+                <label style="font-size:12px;font-weight:600;">Username</label>
+                <input asp-for="FilterUsername" type="text" placeholder="Filter by user…" style="width:100%;" />
+            </div>
+            <div class="form-group" style="margin:0;flex:1;min-width:140px;">
+                <label style="font-size:12px;font-weight:600;">Action</label>
+                <input asp-for="FilterAction" type="text" placeholder="e.g. Login, Member Created…" style="width:100%;" />
+            </div>
+            <div class="form-group" style="margin:0;flex:1;min-width:120px;">
+                <label style="font-size:12px;font-weight:600;">Entity Type</label>
+                <select asp-for="FilterEntity" style="width:100%;">
+                    <option value="">All</option>
+                    <option value="User">User</option>
+                    <option value="Member">Member</option>
+                    <option value="Settings">Settings</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-accent btn-sm">&#128269; Filter</button>
+            <a href="/Admin/AuditLogs" class="btn btn-icon btn-sm">&#10006; Clear</a>
+        </div>
+    </form>
+
+    <!-- Results -->
+    <div class="card">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">
+                Results
+                <span class="badge badge-gray" style="margin-left:6px;">@Model.TotalCount</span>
+            </span>
+            <span style="font-size:12px;color:var(--text-muted);">Page @Model.Page of @Model.TotalPages</span>
+        </div>
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <thead>
+                    <tr style="border-bottom:2px solid var(--border);text-align:left;">
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);white-space:nowrap;">Timestamp</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">User</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">Action</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">Entity</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">Details</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.Logs)
+                    {
+                        var rowColor = log.Action.Contains("Failed") || log.Action.Contains("Deleted")
+                            ? "background:#fff5f5;"
+                            : log.Action.Contains("Created") || log.Action.Contains("Success")
+                                ? "background:#f5fff5;"
+                                : "";
+                        <tr style="border-bottom:1px solid var(--border);@rowColor">
+                            <td style="padding:9px 16px;white-space:nowrap;color:var(--text-muted);font-size:12px;">
+                                @log.Timestamp.ToString("dd/MM/yyyy HH:mm:ss")
+                            </td>
+                            <td style="padding:9px 16px;font-weight:600;">@log.Username</td>
+                            <td style="padding:9px 16px;">
+                                @{
+                                    var badgeClass = log.Action.Contains("Failed") || log.Action.Contains("Deleted") ? "badge-red"
+                                        : log.Action.Contains("Created") || log.Action.Contains("Success") ? "badge-green"
+                                        : "badge-gray";
+                                }
+                                <span class="badge @badgeClass">@log.Action</span>
+                            </td>
+                            <td style="padding:9px 16px;color:var(--text-muted);">
+                                @log.EntityType
+                                @if (log.EntityId.HasValue) { <span style="font-size:11px;">#@log.EntityId</span> }
+                            </td>
+                            <td style="padding:9px 16px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                title="@log.Details">@log.Details</td>
+                            <td style="padding:9px 16px;font-size:11px;color:var(--text-muted);">@log.IpAddress</td>
+                        </tr>
+                    }
+                    @if (!Model.Logs.Any())
+                    {
+                        <tr>
+                            <td colspan="6" style="padding:32px;text-align:center;color:var(--text-muted);">No log entries found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div style="display:flex;gap:8px;justify-content:center;padding:16px;flex-wrap:wrap;">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    var pageNum = i;
+                    var isCurrent = pageNum == Model.Page;
+                    <a href="?Page=@pageNum&FilterUsername=@Model.FilterUsername&FilterAction=@Model.FilterAction&FilterEntity=@Model.FilterEntity"
+                       class="btn @(isCurrent ? "btn-accent" : "btn-icon") btn-sm">@pageNum</a>
+                }
+            </div>
+        }
+    </div>
+</div>

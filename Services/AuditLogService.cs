@@ -76,5 +76,27 @@ namespace AdminMembers.Services
         {
             return await _context.AuditLogs.CountAsync();
         }
+
+        public async Task<(List<AuditLog> Logs, int TotalCount)> GetFilteredLogsAsync(
+            string? username, string? action, string? entityType, int page, int pageSize)
+        {
+            var query = _context.AuditLogs.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(username))
+                query = query.Where(l => l.Username.Contains(username));
+            if (!string.IsNullOrWhiteSpace(action))
+                query = query.Where(l => l.Action.Contains(action));
+            if (!string.IsNullOrWhiteSpace(entityType))
+                query = query.Where(l => l.EntityType == entityType);
+
+            var total = await query.CountAsync();
+            var logs  = await query
+                .OrderByDescending(l => l.Timestamp)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (logs, total);
+        }
     }
 }

@@ -16,6 +16,10 @@ namespace AdminMembers.Models
         public bool TotpEnabled { get; set; } = false;
         public bool TotpRequired { get; set; } = false;
 
+        // Password reset
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
+
         // Navigation property
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }
