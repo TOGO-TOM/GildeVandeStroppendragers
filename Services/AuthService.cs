@@ -11,12 +11,14 @@ namespace AdminMembers.Services
         private readonly ApplicationDbContext _context;
         private readonly ILogger<AuthService> _logger;
         private readonly AuditLogService _auditLogService;
+        private readonly PasswordPolicyService _passwordPolicy;
 
-        public AuthService(ApplicationDbContext context, ILogger<AuthService> logger, AuditLogService auditLogService)
+        public AuthService(ApplicationDbContext context, ILogger<AuthService> logger, AuditLogService auditLogService, PasswordPolicyService passwordPolicy)
         {
             _context = context;
             _logger = logger;
             _auditLogService = auditLogService;
+            _passwordPolicy = passwordPolicy;
         }
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request, string ipAddress)
@@ -121,6 +123,9 @@ namespace AdminMembers.Services
                     return (false, "Email already exists", null);
                 }
 
+                var (policyOk, policyMsg) = _passwordPolicy.Validate(request.Password);
+                if (!policyOk) return (false, policyMsg, null);
+
                 var user = new User
                 {
                     Username = request.Username,
@@ -168,6 +173,9 @@ namespace AdminMembers.Services
 
                 if (await _context.Users.AnyAsync(u => u.Email == request.Email))
                     return (false, "An account with this email already exists.", null);
+
+                var (policyOk, policyMsg) = _passwordPolicy.Validate(request.Password);
+                if (!policyOk) return (false, policyMsg, null);
 
                 var user = new User
                 {
@@ -404,6 +412,35 @@ namespace AdminMembers.Services
                 _logger.LogError(ex, "Error deleting user {UserId}", userId);
                 return false;
             }
+        }
+
+        public async Task<(bool Success, string Token)> GeneratePasswordResetTokenAsync(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+            if (user == null) return (false, string.Empty);
+
+            var token = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
+            user.PasswordResetToken = token;
+            user.PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(1);
+            await _context.SaveChangesAsync();
+            return (true, token);
+        }
+
+        public async Task<(bool Success, string Message)> ResetPasswordWithTokenAsync(string email, string token, string newPassword)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null || user.PasswordResetToken != token || user.PasswordResetTokenExpiry < DateTime.UtcNow)
+                return (false, "Invalid or expired reset link.");
+
+            var (policyOk, policyMsg) = _passwordPolicy.Validate(newPassword);
+            if (!policyOk) return (false, policyMsg);
+
+            user.PasswordHash = HashPassword(newPassword);
+            user.PasswordResetToken = null;
+            user.PasswordResetTokenExpiry = null;
+            await _context.SaveChangesAsync();
+            await _auditLogService.LogActionAsync(user.Id, user.Username, "Password Reset", "User", user.Id, "Password reset via email token", "system");
+            return (true, "Password reset successfully.");
         }
 
         private string HashPassword(string password)

@@ -9,11 +9,13 @@ namespace AdminMembers.Pages
     {
         private readonly AuthService _authService;
         private readonly ILogger<RegisterModel> _logger;
+        private readonly PasswordPolicyService _passwordPolicy;
 
-        public RegisterModel(AuthService authService, ILogger<RegisterModel> logger)
+        public RegisterModel(AuthService authService, ILogger<RegisterModel> logger, PasswordPolicyService passwordPolicy)
         {
             _authService = authService;
             _logger = logger;
+            _passwordPolicy = passwordPolicy;
         }
 
         [BindProperty] public string Username { get; set; } = string.Empty;
@@ -23,6 +25,7 @@ namespace AdminMembers.Pages
 
         public string? ErrorMessage { get; set; }
         public string? SuccessMessage { get; set; }
+        public string PasswordHint => _passwordPolicy.GetRequirementsHint();
 
         public void OnGet() { }
 
