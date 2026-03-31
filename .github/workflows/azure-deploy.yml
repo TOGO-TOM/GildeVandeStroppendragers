@@ -42,7 +42,7 @@ jobs:
         run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --no-build --output ${{ env.PUBLISH_PATH }}
 
       - name: Zip publish output
-        run: zip -r publish.zip ${{ env.PUBLISH_PATH }}
+        run: cd ${{ env.PUBLISH_PATH }} && zip -r ../publish.zip .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
