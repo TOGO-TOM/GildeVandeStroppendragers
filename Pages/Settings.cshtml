@@ -42,44 +42,61 @@
                         <span class="card-title">General Settings</span>
                     </div>
                     <div class="card-body">
-                        <div class="settings-row">
-                            <div>
-                                <div class="settings-row-label">Company Name</div>
-                                <div class="settings-row-desc">Displayed in the application header and exports.</div>
-                            </div>
-                            <span class="settings-row-value">@(Model.GeneralSettings?.CompanyName ?? "Not configured")</span>
-                        </div>
-                        <div class="settings-row">
-                            <div>
-                                <div class="settings-row-label">Logo</div>
-                                <div class="settings-row-desc">Company logo used in PDF exports.</div>
-                            </div>
-                            @if (Model.HasLogo)
-                            {
-                                <div style="display:flex;align-items:center;gap:12px;">
-                                    <img src="/api/settings/logo" alt="Logo" style="height:36px;border-radius:6px;border:1px solid var(--border);" />
-                                    <span class="badge badge-green">Uploaded</span>
+                        <form id="generalForm" onsubmit="saveGeneralSettings(event)" enctype="multipart/form-data">
+
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">Company Name</div>
+                                    <div class="settings-row-desc">Displayed in exports and PDF headers.</div>
                                 </div>
-                            }
-                            else
-                            {
-                                <span class="badge badge-gray">Not set</span>
-                            }
-                        </div>
+                                <input id="companyName" name="companyName" type="text"
+                                       value="@(Model.GeneralSettings?.CompanyName ?? "")"
+                                       placeholder="Enter company name"
+                                       style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                            </div>
+
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">Logo</div>
+                                    <div class="settings-row-desc">PNG, JPEG or GIF — max 2 MB. Used in PDF exports.</div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                                    @if (Model.HasLogo)
+                                    {
+                                        <img id="logoPreview" src="/api/settings/logo" alt="Logo"
+                                             style="height:40px;border-radius:6px;border:1px solid var(--border);" />
+                                    }
+                                    else
+                                    {
+                                        <img id="logoPreview" src="" alt="" style="height:40px;border-radius:6px;border:1px solid var(--border);display:none;" />
+                                    }
+                                    <label class="btn btn-icon btn-sm" style="cursor:pointer;margin:0;">
+                                        &#128247; Choose file
+                                        <input type="file" id="logoFile" name="logo" accept="image/png,image/jpeg,image/gif"
+                                               style="display:none;" onchange="previewLogo(this)" />
+                                    </label>
+                                    @if (Model.HasLogo)
+                                    {
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteLogo()">&#128465; Remove</button>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="settings-row" style="border-bottom:none;padding-bottom:0;justify-content:flex-end;gap:12px;align-items:center;">
+                                <span id="generalStatus" style="font-size:12px;color:var(--text-muted);"></span>
+                                <button type="submit" class="btn btn-accent">&#10003; Save Settings</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:16px;">
+                    <div class="card-header"><span class="card-title">Export Members</span></div>
+                    <div class="card-body">
                         <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
                             <div>
-                                <div class="settings-row-label">API Endpoints</div>
-                                <div class="settings-row-desc">Use these to update settings programmatically.</div>
-                            </div>
-                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                                <span class="badge badge-purple">POST /api/settings</span>
-                                <span class="badge badge-purple">POST /api/settings/logo</span>
-                            </div>
-                        </div>
-                        <div class="settings-row" style="border-top:1px solid var(--border);margin-top:8px;padding-top:16px;border-bottom:none;padding-bottom:0;">
-                            <div>
-                                <div class="settings-row-label">Export Members</div>
-                                <div class="settings-row-desc">Download all member data in your preferred format.</div>
+                                <div class="settings-row-label">Download member data</div>
+                                <div class="settings-row-desc">Choose fields and format, then download.</div>
                             </div>
                             <button class="btn btn-accent btn-sm" onclick="showModal('exportModal')">&#128229; Export</button>
                         </div>
@@ -90,33 +107,38 @@
             <!-- Custom Fields -->
             <div id="sec-fields" class="settings-section">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
                         <span class="card-title">
                             Custom Fields
-                            <span class="badge badge-gray" style="margin-left:6px;">@Model.CustomFields.Count</span>
+                            <span class="badge badge-gray" style="margin-left:6px;" id="fieldCount">@Model.CustomFields.Count</span>
                         </span>
+                        <button class="btn btn-accent btn-sm" onclick="openFieldModal()">&#43; Add Field</button>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" id="customFieldsList">
                         @if (Model.CustomFields.Any())
                         {
                             @foreach (var f in Model.CustomFields)
                             {
-                                <div class="settings-row">
+                                <div class="settings-row" id="field-row-@f.Id">
                                     <div class="field-tag">
                                         <span style="font-weight:700;">@f.FieldLabel</span>
                                         <span class="badge badge-gray">@f.FieldType</span>
                                         @if (f.IsRequired) { <span class="badge badge-red">Required</span> }
-                                        @if (!f.IsActive)  { <span class="badge badge-gray">Inactive</span> }
+                                        @if (!f.IsActive) { <span class="badge badge-gray">Inactive</span> }
                                     </div>
-                                    <span style="font-size:12px;color:var(--text-muted);">Order: @f.DisplayOrder</span>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span style="font-size:12px;color:var(--text-muted);">Order: @f.DisplayOrder</span>
+                                        <button class="btn btn-icon btn-sm" onclick="openFieldModal(@f.Id,'@f.FieldName','@f.FieldLabel','@f.FieldType',@(f.IsRequired ? "true" : "false"),@(f.IsActive ? "true" : "false"),@f.DisplayOrder)">&#9998;</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteField(@f.Id)">&#128465;</button>
+                                    </div>
                                 </div>
                             }
                         }
                         else
                         {
-                            <div class="empty-state">
+                            <div class="empty-state" id="fieldsEmptyState">
                                 <h3>No custom fields</h3>
-                                <p>Use the API to add custom fields to member profiles.</p>
+                                <p>Add custom fields to extend member profiles.</p>
                             </div>
                         }
                     </div>
@@ -224,7 +246,54 @@
     </div>
 </div>
 
-<!-- ?? EXPORT MODAL ?? -->
+<!-- CUSTOM FIELD MODAL -->
+<div id="fieldModal" class="modal" onclick="if(event.target===this)hideModal('fieldModal')">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-head">
+            <h3 id="fieldModalTitle">Add Custom Field</h3>
+            <button class="modal-close-btn" onclick="hideModal('fieldModal')">&times;</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+            <input type="hidden" id="fieldId" value="0" />
+            <div class="form-group">
+                <label>Field Name <span style="font-size:11px;color:var(--text-muted);">(internal, no spaces)</span></label>
+                <input type="text" id="fieldName" placeholder="e.g. membershipType" style="width:100%;" />
+            </div>
+            <div class="form-group">
+                <label>Label <span style="font-size:11px;color:var(--text-muted);">(shown to users)</span></label>
+                <input type="text" id="fieldLabel" placeholder="e.g. Membership Type" style="width:100%;" />
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select id="fieldType" style="width:100%;">
+                    <option value="Text">Text</option>
+                    <option value="Number">Number</option>
+                    <option value="Date">Date</option>
+                    <option value="Boolean">Yes / No</option>
+                </select>
+            </div>
+            <div class="form-row" style="gap:24px;">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+                    <input type="checkbox" id="fieldRequired" /> Required
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+                    <input type="checkbox" id="fieldActive" checked /> Active
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Display Order</label>
+                <input type="number" id="fieldOrder" value="0" min="0" style="width:100px;" />
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span id="fieldStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+            <button class="btn btn-icon" onclick="hideModal('fieldModal')">Cancel</button>
+            <button class="btn btn-accent" onclick="saveField()">&#10003; Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- EXPORT MODAL -->
 <div id="exportModal" class="modal" onclick="if(event.target===this)hideModal('exportModal')">
     <div class="modal-box">
         <div class="modal-head">
@@ -294,15 +363,158 @@
 <script>
 const pageToken = '@Model.AuthToken';
 
-function showModal(id)
+function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
 function hideModal(id) { document.getElementById(id).style.display = 'none';  document.body.style.overflow = ''; }
 
+// ?? Section nav ???????????????????????????
+function showSection(id, el) {
+    event.preventDefault();
+    document.querySelectorAll('.settings-section').forEach(s => {
+        s.style.opacity = '0';
+        s.style.transform = 'translateY(6px)';
+        setTimeout(() => s.classList.remove('active'), 150);
+    });
+    document.querySelectorAll('.settings-nav-item').forEach(a => a.classList.remove('active'));
+    setTimeout(() => {
+        const target = document.getElementById('sec-' + id);
+        target.classList.add('active');
+        requestAnimationFrame(() => { target.style.opacity = '1'; target.style.transform = 'translateY(0)'; });
+    }, 160);
+    el.classList.add('active');
+}
+
+// ?? Logo preview ??????????????????????????
+function previewLogo(input) {
+    if (!input.files || !input.files[0]) return;
+    const img = document.getElementById('logoPreview');
+    img.src = URL.createObjectURL(input.files[0]);
+    img.style.display = 'block';
+}
+
+// ?? Save general settings ?????????????????
+async function saveGeneralSettings(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById('generalStatus');
+    statusEl.textContent = 'Saving…';
+    statusEl.style.color = '';
+
+    const fd = new FormData();
+    fd.append('companyName', document.getElementById('companyName').value);
+    const logoFile = document.getElementById('logoFile').files[0];
+    if (logoFile) fd.append('logo', logoFile);
+
+    try {
+        const r = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}) },
+            body: fd
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) {
+            statusEl.style.color = 'green';
+            statusEl.textContent = '? Saved';
+            setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = ''; }, 3000);
+        } else {
+            statusEl.style.color = 'red';
+            statusEl.textContent = data.error ?? 'Save failed.';
+        }
+    } catch {
+        statusEl.style.color = 'red';
+        statusEl.textContent = 'Request failed.';
+    }
+}
+
+// ?? Delete logo ???????????????????????????
+async function deleteLogo() {
+    if (!confirm('Remove the logo?')) return;
+    try {
+        const r = await fetch('/api/settings/logo', {
+            method: 'DELETE',
+            headers: { ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}) }
+        });
+        if (r.ok) {
+            const img = document.getElementById('logoPreview');
+            img.src = ''; img.style.display = 'none';
+            document.querySelector('[onclick="deleteLogo()"]')?.remove();
+        }
+    } catch { alert('Failed to remove logo.'); }
+}
+
+// ?? Custom fields ?????????????????????????
+function openFieldModal(id = 0, name = '', label = '', type = 'Text', required = false, active = true, order = 0) {
+    document.getElementById('fieldModalTitle').textContent = id === 0 ? 'Add Custom Field' : 'Edit Custom Field';
+    document.getElementById('fieldId').value    = id;
+    document.getElementById('fieldName').value  = name;
+    document.getElementById('fieldLabel').value = label;
+    document.getElementById('fieldType').value  = type;
+    document.getElementById('fieldRequired').checked = required;
+    document.getElementById('fieldActive').checked   = active;
+    document.getElementById('fieldOrder').value = order;
+    document.getElementById('fieldName').readOnly = id !== 0;
+    document.getElementById('fieldStatus').textContent = '';
+    showModal('fieldModal');
+}
+
+async function saveField() {
+    const id       = parseInt(document.getElementById('fieldId').value);
+    const name     = document.getElementById('fieldName').value.trim();
+    const label    = document.getElementById('fieldLabel').value.trim();
+    const type     = document.getElementById('fieldType').value;
+    const required = document.getElementById('fieldRequired').checked;
+    const active   = document.getElementById('fieldActive').checked;
+    const order    = parseInt(document.getElementById('fieldOrder').value) || 0;
+    const statusEl = document.getElementById('fieldStatus');
+
+    if (!name || !label) { statusEl.textContent = 'Name and Label are required.'; return; }
+
+    const isNew  = id === 0;
+    const url    = isNew ? '/api/settings/custom-fields' : `/api/settings/custom-fields/${id}`;
+    const method = isNew ? 'POST' : 'PUT';
+    const body   = { id, fieldName: name, fieldLabel: label, fieldType: type, isRequired: required, isActive: active, displayOrder: order };
+
+    statusEl.textContent = 'Saving…';
+    try {
+        const r = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {})
+            },
+            body: JSON.stringify(body)
+        });
+        if (r.ok) { hideModal('fieldModal'); location.reload(); }
+        else {
+            const d = await r.json().catch(() => ({}));
+            statusEl.textContent = d.error ?? 'Save failed.';
+        }
+    } catch { statusEl.textContent = 'Request failed.'; }
+}
+
+async function deleteField(id) {
+    if (!confirm('Delete this custom field? All member values for it will also be removed.')) return;
+    try {
+        const r = await fetch(`/api/settings/custom-fields/${id}`, {
+            method: 'DELETE',
+            headers: { ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}) }
+        });
+        if (r.ok) {
+            document.getElementById(`field-row-${id}`)?.remove();
+            const remaining = document.querySelectorAll('[id^="field-row-"]').length;
+            document.getElementById('fieldCount').textContent = remaining;
+            if (remaining === 0)
+                document.getElementById('customFieldsList').innerHTML =
+                    '<div class="empty-state"><h3>No custom fields</h3><p>Add custom fields to extend member profiles.</p></div>';
+        } else { alert('Failed to delete field.'); }
+    } catch { alert('Request failed.'); }
+}
+
+// ?? Export ????????????????????????????????
 function toggleAllFields(checked) {
     document.querySelectorAll('#exportModal input[name="ef"]').forEach(cb => cb.checked = checked);
 }
 
 async function runExport() {
-    const format = document.querySelector('input[name="exportFormat"]:checked')?.value ?? 'pdf';
+    const format  = document.querySelector('input[name="exportFormat"]:checked')?.value ?? 'pdf';
     const fields  = [...document.querySelectorAll('#exportModal input[name="ef"]:checked')].map(cb => cb.value);
     const roles   = [...document.querySelectorAll('#exportModal input[name="er"]:checked')].map(cb => cb.value);
 
@@ -323,52 +535,20 @@ async function runExport() {
             },
             body: JSON.stringify({ selectedFields: fields, filterRoles: roles.length > 0 ? roles : null })
         });
-
-        if (!r.ok) {
-            const err = await r.json().catch(() => ({}));
-            throw new Error(err.error ?? `Server error ${r.status}`);
-        }
-
+        if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error(err.error ?? `Server error ${r.status}`); }
         const blob = await r.blob();
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement('a');
-        a.href     = url;
+        a.href = url;
         a.download = `members_export_${new Date().toISOString().slice(0,10)}.${extMap[format]}`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        document.body.appendChild(a); a.click(); a.remove();
         URL.revokeObjectURL(url);
-
         statusEl.textContent = '';
         hideModal('exportModal');
     } catch (e) {
         statusEl.textContent = '';
         alert(e.message ?? 'Export failed.');
     }
-}
-
-function showSection(id, el) {
-    event.preventDefault();
-    const sections = document.querySelectorAll('.settings-section');
-    const navItems = document.querySelectorAll('.settings-nav-item');
-
-    sections.forEach(s => {
-        s.style.opacity = '0';
-        s.style.transform = 'translateY(6px)';
-        setTimeout(() => { s.classList.remove('active'); }, 150);
-    });
-    navItems.forEach(a => a.classList.remove('active'));
-
-    setTimeout(() => {
-        const target = document.getElementById('sec-' + id);
-        target.classList.add('active');
-        requestAnimationFrame(() => {
-            target.style.opacity = '1';
-            target.style.transform = 'translateY(0)';
-        });
-    }, 160);
-
-    el.classList.add('active');
 }
 </script>
 }
