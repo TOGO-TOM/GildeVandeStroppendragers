@@ -25,6 +25,9 @@ namespace AdminMembers.Pages.Members
         public int TotalMembers { get; set; }
         public int ActiveMembers { get; set; }
         public int DeceasedMembers { get; set; }
+        public Dictionary<string, int> RoleCounts { get; set; } = new();
+        public int AllMembersCount { get; set; }
+        public bool CanWrite { get; set; }
 
         [TempData] public string? SuccessMessage { get; set; }
         [TempData] public string? ErrorMessage { get; set; }
@@ -56,22 +59,31 @@ namespace AdminMembers.Pages.Members
         }
 
         // ?? GET ????????????????????????????????????????????????
-        public async Task<IActionResult> OnGetAsync(string? search, string? sortBy)
+        public async Task<IActionResult> OnGetAsync(string? search, string? sortBy, string? filterRole)
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
-            await LoadPageDataAsync(search, sortBy);
+            CanWrite = HasPermission("Write");
+            await LoadPageDataAsync(search, sortBy, filterRole);
             return Page();
         }
 
         // ?? POST: Save (create or update) ?????????????????????
-        public async Task<IActionResult> OnPostSaveAsync(string? search, string? sortBy)
+        public async Task<IActionResult> OnPostSaveAsync(string? search, string? sortBy, string? filterRole)
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
+            CanWrite = HasPermission("Write");
+
+            if (!CanWrite)
+            {
+                ErrorMessage = "You do not have permission to modify members.";
+                await LoadPageDataAsync(search, sortBy, filterRole);
+                return Page();
+            }
 
             if (string.IsNullOrWhiteSpace(Form.FirstName) || string.IsNullOrWhiteSpace(Form.LastName))
             {
                 ErrorMessage = "First name and last name are required.";
-                await LoadPageDataAsync(search, sortBy);
+                await LoadPageDataAsync(search, sortBy, filterRole);
                 return Page();
             }
 
@@ -88,7 +100,7 @@ namespace AdminMembers.Pages.Members
                         await _context.Members.AnyAsync(m => m.MemberNumber == Form.MemberNumber))
                     {
                         ErrorMessage = $"Member number {Form.MemberNumber} is already in use.";
-                        await LoadPageDataAsync(search, sortBy);
+                        await LoadPageDataAsync(search, sortBy, filterRole);
                         return Page();
                     }
 
@@ -109,7 +121,7 @@ namespace AdminMembers.Pages.Members
                     if (existing == null)
                     {
                         ErrorMessage = "Member not found.";
-                        await LoadPageDataAsync(search, sortBy);
+                        await LoadPageDataAsync(search, sortBy, filterRole);
                         return Page();
                     }
 
@@ -117,7 +129,7 @@ namespace AdminMembers.Pages.Members
                         await _context.Members.AnyAsync(m => m.MemberNumber == Form.MemberNumber && m.Id != Form.Id))
                     {
                         ErrorMessage = $"Member number {Form.MemberNumber} is already in use.";
-                        await LoadPageDataAsync(search, sortBy);
+                        await LoadPageDataAsync(search, sortBy, filterRole);
                         return Page();
                     }
 
@@ -135,14 +147,22 @@ namespace AdminMembers.Pages.Members
                 ErrorMessage = "An error occurred while saving. Please try again.";
             }
 
-            await LoadPageDataAsync(search, sortBy);
+            await LoadPageDataAsync(search, sortBy, filterRole);
             return Page();
         }
 
         // ?? POST: Delete ???????????????????????????????????????
-        public async Task<IActionResult> OnPostDeleteAsync(int id, string? search, string? sortBy)
+        public async Task<IActionResult> OnPostDeleteAsync(int id, string? search, string? sortBy, string? filterRole)
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
+            CanWrite = HasPermission("Write");
+
+            if (!CanWrite)
+            {
+                ErrorMessage = "You do not have permission to delete members.";
+                await LoadPageDataAsync(search, sortBy, filterRole);
+                return Page();
+            }
 
             try
             {
@@ -164,13 +184,20 @@ namespace AdminMembers.Pages.Members
                 ErrorMessage = "An error occurred while deleting. Please try again.";
             }
 
-            await LoadPageDataAsync(search, sortBy);
+            await LoadPageDataAsync(search, sortBy, filterRole);
             return Page();
         }
 
         // ?? Helpers ????????????????????????????????????????????
-        private async Task LoadPageDataAsync(string? search, string? sortBy)
+        private async Task LoadPageDataAsync(string? search, string? sortBy, string? filterRole)
         {
+            // Always load full unfiltered set for accurate role counts
+            var allMembers = await _context.Members.AsNoTracking().ToListAsync();
+            AllMembersCount = allMembers.Count;
+            RoleCounts = allMembers
+                .GroupBy(m => m.Role)
+                .ToDictionary(g => g.Key, g => g.Count());
+
             var query = _context.Members
                 .Include(m => m.Address)
                 .AsQueryable();
@@ -185,18 +212,21 @@ namespace AdminMembers.Pages.Members
                     (m.MemberNumber != null && m.MemberNumber.ToString()!.Contains(s)));
             }
 
+            if (!string.IsNullOrWhiteSpace(filterRole) && filterRole != "all")
+                query = query.Where(m => m.Role == filterRole);
+
             query = sortBy switch
             {
-                "lastName-asc"       => query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName),
-                "lastName-desc"      => query.OrderByDescending(m => m.LastName),
-                "memberNumber-asc"   => query.OrderBy(m => m.MemberNumber),
-                "memberNumber-desc"  => query.OrderByDescending(m => m.MemberNumber),
-                _                    => query.OrderBy(m => m.Id)
+                "lastName-asc"      => query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName),
+                "lastName-desc"     => query.OrderByDescending(m => m.LastName),
+                "memberNumber-asc"  => query.OrderBy(m => m.MemberNumber),
+                "memberNumber-desc" => query.OrderByDescending(m => m.MemberNumber),
+                _                   => query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName)
             };
 
-            Members       = await query.ToListAsync();
-            TotalMembers  = Members.Count;
-            ActiveMembers = Members.Count(m => m.IsAlive);
+            Members         = await query.ToListAsync();
+            TotalMembers    = Members.Count;
+            ActiveMembers   = Members.Count(m => m.IsAlive);
             DeceasedMembers = Members.Count(m => !m.IsAlive);
 
             CustomFields = await _context.CustomFields

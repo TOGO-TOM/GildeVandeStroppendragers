@@ -1,0 +1,124 @@
+@page
+@model AdminMembers.Pages.Account.IndexModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "My Account";
+    ViewData["LayoutUser"] = Model.CurrentUser;
+    ViewData["LayoutPage"] = "";
+}
+
+<div class="page-body-full" style="max-width:560px;padding-top:32px;">
+
+    <div style="margin-bottom:28px;">
+        <h1 style="font-size:22px;font-weight:800;letter-spacing:-.3px;">My Account</h1>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Manage your profile and security settings.</p>
+    </div>
+
+    <!-- Profile card -->
+    <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><span class="card-title">Profile</span></div>
+        <div class="card-body">
+            <div class="settings-row">
+                <div><div class="settings-row-label">Username</div></div>
+                <span class="settings-row-value">@Model.CurrentUser?.Username</span>
+            </div>
+            <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
+                <div><div class="settings-row-label">Roles</div></div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    @foreach (var role in Model.CurrentUser?.Roles ?? new())
+                    {
+                        <span class="badge badge-purple">@role</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2FA card -->
+    <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+            <span class="card-title">Two-Factor Authentication</span>
+            @if (Model.TotpEnabled)
+            {
+                <span class="badge badge-green">&#10003; Active</span>
+            }
+            else
+            {
+                <span class="badge badge-gray">Not set up</span>
+            }
+        </div>
+        <div class="card-body">
+            @if (Model.TotpEnabled)
+            {
+                <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
+                    Your account is protected with an authenticator app.
+                    Devices you trust will skip the code for 30 days.
+                </p>
+                <a href="/Account/TotpSetup" class="btn btn-sm btn-icon">Manage 2FA</a>
+            }
+            else
+            {
+                <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
+                    Add an extra layer of security. Use Google Authenticator, Microsoft Authenticator or any TOTP app.
+                </p>
+                <a href="/Account/TotpSetup" class="btn btn-sm btn-accent">&#128274; Set Up Authenticator</a>
+            }
+        </div>
+    </div>
+
+    <!-- Change password card -->
+    <div class="card">
+        <div class="card-header"><span class="card-title">Change Password</span></div>
+        <div class="card-body">
+
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert-success">&#10003; @Model.SuccessMessage</div>
+            }
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert-error">&#33; @Model.ErrorMessage</div>
+            }
+
+            <form method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <div class="password-wrapper">
+                        <input asp-for="CurrentPassword" type="password" id="pwd-current"
+                               placeholder="Your current password" autocomplete="current-password" />
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('pwd-current')">&#128065;</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <div class="password-wrapper">
+                        <input asp-for="NewPassword" type="password" id="pwd-new"
+                               placeholder="At least 6 characters" autocomplete="new-password" />
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('pwd-new')">&#128065;</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <div class="password-wrapper">
+                        <input asp-for="ConfirmNewPassword" type="password" id="pwd-confirm"
+                               placeholder="Repeat new password" autocomplete="new-password" />
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('pwd-confirm')">&#128065;</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-accent" style="width:auto;margin-top:8px;">Update Password</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function togglePwd(id) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+}
+</script>
+}

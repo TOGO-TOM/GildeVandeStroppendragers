@@ -12,6 +12,8 @@ namespace AdminMembers.Models
         public string Message { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
         public UserDto? User { get; set; }
+        public bool RequiresTotp { get; set; }
+        public int? PendingUserId { get; set; }
     }
 
     public class RegisterRequest
@@ -20,6 +22,21 @@ namespace AdminMembers.Models
         public string Password { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public List<int> RoleIds { get; set; } = new List<int>();
+    }
+
+    public class SelfRegisterRequest
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+    }
+
+    public class ChangePasswordRequest
+    {
+        public string CurrentPassword { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+        public string ConfirmNewPassword { get; set; } = string.Empty;
     }
 
     public class UserDto

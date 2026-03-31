@@ -1,0 +1,101 @@
+@page
+@model AdminMembers.Pages.Account.TotpSetupModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Two-Factor Authentication Setup";
+    ViewData["LayoutUser"] = Model.CurrentUser;
+    ViewData["LayoutPage"] = "";
+}
+
+<div class="page-body-full" style="max-width:520px;padding-top:32px;">
+
+    <div style="margin-bottom:24px;">
+        <a href="/Account" style="font-size:13px;color:var(--accent);font-weight:600;text-decoration:none;">&#8592; My Account</a>
+        <h1 style="font-size:22px;font-weight:800;margin-top:10px;letter-spacing:-.3px;">
+            Authenticator Setup
+        </h1>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">
+            Scan the QR code with Google Authenticator, Microsoft Authenticator or any compatible TOTP app.
+        </p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert-success" style="margin-bottom:20px;">&#10003; @Model.SuccessMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert-error" style="margin-bottom:20px;">&#33; @Model.ErrorMessage</div>
+    }
+
+    @if (!Model.TotpEnabled)
+    {
+        <!-- Step 1: QR -->
+        <div class="card" style="margin-bottom:16px;">
+            <div class="card-header">
+                <span class="card-title">
+                    <span class="totp-step-badge">1</span> Scan QR Code
+                </span>
+            </div>
+            <div class="card-body" style="text-align:center;padding:28px 20px;">
+                <div class="totp-qr-wrap">
+                    <img src="@Model.QrCodeDataUri" alt="TOTP QR Code" />
+                </div>
+                <div class="totp-secret-label">
+                    Can't scan? Enter this key manually:
+                </div>
+                <code class="totp-secret-code">@Model.FormattedSecret</code>
+            </div>
+        </div>
+
+        <!-- Step 2: Confirm -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">
+                    <span class="totp-step-badge">2</span> Confirm with a code
+                </span>
+            </div>
+            <div class="card-body">
+                <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+                    Enter the 6-digit code shown in your app to activate two-factor authentication.
+                </p>
+                <form method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Secret" />
+                    <div class="form-group">
+                        <label>6-digit code</label>
+                        <input asp-for="VerifyCode" type="text"
+                               class="totp-code-input"
+                               placeholder="000000"
+                               inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                               autocomplete="one-time-code" autofocus />
+                    </div>
+                    <button type="submit" class="btn btn-accent" style="width:auto;margin-top:4px;">
+                        &#10003; Enable 2FA
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Two-Factor Authentication is Active</span>
+                <span class="badge badge-green">&#10003; Enabled</span>
+            </div>
+            <div class="card-body">
+                <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+                    Your account is protected. You will be asked for a code on each new device or after 30 days.
+                </p>
+                <form method="post" asp-page-handler="Disable">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger" style="width:auto;"
+                            onclick="return confirm('This will disable two-factor authentication. Are you sure?')">
+                        &#128275; Disable 2FA
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+</div>

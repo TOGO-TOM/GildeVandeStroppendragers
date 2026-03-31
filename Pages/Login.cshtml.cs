@@ -60,16 +60,21 @@ namespace AdminMembers.Pages
 
                 var result = await _authService.LoginAsync(loginRequest, ipAddress);
 
+                if (result.RequiresTotp && result.PendingUserId.HasValue)
+                {
+                    // Store pending user and redirect target in session, go to TOTP page
+                    HttpContext.Session.SetInt32("PendingTotpUserId", result.PendingUserId.Value);
+                    HttpContext.Session.SetString("PendingTotpRedirect", NormalizeRedirectPath(redirect));
+                    return RedirectToPage("/TotpVerify");
+                }
+
                 if (result.Success && result.User != null)
                 {
                     HttpContext.Session.SetString("AuthToken", result.Token);
                     HttpContext.Session.SetString("CurrentUser", System.Text.Json.JsonSerializer.Serialize(result.User));
                     HttpContext.Session.SetString("LoginTime", DateTime.UtcNow.ToString("o"));
-
-                    _logger.LogInformation("User {Username} logged in successfully via Razor Pages", Username);
-
-                    var target = NormalizeRedirectPath(redirect);
-                    return LocalRedirect(target);
+                    _logger.LogInformation("User {Username} logged in successfully", Username);
+                    return LocalRedirect(NormalizeRedirectPath(redirect));
                 }
 
                 ErrorMessage = result.Message ?? "Invalid username or password.";

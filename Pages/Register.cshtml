@@ -1,0 +1,92 @@
+@page
+@model AdminMembers.Pages.RegisterModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Register";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — Gilde Van De Stroppendragers</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="login-wrap">
+    <div class="login-card">
+        <div class="login-head">
+            <div class="logo-dot"></div>
+            <h1>Create Account</h1>
+            <p>Gilde Van De Stroppendragers</p>
+        </div>
+        <div class="login-body">
+
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="register-success">
+                    <div class="register-success-icon">&#10003;</div>
+                    <p>@Model.SuccessMessage</p>
+                    <a href="/Login" class="btn-login" style="display:block;text-align:center;margin-top:16px;text-decoration:none;">Back to Sign In</a>
+                </div>
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="login-error">@Model.ErrorMessage</div>
+                }
+
+                <form method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="login-input-group">
+                        <label for="Username">Username</label>
+                        <input asp-for="Username" type="text" id="Username"
+                               placeholder="Choose a username"
+                               autocomplete="username" autofocus required />
+                    </div>
+
+                    <div class="login-input-group">
+                        <label for="Email">Email</label>
+                        <input asp-for="Email" type="email" id="Email"
+                               placeholder="Your email address"
+                               autocomplete="email" required />
+                    </div>
+
+                    <div class="login-input-group">
+                        <label for="Password">Password</label>
+                        <div class="password-wrapper">
+                            <input asp-for="Password" type="password" id="Password"
+                                   placeholder="At least 6 characters"
+                                   autocomplete="new-password" required />
+                            <button type="button" class="pwd-toggle" onclick="togglePwd('Password')">&#128065;</button>
+                        </div>
+                    </div>
+
+                    <div class="login-input-group">
+                        <label for="ConfirmPassword">Confirm Password</label>
+                        <div class="password-wrapper">
+                            <input asp-for="ConfirmPassword" type="password" id="ConfirmPassword"
+                                   placeholder="Repeat your password"
+                                   autocomplete="new-password" required />
+                            <button type="button" class="pwd-toggle" onclick="togglePwd('ConfirmPassword')">&#128065;</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login" style="margin-top:8px;">Request Access</button>
+                </form>
+
+                <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--text-muted);">
+                    Already have an account? <a href="/Login" style="color:var(--accent);font-weight:600;">Sign In</a>
+                </div>
+            }
+        </div>
+    </div>
+    <script>
+        function togglePwd(id) {
+            const el = document.getElementById(id);
+            el.type = el.type === 'password' ? 'text' : 'password';
+        }
+    </script>
+</body>
+</html>

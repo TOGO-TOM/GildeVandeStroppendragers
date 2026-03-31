@@ -115,7 +115,11 @@ namespace AdminMembers.Data
                 entity.Property(e => e.PasswordHash).IsRequired();
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
                 entity.HasIndex(e => e.Email).IsUnique();
-                entity.HasIndex(e => e.IsActive); // For filtering
+                entity.HasIndex(e => e.IsActive);
+                entity.Property(e => e.IsApproved).IsRequired().HasDefaultValue(true);
+                entity.HasIndex(e => e.IsApproved);
+                entity.Property(e => e.TotpSecret).HasMaxLength(64).IsRequired(false);
+                entity.Property(e => e.TotpEnabled).IsRequired().HasDefaultValue(false);
             });
 
             modelBuilder.Entity<Role>(entity =>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@(ViewData["Title"] != null ? ViewData["Title"] + " — " : "")Gilde Van De Stroppendragers</title>
-    <link rel="stylesheet" href="~/styles.css">
+    <link rel="stylesheet" href="/styles.css">
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -16,44 +16,35 @@
     var userRoles    = string.Join(", ", layoutUser?.Roles ?? new List<string>());
 }
 
-<!-- ???????????????????????????????????
-     HEADER  (sticky, dark)
-???????????????????????????????????? -->
 <header class="app-header">
-
-    <!-- Brand -->
     <a href="/Home" class="brand">
         <span class="brand-dot"></span>
         <span class="brand-text">Gilde Van De Stroppendragers</span>
     </a>
 
-    <!-- Desktop nav -->
     <nav class="nav desktop-nav" aria-label="Main navigation">
         <a href="/Home"     class="@(layoutPage == "home"     ? "active" : "")">Home</a>
         <a href="/Members"  class="@(layoutPage == "members"  ? "active" : "")">Members</a>
         <a href="/Settings" class="@(layoutPage == "settings" ? "active" : "")">Settings</a>
     </nav>
 
-    <!-- Right side: user + logout + hamburger -->
     <div class="header-right">
         @if (layoutUser != null)
         {
             <div class="user-pill">
                 <div class="user-avatar" title="@userRoles">@userInitials</div>
-                <span class="user-name-label">@layoutUser.Username</span>
+                <a href="/Account" class="user-name-label">@layoutUser.Username</a>
             </div>
             <form method="post" asp-page="/Home" asp-page-handler="Logout" style="margin:0;">
                 <button class="btn btn-ghost btn-sm">Sign&nbsp;Out</button>
             </form>
         }
-        <!-- Mobile hamburger -->
         <button class="hamburger" id="hamburger" aria-label="Open menu" onclick="toggleMobileMenu()">
             <span></span><span></span><span></span>
         </button>
     </div>
 </header>
 
-<!-- Mobile drawer nav -->
 <div class="mobile-nav-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
 <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
     <div class="mobile-nav-head">
@@ -77,9 +68,6 @@
     }
 </nav>
 
-<!-- ???????????????????????????????????
-     PAGE CONTENT
-???????????????????????????????????? -->
 @RenderBody()
 
 @RenderSection("Scripts", required: false)

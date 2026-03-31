@@ -5,8 +5,11 @@
     ViewData["Title"] = "Members";
     ViewData["LayoutPage"] = "members";
     ViewData["LayoutUser"] = Model.CurrentUser;
-    var search = (string?)ViewContext.HttpContext.Request.Query["search"];
-    var sortBy = (string?)ViewContext.HttpContext.Request.Query["sortBy"];
+    var search     = (string?)ViewContext.HttpContext.Request.Query["search"];
+    var sortBy     = (string?)ViewContext.HttpContext.Request.Query["sortBy"];
+    var filterRole = (string?)ViewContext.HttpContext.Request.Query["filterRole"];
+
+    var roles = new[] { "Kandidaat Stappend Lid", "Kandidaat", "Steunend Lid" };
 }
 
 <!-- TOASTS -->
@@ -25,6 +28,8 @@
 
     <!-- ── SIDEBAR ── -->
     <div class="sidebar form-panel" id="formPanel">
+        @if (Model.CanWrite)
+        {
         <div class="card">
             <div class="card-header">
                 <span class="card-title" id="formTitle">Add Member</span>
@@ -73,11 +78,9 @@
                         <div class="form-group">
                             <label>Role</label>
                             <select asp-for="Form.Role">
+                                <option value="Kandidaat Stappend Lid">Kandidaat Stappend Lid</option>
                                 <option value="Kandidaat">Kandidaat</option>
-                                <option value="Lid">Lid</option>
-                                <option value="Deken">Deken</option>
-                                <option value="Erevoorzitter">Erevoorzitter</option>
-                                <option value="Erelid">Erelid</option>
+                                <option value="Steunend Lid">Steunend Lid</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -148,11 +151,35 @@
             <div class="card-header"><span class="card-title">Data</span></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
                 <button class="btn btn-icon" onclick="showModal('importModal')">&#128228; Import CSV</button>
-                <a href="/api/members/export/excel" class="btn btn-icon">&#128229; Export Excel</a>
-                <a href="/api/members/export/csv"   class="btn btn-icon">&#128229; Export CSV</a>
+                <button class="btn btn-icon" onclick="showModal('exportModal')">&#128229; Export</button>
                 <button class="btn btn-icon" onclick="showModal('backupModal')">&#128190; Backup &amp; Restore</button>
             </div>
         </div>
+        }
+        else
+        {
+        <!-- Viewer: read-only notice + export only -->
+        <div class="card">
+            <div class="card-header"><span class="card-title">Members</span></div>
+            <div class="card-body">
+                <div class="viewer-notice">
+                    <span class="viewer-notice-icon">&#128274;</span>
+                    <div>
+                        <div style="font-weight:600;font-size:13px;">Read-only access</div>
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
+                            You can view and export members but cannot add, edit or delete.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+            <div class="card-header"><span class="card-title">Data</span></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
+                <button class="btn btn-icon" onclick="showModal('exportModal')">&#128229; Export</button>
+            </div>
+        </div>
+        }
     </div>
 
     <!-- ── MAIN CONTENT ── -->
@@ -162,7 +189,7 @@
         <div class="stat-strip">
             <div class="stat-item">
                 <div class="stat-value">@Model.TotalMembers</div>
-                <div class="stat-label">Total</div>
+                <div class="stat-label">@(string.IsNullOrEmpty(filterRole) ? "Total" : filterRole)</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value green">@Model.ActiveMembers</div>
@@ -177,18 +204,40 @@
         <!-- Toolbar -->
         <div class="toolbar">
             <form method="get" class="toolbar-search">
-                <input name="search" value="@search" placeholder="Search name, email, member #..." />
-                <input type="hidden" name="sortBy" value="@sortBy" />
+                <input name="search"     value="@search"     placeholder="Search name, email, member #..." />
+                <input type="hidden" name="sortBy"     value="@sortBy" />
+                <input type="hidden" name="filterRole" value="@filterRole" />
                 <button class="btn btn-accent btn-sm" type="submit">Search</button>
             </form>
             <div class="toolbar-divider"></div>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-asc">A&ndash;Z</a>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-desc">Z&ndash;A</a>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=memberNumber-asc">By&nbsp;#</a>
-            @if (!string.IsNullOrEmpty(search))
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-asc&filterRole=@filterRole">A&ndash;Z</a>
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-desc&filterRole=@filterRole">Z&ndash;A</a>
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=memberNumber-asc&filterRole=@filterRole">By&nbsp;#</a>
+            @if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(filterRole))
             {
                 <a class="btn btn-icon btn-sm" href="/Members">Clear</a>
             }
+        </div>
+
+        <!-- Role filter button group -->
+        <div class="role-filter-bar">
+            <span class="role-filter-label">Filter</span>
+            <div class="role-btn-group">
+                <a class="role-btn @(string.IsNullOrEmpty(filterRole) ? "active" : "")"
+                   href="?search=@search&sortBy=@sortBy">
+                    Alle
+                    <span class="role-btn-count">@Model.AllMembersCount</span>
+                </a>
+                @foreach (var role in roles)
+                {
+                    var count = Model.RoleCounts.GetValueOrDefault(role, 0);
+                    <a class="role-btn @(filterRole == role ? "active" : "")"
+                       href="?search=@search&sortBy=@sortBy&filterRole=@Uri.EscapeDataString(role)">
+                        @role
+                        <span class="role-btn-count">@count</span>
+                    </a>
+                }
+            </div>
         </div>
 
         <!-- Member list -->
@@ -302,6 +351,79 @@
     </div>
 </div>
 
+<!-- ══ EXPORT MODAL ══ -->
+<div id="exportModal" class="modal" onclick="if(event.target===this)hideModal('exportModal')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>&#128229; Export Members</h3>
+            <button class="modal-close-btn" onclick="hideModal('exportModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Format -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">Format</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <label class="export-format-pill">
+                        <input type="radio" name="exportFormat" value="pdf" checked /> PDF
+                    </label>
+                    <label class="export-format-pill">
+                        <input type="radio" name="exportFormat" value="excel" /> Excel (.xlsx)
+                    </label>
+                    <label class="export-format-pill">
+                        <input type="radio" name="exportFormat" value="csv" /> CSV
+                    </label>
+                </div>
+            </div>
+
+            <!-- Field selection -->
+            <div style="margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Fields to include</div>
+                    <div style="display:flex;gap:8px;">
+                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(true)">All</button>
+                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(false)">None</button>
+                    </div>
+                </div>
+                <div class="export-fields-grid">
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="MemberNumber" checked /> Member #</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="FirstName"    checked /> First Name</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="LastName"     checked /> Last Name</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Gender"       checked /> Gender</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Role"         checked /> Role</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="IsAlive"      checked /> Status</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="BirthDate"           /> Birth Date</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="SeniorityDate"       /> Seniority Date</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Email"               /> Email</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="PhoneNumber"         /> Phone</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Street"              /> Street</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="HouseNumber"         /> House #</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="City"                /> City</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="PostalCode"          /> Postal Code</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Country"             /> Country</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="CreatedAt"           /> Created Date</label>
+                </div>
+            </div>
+
+            <!-- Role filter -->
+            <div>
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">Filter by role <span style="font-weight:400;text-transform:none;">(leave all unchecked = export everyone)</span></div>
+                <div class="export-fields-grid">
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat Stappend Lid" /> Kandidaat Stappend Lid</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat"              /> Kandidaat</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Steunend Lid"           /> Steunend Lid</label>
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <span id="exportStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+            <button class="btn btn-icon" onclick="hideModal('exportModal')">Cancel</button>
+            <button class="btn btn-accent" onclick="runExport()">&#128229; Download</button>
+        </div>
+    </div>
+</div>
+
 <!-- ══ BACKUP MODAL ══ -->
 <div id="backupModal" class="modal" onclick="if(event.target===this)this.style.display='none'">
     <div class="modal-box modal-box-sm">
@@ -334,6 +456,8 @@
 
 @section Scripts {
 <script>
+const canWrite = @(Model.CanWrite ? "true" : "false");
+
 // ── Helpers ───────────────────────────────
 function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
 function hideModal(id) { document.getElementById(id).style.display = 'none';  document.body.style.overflow = ''; }
@@ -377,10 +501,13 @@ function openCard(el) {
         </div>
         ${years !== null ? `<div class="seniority-box"><div class="years">${years} year${years !== 1 ? 's' : ''}</div><div class="label">Member since ${d.seniority}</div></div>` : ''}`;
 
+
     document.getElementById('cardFooter').innerHTML = `
         <button class="btn btn-icon" onclick="closeCard()">Close</button>
+        ${canWrite ? `
         <button class="btn btn-accent" onclick="loadEdit(document.querySelector('[data-id=\\'${d.id}\\']'));closeCard()">Edit</button>
-        <button class="btn btn-danger" onclick="confirmDelete('${d.id}','${d.first} ${d.last}')">Delete</button>`;
+        <button class="btn btn-danger" onclick="confirmDelete('${d.id}','${d.first} ${d.last}')">Delete</button>
+        ` : ''}`;
 
     showModal('contactModal');
 }
@@ -427,6 +554,63 @@ function confirmDelete(id, name) {
     showModal('deleteModal');
 }
 function closeDelete() { hideModal('deleteModal'); }
+
+// ── Export ────────────────────────────────
+function toggleAllFields(checked) {
+    document.querySelectorAll('#exportModal input[name="ef"]').forEach(cb => cb.checked = checked);
+}
+
+async function runExport() {
+    const format = document.querySelector('input[name="exportFormat"]:checked')?.value ?? 'pdf';
+    const fields  = [...document.querySelectorAll('#exportModal input[name="ef"]:checked')].map(cb => cb.value);
+    const roles   = [...document.querySelectorAll('#exportModal input[name="er"]:checked')].map(cb => cb.value);
+
+    if (fields.length === 0) {
+        showToast('error', 'Select at least one field to export.');
+        return;
+    }
+
+    const statusEl = document.getElementById('exportStatus');
+    statusEl.textContent = 'Generating…';
+
+    const endpointMap = { pdf: 'export/pdf', excel: 'export/excel', csv: 'export/csv-custom' };
+    const mimeMap     = { pdf: 'application/pdf', excel: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', csv: 'text/csv' };
+    const extMap      = { pdf: 'pdf', excel: 'xlsx', csv: 'csv' };
+
+    try {
+        const token = localStorage.getItem('authToken');
+        const r = await fetch(`/api/members/${endpointMap[format]}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ selectedFields: fields, filterRoles: roles.length > 0 ? roles : null })
+        });
+
+        if (!r.ok) {
+            const err = await r.json().catch(() => ({}));
+            throw new Error(err.error ?? `Server error ${r.status}`);
+        }
+
+        const blob = await r.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = `members_export_${new Date().toISOString().slice(0,10)}.${extMap[format]}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        statusEl.textContent = '';
+        hideModal('exportModal');
+        showToast('success', 'Export downloaded successfully.');
+    } catch (e) {
+        statusEl.textContent = '';
+        showToast('error', e.message ?? 'Export failed.');
+    }
+}
 
 // ── Import CSV ────────────────────────────
 async function importCsv() {

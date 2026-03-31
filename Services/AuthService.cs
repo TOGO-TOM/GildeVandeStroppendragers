@@ -34,10 +34,29 @@ namespace AdminMembers.Services
                     return new LoginResponse { Success = false, Message = "Invalid username or password" };
                 }
 
+                if (!user.IsApproved)
+                {
+                    await _auditLogService.LogActionAsync(user.Id, user.Username, "Login Failed", "User", user.Id, "Account pending admin approval", ipAddress);
+                    return new LoginResponse { Success = false, Message = "Your account is pending administrator approval." };
+                }
+
                 if (!VerifyPassword(request.Password, user.PasswordHash))
                 {
                     await _auditLogService.LogActionAsync(user.Id, user.Username, "Login Failed", "User", user.Id, "Invalid password", ipAddress);
                     return new LoginResponse { Success = false, Message = "Invalid username or password" };
+                }
+
+                // Check TOTP — if enabled and device not pre-trusted, demand a code
+                if (user.TotpEnabled && !string.IsNullOrEmpty(user.TotpSecret))
+                {
+                    // Store userId in session so the TOTP page can complete login
+                    return new LoginResponse
+                    {
+                        Success       = false,
+                        RequiresTotp  = true,
+                        PendingUserId = user.Id,
+                        Message       = "TOTP"
+                    };
                 }
 
                 // Update last login
@@ -62,6 +81,28 @@ namespace AdminMembers.Services
                 _logger.LogError(ex, "Error during login for user: {Username}", request.Username);
                 return new LoginResponse { Success = false, Message = "An error occurred during login" };
             }
+        }
+
+        public async Task<LoginResponse> CompleteLoginAsync(int userId, string ipAddress)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return new LoginResponse { Success = false, Message = "User not found." };
+
+            user.LastLoginAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            await _auditLogService.LogActionAsync(user.Id, user.Username, "Login Success", "User", user.Id, "Logged in (TOTP verified)", ipAddress);
+
+            return new LoginResponse
+            {
+                Success = true,
+                Message = "Login successful",
+                Token   = GenerateToken(user),
+                User    = MapToUserDto(user)
+            };
         }
 
         public async Task<(bool Success, string Message, User? User)> RegisterUserAsync(RegisterRequest request, int createdByUserId, string createdByUsername, string ipAddress)
@@ -115,6 +156,70 @@ namespace AdminMembers.Services
             {
                 _logger.LogError(ex, "Error registering user: {Username}", request.Username);
                 return (false, "An error occurred during registration", null);
+            }
+        }
+
+        public async Task<(bool Success, string Message, User? User)> SelfRegisterAsync(SelfRegisterRequest request, string ipAddress)
+        {
+            try
+            {
+                if (await _context.Users.AnyAsync(u => u.Username == request.Username))
+                    return (false, "Username is already taken.", null);
+
+                if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+                    return (false, "An account with this email already exists.", null);
+
+                var user = new User
+                {
+                    Username  = request.Username,
+                    Email     = request.Email,
+                    PasswordHash = HashPassword(request.Password),
+                    IsActive  = false,   // cannot log in until admin approves
+                    IsApproved = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                await _auditLogService.LogActionAsync(null, request.Username, "Self Registration", "User", user.Id,
+                    $"Self-registration request by {request.Username} ({request.Email}) — pending approval", ipAddress);
+
+                return (true, "Your registration request has been submitted. An administrator will review it shortly.", user);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in self-registration for {Username}", request.Username);
+                return (false, "An error occurred. Please try again.", null);
+            }
+        }
+
+        public async Task<bool> ApproveUserAsync(int userId, int roleId, int approvedByUserId, string approvedByUsername, string ipAddress)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null) return false;
+
+                user.IsApproved = true;
+                user.IsActive   = true;
+
+                var existingRole = await _context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == userId);
+                if (existingRole == null)
+                {
+                    _context.UserRoles.Add(new UserRole { UserId = userId, RoleId = roleId });
+                }
+
+                await _context.SaveChangesAsync();
+                await _auditLogService.LogActionAsync(approvedByUserId, approvedByUsername, "User Approved", "User", userId,
+                    $"Approved user {user.Username} with roleId {roleId}", ipAddress);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error approving user {UserId}", userId);
+                return false;
             }
         }
 
@@ -216,12 +321,27 @@ namespace AdminMembers.Services
             }
         }
 
+        public async Task<List<User>> GetPendingUsersAsync()
+        {
+            return await _context.Users
+                .Where(u => !u.IsApproved)
+                .OrderBy(u => u.CreatedAt)
+                .ToListAsync();
+        }
+
         private string HashPassword(string password)
         {
             using var sha256 = SHA256.Create();
             var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
             return Convert.ToBase64String(hashedBytes);
         }
+
+        public bool VerifyPasswordPublic(string password, string hash) => VerifyPassword(password, hash);
+
+        public string HashPasswordPublic(string password) => HashPassword(password);
+
+        public async Task<User?> GetRawUserByIdAsync(int userId)
+            => await _context.Users.FindAsync(userId);
 
         private bool VerifyPassword(string password, string passwordHash)
         {

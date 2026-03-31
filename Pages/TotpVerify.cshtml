@@ -1,0 +1,58 @@
+@page
+@model AdminMembers.Pages.TotpVerifyModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Two-Factor Authentication";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Factor Authentication — Gilde Van De Stroppendragers</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="login-wrap">
+    <div class="login-card">
+        <div class="login-head">
+            <div class="logo-dot"></div>
+            <h1>Two-Factor Auth</h1>
+            <p>Enter the code from your authenticator app</p>
+        </div>
+        <div class="login-body">
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="login-error">@Model.ErrorMessage</div>
+            }
+
+            <form method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="login-input-group">
+                    <label for="Code">6-digit code</label>
+                    <input asp-for="Code" type="text" id="Code"
+                           placeholder="000000"
+                           autocomplete="one-time-code"
+                           inputmode="numeric"
+                           pattern="[0-9]{6}"
+                           maxlength="6"
+                           autofocus required
+                           class="totp-code-input" />
+                </div>
+
+                <label class="totp-trust-label">
+                    <input asp-for="TrustDevice" type="checkbox" />
+                    Trust this device for 30 days
+                </label>
+
+                <button type="submit" class="btn-login" style="margin-top:16px;">Verify</button>
+            </form>
+
+            <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--text-muted);">
+                <a href="/Login" style="color:var(--accent);font-weight:600;">&#8592; Back to sign in</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
