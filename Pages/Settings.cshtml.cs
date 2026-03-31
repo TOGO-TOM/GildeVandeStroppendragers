@@ -25,10 +25,12 @@ namespace AdminMembers.Pages
         public List<Role> Roles { get; set; } = new();
         public AppSettings? GeneralSettings { get; set; }
         public bool HasLogo { get; set; }
+        public string? AuthToken { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
+            AuthToken = HttpContext.Session.GetString("AuthToken");
             await LoadDataAsync();
             return Page();
         }

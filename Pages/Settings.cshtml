@@ -292,7 +292,9 @@
 
 @section Scripts {
 <script>
-function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
+const pageToken = '@Model.AuthToken';
+
+function showModal(id)
 function hideModal(id) { document.getElementById(id).style.display = 'none';  document.body.style.overflow = ''; }
 
 function toggleAllFields(checked) {
@@ -313,12 +315,11 @@ async function runExport() {
     const extMap      = { pdf: 'pdf', excel: 'xlsx', csv: 'csv' };
 
     try {
-        const token = localStorage.getItem('authToken');
         const r = await fetch(`/api/members/${endpointMap[format]}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {})
             },
             body: JSON.stringify({ selectedFields: fields, filterRoles: roles.length > 0 ? roles : null })
         });
