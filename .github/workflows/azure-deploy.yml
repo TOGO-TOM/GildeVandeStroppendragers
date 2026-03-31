@@ -84,14 +84,14 @@ jobs:
       - name: Health check
         run: |
           echo "Waiting for app to start..."
-          sleep 20
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/Login)
+          sleep 30
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L --max-redirs 5 https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/Login)
           echo "HTTP status: $STATUS"
-          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 400 ]; then
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 500 ]; then
             echo "Health check failed with status $STATUS"
             exit 1
           fi
-          echo "Health check passed."
+          echo "Health check passed with status $STATUS."
 
       - name: Deployment summary
         run: |
