@@ -18,6 +18,7 @@ namespace AdminMembers.Data
         public DbSet<AppSettings> AppSettings { get; set; }
         public DbSet<CustomField> CustomFields { get; set; }
         public DbSet<MemberCustomField> MemberCustomFields { get; set; }
+        public DbSet<MemberDocument> MemberDocuments { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
@@ -164,6 +165,22 @@ namespace AdminMembers.Data
                       .WithMany()
                       .HasForeignKey(al => al.UserId)
                       .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<MemberDocument>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("MemberDocuments");
+                entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.BlobName).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.UploadedByUsername).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.MemberId);
+
+                entity.HasOne(d => d.Member)
+                      .WithMany(m => m.Documents)
+                      .HasForeignKey(d => d.MemberId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Seed default roles

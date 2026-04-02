@@ -19,5 +19,6 @@ namespace AdminMembers.Models
 
         public Address? Address { get; set; }
         public ICollection<MemberCustomField> CustomFieldValues { get; set; } = new List<MemberCustomField>();
+        public ICollection<MemberDocument> Documents { get; set; } = new List<MemberDocument>();
     }
 }

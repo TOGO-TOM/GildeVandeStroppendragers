@@ -60,6 +60,7 @@ builder.Services.AddScoped<PasswordPolicyService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TotpService>();
+builder.Services.AddScoped<MemberDocumentService>();
 builder.Services.AddHostedService<AuditLogCleanupService>();
 
 builder.Services.AddSession(options =>
