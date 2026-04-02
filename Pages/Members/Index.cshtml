@@ -443,6 +443,24 @@
     </div>
 </div>
 
+<!-- ══ DOCUMENT VIEWER MODAL ══ -->
+<div id="docViewerModal" class="modal" onclick="if(event.target===this)closeViewer()">
+    <div class="modal-box doc-viewer-box">
+        <div class="modal-head">
+            <h3 id="viewerTitle" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 80px);">Document</h3>
+            <div style="display:flex;gap:8px;flex-shrink:0;">
+                <button class="btn btn-xs btn-icon" id="viewerDownloadBtn">
+                    <svg class="icon icon-sm"><use href="/icons.svg#icon-download" /></svg> Download
+                </button>
+                <button class="modal-close-btn" onclick="closeViewer()">&times;</button>
+            </div>
+        </div>
+        <div class="doc-viewer-body" id="docViewerBody">
+            <div class="doc-viewer-loading">Loading preview…</div>
+        </div>
+    </div>
+</div>
+
 <!-- ══ DELETE MODAL ══ -->
 <div id="deleteModal" class="modal" onclick="if(event.target===this)closeDelete()">
     <div class="modal-box modal-box-sm">
@@ -936,19 +954,27 @@ async function loadDocs(memberId) {
             list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">No documents attached yet.</div>';
             return;
         }
-        list.innerHTML = docs.map(d => `
+        list.innerHTML = docs.map(d => {
+            const ext = d.FileName.split('.').pop().toLowerCase();
+            const canPreview = ['pdf','png','jpg','jpeg','gif','webp','txt'].includes(ext);
+            return `
             <div class="doc-item" id="doc-${d.Id}">
                 <svg class="icon icon-md doc-item-icon"><use href="/icons.svg#icon-paperclip" /></svg>
                 <span class="doc-item-name" title="${d.FileName}">${d.FileName}</span>
                 <span class="doc-item-meta">${formatBytes(d.FileSizeBytes)}</span>
-                <button class="btn btn-xs btn-icon" style="margin-left:4px;"
-                        onclick="downloadDoc(${memberId},${d.Id},'${d.FileName}')">
-                    <svg class="icon icon-sm"><use href="/icons.svg#icon-download" /></svg>
-                </button>
-                ${canWrite ? `<button class="btn btn-xs btn-danger" style="margin-left:2px;" onclick="deleteDoc(${memberId},${d.Id})">
-                    <svg class="icon icon-sm"><use href="/icons.svg#icon-trash" /></svg>
-                </button>` : ''}
-            </div>`).join('');
+                <div class="doc-item-actions">
+                    ${canPreview ? `<button class="btn btn-xs btn-icon" onclick="viewDoc(${memberId},${d.Id},'${d.FileName}','${d.ContentType}')">
+                        <svg class="icon icon-sm"><use href="/icons.svg#icon-eye" /></svg> View
+                    </button>` : ''}
+                    <button class="btn btn-xs btn-icon" onclick="downloadDoc(${memberId},${d.Id},'${d.FileName}')">
+                        <svg class="icon icon-sm"><use href="/icons.svg#icon-download" /></svg> Download
+                    </button>
+                    ${canWrite ? `<button class="btn btn-xs btn-danger" onclick="deleteDoc(${memberId},${d.Id})">
+                        <svg class="icon icon-sm"><use href="/icons.svg#icon-trash" /></svg> Delete
+                    </button>` : ''}
+                </div>
+            </div>`;
+        }).join('');
     } catch {
         list.innerHTML = '<div style="color:var(--danger);font-size:13px;text-align:center;padding:12px;">Failed to load documents.</div>';
     }
@@ -983,6 +1009,62 @@ async function uploadDoc(file) {
     }
     document.getElementById('docFileInput').value = '';
     setTimeout(() => { status.style.display = 'none'; }, 4000);
+}
+
+async function viewDoc(memberId, docId, fileName, contentType) {
+    // Open the viewer immediately with loading state
+    document.getElementById('viewerTitle').textContent = fileName;
+    document.getElementById('docViewerBody').innerHTML = '<div class="doc-viewer-loading">Loading preview…</div>';
+    document.getElementById('viewerDownloadBtn').onclick = () => downloadDoc(memberId, docId, fileName);
+    showModal('docViewerModal');
+
+    try {
+        const r = await fetch(`/api/members/${memberId}/documents/${docId}/download`, {
+            headers: pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}
+        });
+        if (!r.ok) { document.getElementById('docViewerBody').innerHTML = '<div class="doc-viewer-error">Failed to load document.</div>'; return; }
+
+        const blob    = await r.blob();
+        const objUrl  = URL.createObjectURL(blob);
+        const ext     = fileName.split('.').pop().toLowerCase();
+        const body    = document.getElementById('docViewerBody');
+
+        if (['png','jpg','jpeg','gif','webp'].includes(ext)) {
+            body.innerHTML = `<div class="doc-viewer-img-wrap"><img src="${objUrl}" alt="${fileName}" class="doc-viewer-img" /></div>`;
+        } else if (ext === 'pdf') {
+            body.innerHTML = `<iframe src="${objUrl}" class="doc-viewer-iframe" title="${fileName}"></iframe>`;
+        } else if (ext === 'txt') {
+            const text = await blob.text();
+            body.innerHTML = `<pre class="doc-viewer-text">${escapeHtml(text)}</pre>`;
+            URL.revokeObjectURL(objUrl);
+        } else {
+            body.innerHTML = `<div class="doc-viewer-unsupported">
+                <svg class="icon icon-2xl" style="color:var(--text-muted);margin-bottom:12px;"><use href="/icons.svg#icon-download" /></svg>
+                <div style="font-weight:600;margin-bottom:6px;">Preview not available</div>
+                <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">${fileName}</div>
+                <button class="btn btn-accent" onclick="downloadDoc(${memberId},${docId},'${fileName}')">
+                    <svg class="icon icon-sm"><use href="/icons.svg#icon-download" /></svg> Download file
+                </button>
+            </div>`;
+            URL.revokeObjectURL(objUrl);
+        }
+    } catch {
+        document.getElementById('docViewerBody').innerHTML = '<div class="doc-viewer-error">Could not load preview.</div>';
+    }
+}
+
+function closeViewer() {
+    hideModal('docViewerModal');
+    // Revoke any blob URL inside the viewer to free memory
+    const iframe = document.querySelector('#docViewerBody iframe');
+    const img    = document.querySelector('#docViewerBody img');
+    if (iframe) URL.revokeObjectURL(iframe.src);
+    if (img)    URL.revokeObjectURL(img.src);
+    document.getElementById('docViewerBody').innerHTML = '';
+}
+
+function escapeHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 async function downloadDoc(memberId, docId, fileName) {
