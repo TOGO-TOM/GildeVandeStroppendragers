@@ -937,16 +937,15 @@ async function loadDocs(memberId) {
             return;
         }
         list.innerHTML = docs.map(d => `
-            <div class="doc-item" id="doc-${d.id}">
+            <div class="doc-item" id="doc-${d.Id}">
                 <svg class="icon icon-md doc-item-icon"><use href="/icons.svg#icon-paperclip" /></svg>
-                <span class="doc-item-name" title="${d.fileName}">${d.fileName}</span>
-                <span class="doc-item-meta">${formatBytes(d.fileSizeBytes)}</span>
-                <a href="/api/members/${memberId}/documents/${d.id}/download"
-                   class="btn btn-xs btn-icon" style="margin-left:4px;"
-                   download="${d.fileName}">
+                <span class="doc-item-name" title="${d.FileName}">${d.FileName}</span>
+                <span class="doc-item-meta">${formatBytes(d.FileSizeBytes)}</span>
+                <button class="btn btn-xs btn-icon" style="margin-left:4px;"
+                        onclick="downloadDoc(${memberId},${d.Id},'${d.FileName}')">
                     <svg class="icon icon-sm"><use href="/icons.svg#icon-download" /></svg>
-                </a>
-                ${canWrite ? `<button class="btn btn-xs btn-danger" style="margin-left:2px;" onclick="deleteDoc(${memberId},${d.id})">
+                </button>
+                ${canWrite ? `<button class="btn btn-xs btn-danger" style="margin-left:2px;" onclick="deleteDoc(${memberId},${d.Id})">
                     <svg class="icon icon-sm"><use href="/icons.svg#icon-trash" /></svg>
                 </button>` : ''}
             </div>`).join('');
@@ -984,6 +983,21 @@ async function uploadDoc(file) {
     }
     document.getElementById('docFileInput').value = '';
     setTimeout(() => { status.style.display = 'none'; }, 4000);
+}
+
+async function downloadDoc(memberId, docId, fileName) {
+    try {
+        const r = await fetch(`/api/members/${memberId}/documents/${docId}/download`, {
+            headers: pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}
+        });
+        if (!r.ok) { showToast('error', 'Download failed.'); return; }
+        const blob = await r.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url; a.download = fileName;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+    } catch { showToast('error', 'Download request failed.'); }
 }
 
 async function deleteDoc(memberId, docId) {
