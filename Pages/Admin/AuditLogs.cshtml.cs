@@ -20,7 +20,7 @@ namespace AdminMembers.Pages.Admin
         [BindProperty(SupportsGet = true)] public string? FilterUsername { get; set; }
         [BindProperty(SupportsGet = true)] public string? FilterAction { get; set; }
         [BindProperty(SupportsGet = true)] public string? FilterEntity { get; set; }
-        [BindProperty(SupportsGet = true)] public int Page { get; set; } = 1;
+        [BindProperty(SupportsGet = true)] public int CurrentPage { get; set; } = 1;
 
         private const int PageSize = 50;
 
@@ -30,7 +30,7 @@ namespace AdminMembers.Pages.Admin
             if (!CurrentUser!.Roles.Contains("Admin")) return Forbid();
 
             var (logs, total) = await _auditLogService.GetFilteredLogsAsync(
-                FilterUsername, FilterAction, FilterEntity, Page, PageSize);
+                FilterUsername, FilterAction, FilterEntity, CurrentPage, PageSize);
 
             Logs       = logs;
             TotalCount = total;

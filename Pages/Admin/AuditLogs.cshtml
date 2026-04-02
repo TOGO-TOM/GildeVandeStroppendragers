@@ -46,7 +46,7 @@
                 Results
                 <span class="badge badge-gray" style="margin-left:6px;">@Model.TotalCount</span>
             </span>
-            <span style="font-size:12px;color:var(--text-muted);">Page @Model.Page of @Model.TotalPages</span>
+            <span style="font-size:12px;color:var(--text-muted);">Page @Model.CurrentPage of @Model.TotalPages</span>
         </div>
         <div style="overflow-x:auto;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -107,8 +107,8 @@
                 @for (int i = 1; i <= Model.TotalPages; i++)
                 {
                     var pageNum = i;
-                    var isCurrent = pageNum == Model.Page;
-                    <a href="?Page=@pageNum&FilterUsername=@Model.FilterUsername&FilterAction=@Model.FilterAction&FilterEntity=@Model.FilterEntity"
+                    var isCurrent = pageNum == Model.CurrentPage;
+                    <a href="?CurrentPage=@pageNum&FilterUsername=@Model.FilterUsername&FilterAction=@Model.FilterAction&FilterEntity=@Model.FilterEntity"
                        class="btn @(isCurrent ? "btn-accent" : "btn-icon") btn-sm">@pageNum</a>
                 }
             </div>
