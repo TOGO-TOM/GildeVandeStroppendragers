@@ -88,11 +88,11 @@ jobs:
             echo "Falling back to AZURE_SQL_CONNECTION_STRING secret"
             CONNECTION_STRING="${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
           fi
-          dotnet tool install --global dotnet-ef
+          dotnet restore ${{ env.PROJECT_PATH }}
+          dotnet tool install --global dotnet-ef --version 8.0.* 2>/dev/null || true
           dotnet ef database update \
             --project ${{ env.PROJECT_PATH }} \
-            --connection "$CONNECTION_STRING" \
-            --no-build
+            --connection "$CONNECTION_STRING"
         env:
           DOTNET_ROLL_FORWARD: Major
 
