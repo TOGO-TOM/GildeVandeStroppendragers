@@ -57,6 +57,14 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
@@ -68,6 +76,25 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Apply DB migrations
+        run: |
+          CONNECTION_STRING=$(az webapp config appsettings list \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "[?name=='ConnectionStrings__DefaultConnection'].value" \
+            --output tsv)
+          if [ -z "$CONNECTION_STRING" ]; then
+            echo "Falling back to AZURE_SQL_CONNECTION_STRING secret"
+            CONNECTION_STRING="${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
+          fi
+          dotnet tool install --global dotnet-ef
+          dotnet ef database update \
+            --project ${{ env.PROJECT_PATH }} \
+            --connection "$CONNECTION_STRING" \
+            --no-build
+        env:
+          DOTNET_ROLL_FORWARD: Major
 
       - name: Deploy zip to App Service
         run: |

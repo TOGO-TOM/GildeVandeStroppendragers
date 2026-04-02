@@ -121,8 +121,8 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        startupLogger.LogCritical(ex, "Database migration failed on startup. The application may not function correctly.");
-        // Do not rethrow — let the app start so the error page is reachable
+        startupLogger.LogCritical(ex, "Database migration failed on startup.");
+        throw; // Rethrow — app cannot run with an out-of-date schema
     }
 }
 
