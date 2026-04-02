@@ -106,8 +106,18 @@ app.MapGet("/", () => Results.Redirect("/Login"));
 // Auto-apply EF migrations on startup (safe to run multiple times)
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    var startupLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+        startupLogger.LogInformation("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        startupLogger.LogCritical(ex, "Database migration failed on startup. The application may not function correctly.");
+        // Do not rethrow — let the app start so the error page is reachable
+    }
 }
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
