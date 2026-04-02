@@ -42,11 +42,23 @@ jobs:
       - name: Zip publish output
         run: cd ${{ env.PUBLISH_PATH }} && zip -r ../publish.zip .
 
+      - name: Generate idempotent migration script
+        run: |
+          dotnet tool install --global dotnet-ef --version 8.0.* 2>/dev/null || true
+          dotnet ef migrations script \
+            --project ${{ env.PROJECT_PATH }} \
+            --idempotent \
+            --output migration.sql
+          echo "Migration SQL generated:"
+          tail -20 migration.sql
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: webapp
-          path: publish.zip
+          path: |
+            publish.zip
+            migration.sql
           retention-days: 1
 
   deploy:
@@ -68,6 +80,39 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Apply DB migrations
+        run: |
+          RUNNER_IP=$(curl -s https://api.ipify.org)
+          az sql server firewall-rule create \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --server sql-gilde-prod \
+            --name github-runner \
+            --start-ip-address "$RUNNER_IP" \
+            --end-ip-address "$RUNNER_IP"
+
+          # Install sqlcmd (Microsoft package)
+          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+            | sudo gpg --dearmor -o /usr/share/keyrings/microsoft.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] \
+            https://packages.microsoft.com/ubuntu/22.04/prod jammy main" \
+            | sudo tee /etc/apt/sources.list.d/mssql.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mssql-tools18 unixodbc-dev
+
+          /opt/mssql-tools18/bin/sqlcmd -C \
+            -S "sql-gilde-prod.database.windows.net,1433" \
+            -d "AdminMembersDb" \
+            -U "sqladmin" \
+            -P "${{ secrets.AZURE_SQL_PASSWORD }}" \
+            -i migration.sql
+
+          az sql server firewall-rule delete \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --server sql-gilde-prod \
+            --name github-runner --yes || true
+
+          echo "Migrations applied successfully."
 
       - name: Deploy zip to App Service
         run: |

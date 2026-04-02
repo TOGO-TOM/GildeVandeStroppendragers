@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using AdminMembers.Data;
 using AdminMembers.Models;
@@ -443,25 +442,39 @@ namespace AdminMembers.Services
             return (true, "Password reset successfully.");
         }
 
-        private string HashPassword(string password)
+        private static string HashPassword(string password)
         {
-            using var sha256 = SHA256.Create();
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
+            // PBKDF2 with SHA-512, 100k iterations, 32-byte salt
+            var salt = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
+            var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(
+                password, salt, 100_000,
+                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);
+            return $"pbkdf2${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
+        }
+
+        private static bool VerifyPassword(string password, string passwordHash)
+        {
+            // Support legacy SHA-256 hashes during transition
+            if (!passwordHash.StartsWith("pbkdf2$"))
+            {
+                using var sha256 = System.Security.Cryptography.SHA256.Create();
+                var legacy = Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(password)));
+                return legacy == passwordHash;
+            }
+
+            var parts = passwordHash.Split('$');
+            if (parts.Length != 3) return false;
+            var salt = Convert.FromBase64String(parts[1]);
+            var storedHash = Convert.FromBase64String(parts[2]);
+            var inputHash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(
+                password, salt, 100_000,
+                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);
+            return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(inputHash, storedHash);
         }
 
         public bool VerifyPasswordPublic(string password, string hash) => VerifyPassword(password, hash);
-
         public string HashPasswordPublic(string password) => HashPassword(password);
-
-        public async Task<User?> GetRawUserByIdAsync(int userId)
-            => await _context.Users.FindAsync(userId);
-
-        private bool VerifyPassword(string password, string passwordHash)
-        {
-            var hashedInput = HashPassword(password);
-            return hashedInput == passwordHash;
-        }
+        public async Task<User?> GetRawUserByIdAsync(int userId) => await _context.Users.FindAsync(userId);
 
         private string GenerateToken(User user)
         {
