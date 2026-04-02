@@ -973,6 +973,21 @@ body {
     box-shadow: 0 2px 8px rgba(99,102,241,.3);
 }
 
+.role-filter-input {
+    font-size: 12px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    width: 130px;
+    transition: border-color var(--transition);
+}
+.role-filter-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
 .role-btn-count {
     font-size: 10px;
     font-weight: 700;

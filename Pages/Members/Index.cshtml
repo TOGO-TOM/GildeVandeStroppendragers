@@ -290,43 +290,50 @@
             </div>
         </div>
 
-        <!-- Custom field filters (only shown if any filterable fields exist) -->
-        @if (Model.FilterableCustomFields.Any())
+        <!-- Custom field filters (one row per filterable field) -->
+        @foreach (var cf in Model.FilterableCustomFields)
         {
-            <div class="role-filter-bar" style="flex-wrap:wrap;gap:8px;">
-                <span class="role-filter-label">Filters</span>
-                <form method="get" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
-                    <input type="hidden" name="search"      value="@search" />
-                    <input type="hidden" name="sortBy"      value="@sortBy" />
-                    <input type="hidden" name="filterRole"  value="@filterRole" />
-                    <input type="hidden" name="filterAlive" value="@filterAlive" />
-                    @foreach (var cf in Model.FilterableCustomFields)
-                    {
-                        var currentCfVal = cfFilters.GetValueOrDefault($"filterCf_{cf.Id}", "");
-                        <div style="display:flex;align-items:center;gap:4px;">
-                            <label style="font-size:12px;color:var(--text-muted);white-space:nowrap;">@cf.FieldLabel</label>
-                            @if (cf.FieldType == "Boolean")
-                            {
-                                <select name="filterCf_@cf.Id" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);">
-                                    <option value="">Alle</option>
-                                    @if (currentCfVal == "Yes") { <option value="Yes" selected>Yes</option> } else { <option value="Yes">Yes</option> }
-                                    @if (currentCfVal == "No")  { <option value="No"  selected>No</option>  } else { <option value="No">No</option>   }
-                                </select>
-                            }
-                            else
-                            {
-                                <input type="text" name="filterCf_@cf.Id" value="@currentCfVal"
-                                       placeholder="Filter..."
-                                       style="font-size:12px;padding:4px 8px;width:120px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);" />
-                            }
-                        </div>
-                    }
-                    <button type="submit" class="btn btn-accent btn-sm">Apply</button>
-                    @if (cfFilters.Any())
-                    {
-                        <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive">Clear filters</a>
-                    }
-                </form>
+            var currentCfVal = cfFilters.GetValueOrDefault($"filterCf_{cf.Id}", "");
+            <div class="role-filter-bar">
+                <span class="role-filter-label">@cf.FieldLabel</span>
+                @if (cf.FieldType == "Boolean")
+                {
+                    <div class="role-btn-group">
+                        <a class="role-btn @(string.IsNullOrEmpty(currentCfVal) ? "active" : "")"
+                           href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs(cf.Id)">
+                            Alle
+                        </a>
+                        <a class="role-btn @(currentCfVal == "Yes" ? "active" : "")"
+                           href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs(cf.Id)&filterCf_@(cf.Id)=Yes">
+                            Ja
+                        </a>
+                        <a class="role-btn @(currentCfVal == "No" ? "active" : "")"
+                           href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs(cf.Id)&filterCf_@(cf.Id)=No">
+                            Nee
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <form method="get" style="display:flex;align-items:center;gap:6px;">
+                        <input type="hidden" name="search"      value="@search" />
+                        <input type="hidden" name="sortBy"      value="@sortBy" />
+                        <input type="hidden" name="filterRole"  value="@filterRole" />
+                        <input type="hidden" name="filterAlive" value="@filterAlive" />
+                        @foreach (var kv in cfFilters.Where(kv => kv.Key != $"filterCf_{cf.Id}"))
+                        {
+                            <input type="hidden" name="@kv.Key" value="@kv.Value" />
+                        }
+                        <input type="text" name="filterCf_@cf.Id" value="@currentCfVal"
+                               placeholder="Filter..."
+                               class="role-filter-input" />
+                        <button type="submit" class="role-btn active" style="border:none;cursor:pointer;">Zoek</button>
+                        @if (!string.IsNullOrEmpty(currentCfVal))
+                        {
+                            <a class="role-btn" href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs(cf.Id)">&#x2715;</a>
+                        }
+                    </form>
+                }
             </div>
         }
 
