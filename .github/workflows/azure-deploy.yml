@@ -79,10 +79,8 @@ jobs:
 
       - name: Apply DB migrations
         run: |
-          # Get the runner's public IP and open SQL firewall
+          # Open SQL firewall for runner IP using the OIDC service principal
           RUNNER_IP=$(curl -s https://api.ipify.org)
-          echo "Runner IP: $RUNNER_IP"
-
           az sql server firewall-rule create \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --server sql-gilde-prod \
@@ -90,8 +88,8 @@ jobs:
             --start-ip-address "$RUNNER_IP" \
             --end-ip-address "$RUNNER_IP"
 
-          # Build connection string with SQL credentials
-          CONNECTION_STRING="Server=tcp:sql-gilde-prod.database.windows.net,1433;Database=AdminMembersDb;User ID=sqladmin;Password=${{ secrets.AZURE_SQL_PASSWORD }};Encrypt=True;TrustServerCertificate=False;"
+          # Use SQL admin credentials (password stored as GitHub secret)
+          CONNECTION_STRING="Server=tcp:sql-gilde-prod.database.windows.net,1433;Database=AdminMembersDb;User ID=sqladmin;Password=${{ secrets.AZURE_SQL_PASSWORD }};Encrypt=True;TrustServerCertificate=False;MultipleActiveResultSets=True;"
 
           dotnet restore ${{ env.PROJECT_PATH }}
           dotnet tool install --global dotnet-ef --version 8.0.* 2>/dev/null || true
