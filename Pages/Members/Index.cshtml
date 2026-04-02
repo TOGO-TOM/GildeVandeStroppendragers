@@ -227,20 +227,26 @@
     <!-- ── MAIN CONTENT ── -->
     <div class="main-col">
 
-        <!-- Stats -->
+        <!-- Stats (also act as alive/deceased filter) -->
         <div class="stat-strip">
-            <div class="stat-item">
+            <a class="stat-item @(string.IsNullOrEmpty(filterAlive) ? "active" : "")"
+               href="?search=@search&sortBy=@sortBy&filterRole=@filterRole@CfFilterQs()"
+               style="text-decoration:none;">
                 <div class="stat-value">@Model.TotalMembers</div>
                 <div class="stat-label">@(string.IsNullOrEmpty(filterRole) ? "Total" : filterRole)</div>
-            </div>
-            <div class="stat-item">
+            </a>
+            <a class="stat-item @(filterAlive == "alive" ? "active" : "")"
+               href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=alive@CfFilterQs()"
+               style="text-decoration:none;">
                 <div class="stat-value green">@Model.ActiveMembers</div>
                 <div class="stat-label">Alive</div>
-            </div>
-            <div class="stat-item">
+            </a>
+            <a class="stat-item @(filterAlive == "deceased" ? "active" : "")"
+               href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=deceased@CfFilterQs()"
+               style="text-decoration:none;">
                 <div class="stat-value">@Model.DeceasedMembers</div>
                 <div class="stat-label">Deceased</div>
-            </div>
+            </a>
         </div>
 
         <!-- Toolbar -->
@@ -281,27 +287,6 @@
                         <span class="role-btn-count">@count</span>
                     </a>
                 }
-            </div>
-        </div>
-
-        <!-- Alive / Deceased toggle -->
-        <div class="role-filter-bar">
-            <span class="role-filter-label">Status</span>
-            <div class="role-btn-group">
-                <a class="role-btn @(string.IsNullOrEmpty(filterAlive) ? "active" : "")"
-                   href="?search=@search&sortBy=@sortBy&filterRole=@filterRole@CfFilterQs()">
-                    Alle
-                </a>
-                <a class="role-btn @(filterAlive == "alive" ? "active" : "")"
-                   href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=alive@CfFilterQs()">
-                    &#x25CF; Alive
-                    <span class="role-btn-count">@Model.ActiveMembers</span>
-                </a>
-                <a class="role-btn @(filterAlive == "deceased" ? "active" : "")"
-                   href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=deceased@CfFilterQs()">
-                    Deceased
-                    <span class="role-btn-count">@Model.DeceasedMembers</span>
-                </a>
             </div>
         </div>
 
