@@ -13,7 +13,6 @@ namespace AdminMembers.Services
         private readonly ILogger<BackupService> _logger;
         private readonly BlobStorageService? _blobStorageService;
         private readonly IConfiguration _configuration;
-        private const string DefaultPassword = "AdminMembers2024!SecureBackup"; // Change this in production!
 
         public BackupService(ApplicationDbContext context, ILogger<BackupService> logger, IConfiguration configuration, BlobStorageService? blobStorageService = null)
         {
@@ -23,13 +22,18 @@ namespace AdminMembers.Services
             _blobStorageService = blobStorageService;
         }
 
+        private string GetBackupPassword(string? overridePassword = null)
+            => overridePassword
+               ?? _configuration["Backup:Password"]
+               ?? throw new InvalidOperationException("Backup:Password is not configured. Set it in Azure App Service environment variables.");
+
         public async Task<byte[]> CreateEncryptedBackup(string? password = null)
         {
             try
             {
-                // Get all members with addresses
                 var members = await _context.Members
                     .Include(m => m.Address)
+                    .AsNoTracking()
                     .ToListAsync();
 
                 var backup = new BackupData
@@ -46,7 +50,7 @@ namespace AdminMembers.Services
                 });
 
                 // Encrypt the data
-                var encryptedData = EncryptData(jsonData, password ?? DefaultPassword);
+                var encryptedData = EncryptData(jsonData, GetBackupPassword(password));
 
                 _logger.LogInformation($"Backup created successfully with {members.Count} members");
 
@@ -64,7 +68,7 @@ namespace AdminMembers.Services
             try
             {
                 // Decrypt the data
-                var jsonData = DecryptData(encryptedData, password ?? DefaultPassword);
+                var jsonData = DecryptData(encryptedData, GetBackupPassword(password));
 
                 // Deserialize from JSON
                 var backup = JsonSerializer.Deserialize<BackupData>(jsonData);

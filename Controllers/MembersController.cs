@@ -53,29 +53,19 @@ namespace AdminMembers.Controllers
         [HttpGet("debug")]
         public async Task<ActionResult> GetDebugInfo()
         {
-            try
+            // Only available in Development
+            if (!_logger.IsEnabled(LogLevel.Debug))
+                return NotFound();
+
+            var memberCount = await _context.Members.CountAsync();
+            var canConnect  = await _context.Database.CanConnectAsync();
+
+            return Ok(new
             {
-                var memberCount = await _context.Members.CountAsync();
-                var addressCount = await _context.Addresses.CountAsync();
-                var canConnect = await _context.Database.CanConnectAsync();
-                
-                return Ok(new
-                {
-                    databaseConnected = canConnect,
-                    memberCount = memberCount,
-                    addressCount = addressCount,
-                    connectionString = _context.Database.GetConnectionString()?.Replace("Password=", "Password=***"),
-                    timestamp = DateTime.UtcNow
-                });
-            }
-            catch (Exception ex)
-            {
-                return Ok(new
-                {
-                    error = ex.Message,
-                    stackTrace = ex.StackTrace
-                });
-            }
+                databaseConnected = canConnect,
+                memberCount,
+                timestamp = DateTime.UtcNow
+            });
         }
 
         [HttpGet("{id}")]

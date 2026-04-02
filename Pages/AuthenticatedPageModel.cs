@@ -27,20 +27,18 @@ namespace AdminMembers.Pages
                 return false;
             }
 
-            // Check session timeout (15 minutes)
+            // Sliding session — refresh LoginTime on every valid request
             var loginTimeStr = HttpContext.Session.GetString("LoginTime");
-            if (!string.IsNullOrEmpty(loginTimeStr))
+            if (!string.IsNullOrEmpty(loginTimeStr) && DateTime.TryParse(loginTimeStr, out DateTime loginTime))
             {
-                if (DateTime.TryParse(loginTimeStr, out DateTime loginTime))
+                if ((DateTime.UtcNow - loginTime).TotalMinutes > 60)
                 {
-                    if ((DateTime.UtcNow - loginTime).TotalMinutes > 15)
-                    {
-                        // Session expired
-                        HttpContext.Session.Clear();
-                        IsAuthenticated = false;
-                        return false;
-                    }
+                    HttpContext.Session.Clear();
+                    IsAuthenticated = false;
+                    return false;
                 }
+                // Slide the expiry window
+                HttpContext.Session.SetString("LoginTime", DateTime.UtcNow.ToString("O"));
             }
 
             try
