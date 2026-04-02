@@ -408,7 +408,37 @@
             <h3 id="cardTitle">Member</h3>
             <button class="modal-close-btn" onclick="closeCard()">&times;</button>
         </div>
-        <div class="modal-body" id="cardBody"></div>
+        <div class="modal-tabs">
+            <button class="modal-tab active" onclick="switchTab('info',this)">Info</button>
+            <button class="modal-tab" onclick="switchTab('docs',this)">
+                <svg class="icon icon-sm" style="margin-right:4px;"><use href="/icons.svg#icon-paperclip" /></svg>Documents
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="tabInfo" class="modal-tab-panel active">
+                <div id="cardBody"></div>
+            </div>
+            <div id="tabDocs" class="modal-tab-panel">
+                <div id="docList" class="doc-list">
+                    <div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">Loading...</div>
+                </div>
+                @if (Model.CanWrite)
+                {
+                <div class="doc-upload-area" id="docDropZone"
+                     onclick="document.getElementById('docFileInput').click()"
+                     ondragover="event.preventDefault();this.classList.add('drag-over')"
+                     ondragleave="this.classList.remove('drag-over')"
+                     ondrop="handleDocDrop(event)">
+                    <svg class="icon icon-xl" style="margin-bottom:8px;color:var(--accent);"><use href="/icons.svg#icon-upload" /></svg>
+                    <div style="font-weight:600;">Click or drag a file to upload</div>
+                    <div style="font-size:12px;margin-top:4px;">PDF, Word, Excel, images — max 20 MB</div>
+                    <input type="file" id="docFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp,.txt"
+                           onchange="uploadDoc(this.files[0])" />
+                </div>
+                <div id="docUploadStatus" style="font-size:12px;margin-top:8px;display:none;"></div>
+                }
+            </div>
+        </div>
         <div class="modal-footer" id="cardFooter"></div>
     </div>
 </div>
@@ -625,6 +655,10 @@ function buildCustomFieldBlocks(d) {
 // ── Contact card ──────────────────────────
 function openCard(el) {
     const d = el.dataset;
+    _currentMemberId = d.id;
+    // Reset to Info tab
+    document.querySelectorAll('.modal-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+    document.querySelectorAll('.modal-tab-panel').forEach((p,i) => p.classList.toggle('active', i===0));
     const alive   = d.alive === 'true';
     const initials= ((d.first?.[0] ?? '?') + (d.last?.[0] ?? '?')).toUpperCase();
     const num     = d.number && d.number !== '' ? '#' + d.number : 'No #';
@@ -877,6 +911,110 @@ async function applyBulkUpdate() {
         statusEl.textContent = '';
         showToast('error', 'Request failed.');
     }
+}
+
+// ── Documents ─────────────────────────────
+let _currentMemberId = null;
+
+function switchTab(tab, btn) {
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.modal-tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(tab === 'info' ? 'tabInfo' : 'tabDocs').classList.add('active');
+    if (tab === 'docs' && _currentMemberId) loadDocs(_currentMemberId);
+}
+
+async function loadDocs(memberId) {
+    const list = document.getElementById('docList');
+    list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">Loading...</div>';
+    try {
+        const r = await fetch(`/api/members/${memberId}/documents`, {
+            headers: pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}
+        });
+        const docs = await r.json();
+        if (!docs.length) {
+            list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">No documents attached yet.</div>';
+            return;
+        }
+        list.innerHTML = docs.map(d => `
+            <div class="doc-item" id="doc-${d.id}">
+                <svg class="icon icon-md doc-item-icon"><use href="/icons.svg#icon-paperclip" /></svg>
+                <span class="doc-item-name" title="${d.fileName}">${d.fileName}</span>
+                <span class="doc-item-meta">${formatBytes(d.fileSizeBytes)}</span>
+                <a href="/api/members/${memberId}/documents/${d.id}/download"
+                   class="btn btn-xs btn-icon" style="margin-left:4px;"
+                   download="${d.fileName}">
+                    <svg class="icon icon-sm"><use href="/icons.svg#icon-download" /></svg>
+                </a>
+                ${canWrite ? `<button class="btn btn-xs btn-danger" style="margin-left:2px;" onclick="deleteDoc(${memberId},${d.id})">
+                    <svg class="icon icon-sm"><use href="/icons.svg#icon-trash" /></svg>
+                </button>` : ''}
+            </div>`).join('');
+    } catch {
+        list.innerHTML = '<div style="color:var(--danger);font-size:13px;text-align:center;padding:12px;">Failed to load documents.</div>';
+    }
+}
+
+async function uploadDoc(file) {
+    if (!file || !_currentMemberId) return;
+    const status = document.getElementById('docUploadStatus');
+    status.style.display = 'block';
+    status.style.color   = 'var(--text-muted)';
+    status.textContent   = `Uploading ${file.name}…`;
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+        const r = await fetch(`/api/members/${_currentMemberId}/documents`, {
+            method: 'POST',
+            headers: pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {},
+            body: fd
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) {
+            status.style.color = 'var(--success)';
+            status.textContent = `${file.name} uploaded.`;
+            await loadDocs(_currentMemberId);
+        } else {
+            status.style.color = 'var(--danger)';
+            status.textContent = data.error ?? 'Upload failed.';
+        }
+    } catch {
+        status.style.color = 'var(--danger)';
+        status.textContent = 'Upload request failed.';
+    }
+    document.getElementById('docFileInput').value = '';
+    setTimeout(() => { status.style.display = 'none'; }, 4000);
+}
+
+async function deleteDoc(memberId, docId) {
+    if (!confirm('Delete this document? This cannot be undone.')) return;
+    try {
+        const r = await fetch(`/api/members/${memberId}/documents/${docId}`, {
+            method: 'DELETE',
+            headers: pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}
+        });
+        if (r.ok) {
+            document.getElementById(`doc-${docId}`)?.remove();
+            const list = document.getElementById('docList');
+            if (!list.querySelector('.doc-item'))
+                list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">No documents attached yet.</div>';
+        } else {
+            showToast('error', 'Delete failed.');
+        }
+    } catch { showToast('error', 'Request failed.'); }
+}
+
+function handleDocDrop(e) {
+    e.preventDefault();
+    document.getElementById('docDropZone').classList.remove('drag-over');
+    const file = e.dataTransfer?.files?.[0];
+    if (file) uploadDoc(file);
+}
+
+function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(1) + ' MB';
 }
 
 // ── Init ──────────────────────────────────
