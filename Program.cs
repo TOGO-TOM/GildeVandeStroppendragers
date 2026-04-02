@@ -109,21 +109,35 @@ app.MapRazorPages();
 app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/Login"));
 
-// Auto-apply EF migrations on startup (safe to run multiple times)
+// Auto-apply EF migrations on startup — retry up to 5 times with backoff
 using (var scope = app.Services.CreateScope())
 {
     var startupLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    try
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var migrated = false;
+
+    for (int attempt = 1; attempt <= 5; attempt++)
     {
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        db.Database.Migrate();
-        startupLogger.LogInformation("Database migrations applied successfully.");
+        try
+        {
+            db.Database.Migrate();
+            startupLogger.LogInformation("Database migrations applied successfully on attempt {Attempt}.", attempt);
+            migrated = true;
+            break;
+        }
+        catch (Exception ex) when (attempt < 5)
+        {
+            startupLogger.LogWarning(ex, "Migration attempt {Attempt} failed — retrying in {Delay}s.", attempt, attempt * 5);
+            await Task.Delay(TimeSpan.FromSeconds(attempt * 5));
+        }
+        catch (Exception ex)
+        {
+            startupLogger.LogCritical(ex, "All migration attempts failed. App will start but may be unstable.");
+        }
     }
-    catch (Exception ex)
-    {
-        startupLogger.LogCritical(ex, "Database migration failed on startup.");
-        throw; // Rethrow — app cannot run with an out-of-date schema
-    }
+
+    if (!migrated)
+        startupLogger.LogCritical("Migrations did not complete — check connection string and SQL firewall rules.");
 }
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
