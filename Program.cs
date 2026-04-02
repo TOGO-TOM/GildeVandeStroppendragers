@@ -89,6 +89,12 @@ else
     app.UseHsts();
 }
 
+// Temporary: expose detailed errors when SHOW_DETAILED_ERRORS=true env var is set
+if (builder.Configuration.GetValue<bool>("SHOW_DETAILED_ERRORS"))
+{
+    app.UseDeveloperExceptionPage();
+}
+
 app.UseResponseCompression();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
