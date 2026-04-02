@@ -1,6 +1,12 @@
 # Azure provisioning - contains sensitive publish credentials, never commit
 azure/publish-profile.xml
 
+# Copilot workspace internals
+.claude/
+
+# Temp SQL scripts
+*.sql
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
