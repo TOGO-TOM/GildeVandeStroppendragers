@@ -78,6 +78,15 @@ jobs:
             --type zip \
             --async false
 
+      - name: Enable App Service logging
+        run: |
+          az webapp log config \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --application-logging filesystem \
+            --level information \
+            --web-server-logging filesystem
+
       - name: Health check
         run: |
           echo "Waiting for app to start..."
@@ -85,7 +94,12 @@ jobs:
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L --max-redirs 5 https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/Login)
           echo "HTTP status: $STATUS"
           if [ "$STATUS" -ge 500 ]; then
-            echo "Health check failed with status $STATUS"
+            echo "Health check failed with status $STATUS — fetching Azure logs..."
+            az webapp log download \
+              --name ${{ env.AZURE_WEBAPP_NAME }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --log-file app_logs.zip || true
+            unzip -p app_logs.zip || true
             exit 1
           fi
           echo "Health check passed with status $STATUS."
