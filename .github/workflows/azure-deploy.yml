@@ -79,41 +79,20 @@ jobs:
 
       - name: Apply DB migrations
         run: |
-          # Get connection string from App Service settings
-          CONNECTION_STRING=$(az webapp config appsettings list \
-            --name ${{ env.AZURE_WEBAPP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --query "[?name=='ConnectionStrings__DefaultConnection'].value | [0]" \
-            --output tsv)
-          if [ -z "$CONNECTION_STRING" ]; then
-            echo "Falling back to AZURE_SQL_CONNECTION_STRING secret"
-            CONNECTION_STRING="${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
-          fi
-          if [ -z "$CONNECTION_STRING" ]; then
-            echo "ERROR: No SQL connection string found. Set ConnectionStrings__DefaultConnection in App Service or AZURE_SQL_CONNECTION_STRING secret."
-            exit 1
-          fi
-
-          # Extract SQL server name (e.g. myserver.database.windows.net)
-          SQL_SERVER=$(echo "$CONNECTION_STRING" | grep -oiP 'Server=tcp:\K[^,]+' || echo "$CONNECTION_STRING" | grep -oiP 'Server=\K[^;]+')
-          echo "SQL Server: $SQL_SERVER"
-
-          # Get the runner's public IP and open firewall
+          # Get the runner's public IP and open SQL firewall
           RUNNER_IP=$(curl -s https://api.ipify.org)
           echo "Runner IP: $RUNNER_IP"
 
-          SQL_SERVER_RESOURCE=$(az sql server list \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --query "[0].name" --output tsv)
-
           az sql server firewall-rule create \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --server "$SQL_SERVER_RESOURCE" \
+            --server sql-gilde-prod \
             --name "github-actions-runner" \
             --start-ip-address "$RUNNER_IP" \
             --end-ip-address "$RUNNER_IP"
 
-          # Run migrations
+          # Build connection string with SQL credentials
+          CONNECTION_STRING="Server=tcp:sql-gilde-prod.database.windows.net,1433;Database=AdminMembersDb;User ID=sqladmin;Password=${{ secrets.AZURE_SQL_PASSWORD }};Encrypt=True;TrustServerCertificate=False;"
+
           dotnet restore ${{ env.PROJECT_PATH }}
           dotnet tool install --global dotnet-ef --version 8.0.* 2>/dev/null || true
           dotnet ef database update \
@@ -123,7 +102,7 @@ jobs:
           # Remove firewall rule
           az sql server firewall-rule delete \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --server "$SQL_SERVER_RESOURCE" \
+            --server sql-gilde-prod \
             --name "github-actions-runner" \
             --yes || true
         env:
