@@ -313,6 +313,7 @@ namespace AdminMembers.Controllers
                 existingField.FieldType = field.FieldType;
                 existingField.IsRequired = field.IsRequired;
                 existingField.IsActive = field.IsActive;
+                existingField.IsFilterable = field.IsFilterable;
                 existingField.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();

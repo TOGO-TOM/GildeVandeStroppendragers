@@ -58,7 +58,7 @@
                             <div class="settings-row">
                                 <div>
                                     <div class="settings-row-label">Logo</div>
-                                    <div class="settings-row-desc">PNG, JPEG or GIF — max 2 MB. Used in PDF exports.</div>
+                                    <div class="settings-row-desc">PNG, JPEG or GIF ï¿½ max 2 MB. Used in PDF exports.</div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
                                     @if (Model.HasLogo)
@@ -124,11 +124,12 @@
                                         <span style="font-weight:700;">@f.FieldLabel</span>
                                         <span class="badge badge-gray">@f.FieldType</span>
                                         @if (f.IsRequired) { <span class="badge badge-red">Required</span> }
+                                        @if (f.IsFilterable) { <span class="badge badge-purple">Filterable</span> }
                                         @if (!f.IsActive) { <span class="badge badge-gray">Inactive</span> }
                                     </div>
                                     <div style="display:flex;align-items:center;gap:8px;">
                                         <span style="font-size:12px;color:var(--text-muted);">Order: @f.DisplayOrder</span>
-                                        <button class="btn btn-icon btn-sm" onclick="openFieldModal(@f.Id,'@f.FieldName','@f.FieldLabel','@f.FieldType',@(f.IsRequired ? "true" : "false"),@(f.IsActive ? "true" : "false"),@f.DisplayOrder)">&#9998;</button>
+                                        <button class="btn btn-icon btn-sm" onclick="openFieldModal(@f.Id,'@f.FieldName','@f.FieldLabel','@f.FieldType',@(f.IsRequired ? "true" : "false"),@(f.IsActive ? "true" : "false"),@f.DisplayOrder,@(f.IsFilterable ? "true" : "false"))">&#9998;</button>
                                         <button class="btn btn-danger btn-sm" onclick="deleteField(@f.Id)">&#128465;</button>
                                     </div>
                                 </div>
@@ -174,7 +175,7 @@
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="userId" value="@p.Id" />
                                                 <select name="roleId" class="pending-role-select" required>
-                                                    <option value="">Assign role…</option>
+                                                    <option value="">Assign roleï¿½</option>
                                                     @foreach (var r in Model.Roles)
                                                     {
                                                         <option value="@r.Id">@r.Name</option>
@@ -278,6 +279,9 @@
                 </label>
                 <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
                     <input type="checkbox" id="fieldActive" checked /> Active
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+                    <input type="checkbox" id="fieldFilterable" /> Filterable
                 </label>
             </div>
             <div class="form-group">
@@ -395,7 +399,7 @@ function previewLogo(input) {
 async function saveGeneralSettings(e) {
     e.preventDefault();
     const statusEl = document.getElementById('generalStatus');
-    statusEl.textContent = 'Saving…';
+    statusEl.textContent = 'Savingï¿½';
     statusEl.style.color = '';
 
     const fd = new FormData();
@@ -441,14 +445,15 @@ async function deleteLogo() {
 }
 
 // ?? Custom fields ?????????????????????????
-function openFieldModal(id = 0, name = '', label = '', type = 'Text', required = false, active = true, order = 0) {
+function openFieldModal(id = 0, name = '', label = '', type = 'Text', required = false, active = true, order = 0, filterable = false) {
     document.getElementById('fieldModalTitle').textContent = id === 0 ? 'Add Custom Field' : 'Edit Custom Field';
     document.getElementById('fieldId').value    = id;
     document.getElementById('fieldName').value  = name;
     document.getElementById('fieldLabel').value = label;
     document.getElementById('fieldType').value  = type;
-    document.getElementById('fieldRequired').checked = required;
-    document.getElementById('fieldActive').checked   = active;
+    document.getElementById('fieldRequired').checked   = required;
+    document.getElementById('fieldActive').checked     = active;
+    document.getElementById('fieldFilterable').checked = filterable;
     document.getElementById('fieldOrder').value = order;
     document.getElementById('fieldName').readOnly = id !== 0;
     document.getElementById('fieldStatus').textContent = '';
@@ -460,19 +465,20 @@ async function saveField() {
     const name     = document.getElementById('fieldName').value.trim();
     const label    = document.getElementById('fieldLabel').value.trim();
     const type     = document.getElementById('fieldType').value;
-    const required = document.getElementById('fieldRequired').checked;
-    const active   = document.getElementById('fieldActive').checked;
-    const order    = parseInt(document.getElementById('fieldOrder').value) || 0;
-    const statusEl = document.getElementById('fieldStatus');
+    const required   = document.getElementById('fieldRequired').checked;
+    const active     = document.getElementById('fieldActive').checked;
+    const filterable = document.getElementById('fieldFilterable').checked;
+    const order      = parseInt(document.getElementById('fieldOrder').value) || 0;
+    const statusEl   = document.getElementById('fieldStatus');
 
     if (!name || !label) { statusEl.textContent = 'Name and Label are required.'; return; }
 
     const isNew  = id === 0;
     const url    = isNew ? '/api/settings/custom-fields' : `/api/settings/custom-fields/${id}`;
     const method = isNew ? 'POST' : 'PUT';
-    const body   = { id, fieldName: name, fieldLabel: label, fieldType: type, isRequired: required, isActive: active, displayOrder: order };
+    const body   = { id, fieldName: name, fieldLabel: label, fieldType: type, isRequired: required, isActive: active, isFilterable: filterable, displayOrder: order };
 
-    statusEl.textContent = 'Saving…';
+    statusEl.textContent = 'Savingï¿½';
     try {
         const r = await fetch(url, {
             method,
@@ -521,7 +527,7 @@ async function runExport() {
     if (fields.length === 0) { alert('Select at least one field to export.'); return; }
 
     const statusEl = document.getElementById('exportStatus');
-    statusEl.textContent = 'Generating…';
+    statusEl.textContent = 'Generatingï¿½';
 
     const endpointMap = { pdf: 'export/pdf', excel: 'export/excel', csv: 'export/csv-custom' };
     const extMap      = { pdf: 'pdf', excel: 'xlsx', csv: 'csv' };

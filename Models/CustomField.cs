@@ -8,6 +8,7 @@ namespace AdminMembers.Models
         public string FieldType { get; set; } = "Text";
         public bool IsRequired { get; set; } = false;
         public bool IsActive { get; set; } = true;
+        public bool IsFilterable { get; set; } = false;
         public int DisplayOrder { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }

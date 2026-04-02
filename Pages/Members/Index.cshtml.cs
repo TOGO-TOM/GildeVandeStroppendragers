@@ -22,6 +22,7 @@ namespace AdminMembers.Pages.Members
         // ?? Page data ??????????????????????????????????????????
         public List<Member> Members { get; set; } = new();
         public List<CustomField> CustomFields { get; set; } = new();
+        public List<CustomField> FilterableCustomFields { get; set; } = new();
         public int TotalMembers { get; set; }
         public int ActiveMembers { get; set; }
         public int DeceasedMembers { get; set; }
@@ -60,17 +61,17 @@ namespace AdminMembers.Pages.Members
         }
 
         // ?? GET ????????????????????????????????????????????????
-        public async Task<IActionResult> OnGetAsync(string? search, string? sortBy, string? filterRole)
+        public async Task<IActionResult> OnGetAsync(string? search, string? sortBy, string? filterRole, string? filterAlive)
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
             CanWrite = HasPermission("Write");
             AuthToken = HttpContext.Session.GetString("AuthToken");
-            await LoadPageDataAsync(search, sortBy, filterRole);
+            await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
             return Page();
         }
 
         // ?? POST: Save (create or update) ?????????????????????
-        public async Task<IActionResult> OnPostSaveAsync(string? search, string? sortBy, string? filterRole)
+        public async Task<IActionResult> OnPostSaveAsync(string? search, string? sortBy, string? filterRole, string? filterAlive)
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
             CanWrite = HasPermission("Write");
@@ -78,14 +79,14 @@ namespace AdminMembers.Pages.Members
             if (!CanWrite)
             {
                 ErrorMessage = "You do not have permission to modify members.";
-                await LoadPageDataAsync(search, sortBy, filterRole);
+                await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                 return Page();
             }
 
             if (string.IsNullOrWhiteSpace(Form.FirstName) || string.IsNullOrWhiteSpace(Form.LastName))
             {
                 ErrorMessage = "First name and last name are required.";
-                await LoadPageDataAsync(search, sortBy, filterRole);
+                await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                 return Page();
             }
 
@@ -102,7 +103,7 @@ namespace AdminMembers.Pages.Members
                         await _context.Members.AnyAsync(m => m.MemberNumber == Form.MemberNumber))
                     {
                         ErrorMessage = $"Member number {Form.MemberNumber} is already in use.";
-                        await LoadPageDataAsync(search, sortBy, filterRole);
+                        await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                         return Page();
                     }
 
@@ -124,7 +125,7 @@ namespace AdminMembers.Pages.Members
                     if (existing == null)
                     {
                         ErrorMessage = "Member not found.";
-                        await LoadPageDataAsync(search, sortBy, filterRole);
+                        await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                         return Page();
                     }
 
@@ -132,7 +133,7 @@ namespace AdminMembers.Pages.Members
                         await _context.Members.AnyAsync(m => m.MemberNumber == Form.MemberNumber && m.Id != Form.Id))
                     {
                         ErrorMessage = $"Member number {Form.MemberNumber} is already in use.";
-                        await LoadPageDataAsync(search, sortBy, filterRole);
+                        await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                         return Page();
                     }
 
@@ -151,12 +152,12 @@ namespace AdminMembers.Pages.Members
                 ErrorMessage = "An error occurred while saving. Please try again.";
             }
 
-            await LoadPageDataAsync(search, sortBy, filterRole);
+            await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
             return Page();
         }
 
         // ?? POST: Delete ???????????????????????????????????????
-        public async Task<IActionResult> OnPostDeleteAsync(int id, string? search, string? sortBy, string? filterRole)
+        public async Task<IActionResult> OnPostDeleteAsync(int id, string? search, string? sortBy, string? filterRole, string? filterAlive)
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
             CanWrite = HasPermission("Write");
@@ -164,7 +165,7 @@ namespace AdminMembers.Pages.Members
             if (!CanWrite)
             {
                 ErrorMessage = "You do not have permission to delete members.";
-                await LoadPageDataAsync(search, sortBy, filterRole);
+                await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                 return Page();
             }
 
@@ -188,14 +189,14 @@ namespace AdminMembers.Pages.Members
                 ErrorMessage = "An error occurred while deleting. Please try again.";
             }
 
-            await LoadPageDataAsync(search, sortBy, filterRole);
+            await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
             return Page();
         }
 
         // ?? Helpers ????????????????????????????????????????????
-        private async Task LoadPageDataAsync(string? search, string? sortBy, string? filterRole)
+        private async Task LoadPageDataAsync(string? search, string? sortBy, string? filterRole, string? filterAlive)
         {
-            // Single query for role counts and total — no need to load full entities
+            // Single query for role counts and total ï¿½ no need to load full entities
             var roleCounts = await _context.Members
                 .AsNoTracking()
                 .GroupBy(m => m.Role)
@@ -223,6 +224,20 @@ namespace AdminMembers.Pages.Members
             if (!string.IsNullOrWhiteSpace(filterRole) && filterRole != "all")
                 query = query.Where(m => m.Role == filterRole);
 
+            if (filterAlive == "alive")
+                query = query.Where(m => m.IsAlive);
+            else if (filterAlive == "deceased")
+                query = query.Where(m => !m.IsAlive);
+
+            // Custom field filters: ?filterCf_<id>=<value>
+            foreach (var key in Request.Query.Keys.Where(k => k.StartsWith("filterCf_")))
+            {
+                if (!int.TryParse(key[9..], out var cfId)) continue;
+                var cfVal = Request.Query[key].ToString();
+                if (!string.IsNullOrEmpty(cfVal))
+                    query = query.Where(m => m.CustomFieldValues.Any(cv => cv.CustomFieldId == cfId && cv.Value == cfVal));
+            }
+
             query = sortBy switch
             {
                 "lastName-asc"      => query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName),
@@ -242,6 +257,8 @@ namespace AdminMembers.Pages.Members
                 .OrderBy(cf => cf.DisplayOrder)
                 .AsNoTracking()
                 .ToListAsync();
+
+            FilterableCustomFields = CustomFields.Where(cf => cf.IsFilterable).ToList();
         }
 
         private Member MapFormToMember(Member m)

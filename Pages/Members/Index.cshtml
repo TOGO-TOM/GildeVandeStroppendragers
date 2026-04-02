@@ -5,9 +5,19 @@
     ViewData["Title"] = "Members";
     ViewData["LayoutPage"] = "members";
     ViewData["LayoutUser"] = Model.CurrentUser;
-    var search     = (string?)ViewContext.HttpContext.Request.Query["search"];
-    var sortBy     = (string?)ViewContext.HttpContext.Request.Query["sortBy"];
-    var filterRole = (string?)ViewContext.HttpContext.Request.Query["filterRole"];
+    var search      = (string?)ViewContext.HttpContext.Request.Query["search"];
+    var sortBy      = (string?)ViewContext.HttpContext.Request.Query["sortBy"];
+    var filterRole  = (string?)ViewContext.HttpContext.Request.Query["filterRole"];
+    var filterAlive = (string?)ViewContext.HttpContext.Request.Query["filterAlive"];
+    // Collect active custom field filters from query string
+    var cfFilters = ViewContext.HttpContext.Request.Query.Keys
+        .Where(k => k.StartsWith("filterCf_"))
+        .ToDictionary(k => k, k => (string?)ViewContext.HttpContext.Request.Query[k]);
+    // Build a base query string fragment that preserves all active filters (except the one being changed)
+    string CfFilterQs(int? excludeId = null) => string.Join("",
+        cfFilters.Where(kv => excludeId == null || kv.Key != $"filterCf_{excludeId}")
+                 .Select(kv => $"&{kv.Key}={Uri.EscapeDataString(kv.Value ?? "")}")
+    );
 
     var roles = new[] { "Steunend Lid", "Kandidaat", "Stappend Lid" };
 }
@@ -38,6 +48,7 @@
             <div class="card-body">
                 <form method="post" asp-page-handler="Save"
                       asp-route-search="@search" asp-route-sortBy="@sortBy"
+                      asp-route-filterRole="@filterRole" asp-route-filterAlive="@filterAlive"
                       id="memberForm">
 
                     <input type="hidden" asp-for="Form.Id" />
@@ -236,15 +247,17 @@
         <div class="toolbar">
             <form method="get" class="toolbar-search">
                 <input name="search"     value="@search"     placeholder="Search name, email, member #..." />
-                <input type="hidden" name="sortBy"     value="@sortBy" />
-                <input type="hidden" name="filterRole" value="@filterRole" />
+                <input type="hidden" name="sortBy"      value="@sortBy" />
+                <input type="hidden" name="filterRole"  value="@filterRole" />
+                <input type="hidden" name="filterAlive" value="@filterAlive" />
+                @foreach (var kv in cfFilters) { <input type="hidden" name="@kv.Key" value="@kv.Value" /> }
                 <button class="btn btn-accent btn-sm" type="submit">Search</button>
             </form>
             <div class="toolbar-divider"></div>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-asc&filterRole=@filterRole">A&ndash;Z</a>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-desc&filterRole=@filterRole">Z&ndash;A</a>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=memberNumber-asc&filterRole=@filterRole">By&nbsp;#</a>
-            @if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(filterRole))
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-asc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">A&ndash;Z</a>
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-desc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">Z&ndash;A</a>
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=memberNumber-asc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">By&nbsp;#</a>
+            @if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(filterRole) || !string.IsNullOrEmpty(filterAlive) || cfFilters.Any())
             {
                 <a class="btn btn-icon btn-sm" href="/Members">Clear</a>
             }
@@ -252,10 +265,10 @@
 
         <!-- Role filter button group -->
         <div class="role-filter-bar">
-            <span class="role-filter-label">Filter</span>
+            <span class="role-filter-label">Rol</span>
             <div class="role-btn-group">
                 <a class="role-btn @(string.IsNullOrEmpty(filterRole) ? "active" : "")"
-                   href="?search=@search&sortBy=@sortBy">
+                   href="?search=@search&sortBy=@sortBy&filterAlive=@filterAlive@CfFilterQs()">
                     Alle
                     <span class="role-btn-count">@Model.AllMembersCount</span>
                 </a>
@@ -263,13 +276,74 @@
                 {
                     var count = Model.RoleCounts.GetValueOrDefault(role, 0);
                     <a class="role-btn @(filterRole == role ? "active" : "")"
-                       href="?search=@search&sortBy=@sortBy&filterRole=@Uri.EscapeDataString(role)">
+                       href="?search=@search&sortBy=@sortBy&filterRole=@Uri.EscapeDataString(role)&filterAlive=@filterAlive@CfFilterQs()">
                         @role
                         <span class="role-btn-count">@count</span>
                     </a>
                 }
             </div>
         </div>
+
+        <!-- Alive / Deceased toggle -->
+        <div class="role-filter-bar">
+            <span class="role-filter-label">Status</span>
+            <div class="role-btn-group">
+                <a class="role-btn @(string.IsNullOrEmpty(filterAlive) ? "active" : "")"
+                   href="?search=@search&sortBy=@sortBy&filterRole=@filterRole@CfFilterQs()">
+                    Alle
+                </a>
+                <a class="role-btn @(filterAlive == "alive" ? "active" : "")"
+                   href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=alive@CfFilterQs()">
+                    &#x25CF; Alive
+                    <span class="role-btn-count">@Model.ActiveMembers</span>
+                </a>
+                <a class="role-btn @(filterAlive == "deceased" ? "active" : "")"
+                   href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=deceased@CfFilterQs()">
+                    Deceased
+                    <span class="role-btn-count">@Model.DeceasedMembers</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Custom field filters (only shown if any filterable fields exist) -->
+        @if (Model.FilterableCustomFields.Any())
+        {
+            <div class="role-filter-bar" style="flex-wrap:wrap;gap:8px;">
+                <span class="role-filter-label">Filters</span>
+                <form method="get" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                    <input type="hidden" name="search"      value="@search" />
+                    <input type="hidden" name="sortBy"      value="@sortBy" />
+                    <input type="hidden" name="filterRole"  value="@filterRole" />
+                    <input type="hidden" name="filterAlive" value="@filterAlive" />
+                    @foreach (var cf in Model.FilterableCustomFields)
+                    {
+                        var currentCfVal = cfFilters.GetValueOrDefault($"filterCf_{cf.Id}", "");
+                        <div style="display:flex;align-items:center;gap:4px;">
+                            <label style="font-size:12px;color:var(--text-muted);white-space:nowrap;">@cf.FieldLabel</label>
+                            @if (cf.FieldType == "Boolean")
+                            {
+                                <select name="filterCf_@cf.Id" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);">
+                                    <option value="">Alle</option>
+                                    @if (currentCfVal == "Yes") { <option value="Yes" selected>Yes</option> } else { <option value="Yes">Yes</option> }
+                                    @if (currentCfVal == "No")  { <option value="No"  selected>No</option>  } else { <option value="No">No</option>   }
+                                </select>
+                            }
+                            else
+                            {
+                                <input type="text" name="filterCf_@cf.Id" value="@currentCfVal"
+                                       placeholder="Filter..."
+                                       style="font-size:12px;padding:4px 8px;width:120px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);" />
+                            }
+                        </div>
+                    }
+                    <button type="submit" class="btn btn-accent btn-sm">Apply</button>
+                    @if (cfFilters.Any())
+                    {
+                        <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive">Clear filters</a>
+                    }
+                </form>
+            </div>
+        }
 
         <!-- Member list -->
         @if (Model.Members.Any())
@@ -353,7 +427,8 @@
         </div>
         <div class="modal-footer">
             <form method="post" asp-page-handler="Delete"
-                  asp-route-search="@search" asp-route-sortBy="@sortBy">
+                  asp-route-search="@search" asp-route-sortBy="@sortBy"
+                  asp-route-filterRole="@filterRole" asp-route-filterAlive="@filterAlive">
                 <input type="hidden" name="id" id="deleteId" />
                 <button type="button" class="btn btn-icon" onclick="closeDelete()">Cancel</button>
                 <button type="submit" class="btn btn-danger">Delete</button>
