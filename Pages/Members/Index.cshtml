@@ -192,9 +192,15 @@
         <div class="card" style="margin-top:16px;">
             <div class="card-header"><span class="card-title">Data</span></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
-                <button class="btn btn-icon" onclick="showModal('importModal')">&#128228; Import CSV</button>
-                <button class="btn btn-icon" onclick="showModal('exportModal')">&#128229; Export</button>
-                <button class="btn btn-icon" onclick="showModal('bulkModal')">&#9998; Bulk Update</button>
+                <button class="btn btn-icon" onclick="showModal('importModal')">
+                    <svg class="icon icon-md"><use href="/icons.svg#icon-upload" /></svg> Import CSV
+                </button>
+                <button class="btn btn-icon" onclick="showModal('exportModal')">
+                    <svg class="icon icon-md"><use href="/icons.svg#icon-download" /></svg> Export
+                </button>
+                <button class="btn btn-icon" onclick="showModal('bulkModal')">
+                    <svg class="icon icon-md"><use href="/icons.svg#icon-edit" /></svg> Bulk Update
+                </button>
             </div>
         </div>
         }
@@ -205,7 +211,7 @@
             <div class="card-header"><span class="card-title">Members</span></div>
             <div class="card-body">
                 <div class="viewer-notice">
-                    <span class="viewer-notice-icon">&#128274;</span>
+                    <svg class="icon icon-xl" style="color:var(--text-muted);"><use href="/icons.svg#icon-lock" /></svg>
                     <div>
                         <div style="font-weight:600;font-size:13px;">Read-only access</div>
                         <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">

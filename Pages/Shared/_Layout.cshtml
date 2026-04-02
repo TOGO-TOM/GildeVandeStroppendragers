@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " — " : "")Gilde Van De Stroppendragers</title>
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " - " : "")Gilde Van De Stroppendragers</title>
     <link rel="stylesheet" href="/styles.css">
     @RenderSection("Styles", required: false)
 </head>
 <body>
+@* Inject SVG sprite — hidden, referenced by <use href="/icons.svg#icon-name"> *@
+<div style="display:none" id="svg-sprite-container">
+    @Html.Raw(System.IO.File.ReadAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "icons.svg")))
+</div>
 
 @{
     var layoutUser   = ViewData["LayoutUser"]   as AdminMembers.Pages.AuthenticatedPageModel.UserInfo;

@@ -32,18 +32,18 @@
         <!-- NAV -->
         <div class="settings-nav card">
             <a class="settings-nav-item active" href="#" onclick="showSection('users',this)">
-                <span class="nav-icon">&#128100;</span> Active Users
+                <svg class="icon icon-md nav-icon"><use href="/icons.svg#icon-user" /></svg> Active Users
                 <span class="badge badge-gray" style="margin-left:auto;">@Model.Users.Count</span>
             </a>
             @if (Model.PendingUsers.Any())
             {
                 <a class="settings-nav-item" href="#" onclick="showSection('pending',this)">
-                    <span class="nav-icon">&#9888;</span> Pending
+                    <svg class="icon icon-md nav-icon"><use href="/icons.svg#icon-warning" /></svg> Pending
                     <span class="badge badge-red" style="margin-left:auto;">@Model.PendingUsers.Count</span>
                 </a>
             }
             <a class="settings-nav-item" href="#" onclick="showSection('create',this)">
-                <span class="nav-icon">&#43;</span> Create User
+                <svg class="icon icon-md nav-icon"><use href="/icons.svg#icon-plus" /></svg> Create User
             </a>
         </div>
 
