@@ -13,12 +13,15 @@ namespace AdminMembers.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly AuditLogService _auditLogService;
+        private readonly StockExportService _exportService;
         private readonly ILogger<StockController> _logger;
 
-        public StockController(ApplicationDbContext context, AuditLogService auditLogService, ILogger<StockController> logger)
+        public StockController(ApplicationDbContext context, AuditLogService auditLogService,
+            StockExportService exportService, ILogger<StockController> logger)
         {
             _context = context;
             _auditLogService = auditLogService;
+            _exportService = exportService;
             _logger = logger;
         }
 
@@ -178,6 +181,73 @@ namespace AdminMembers.Controllers
 
             return Ok(new { item, movement });
         }
+
+        // ?? Export endpoints ?????????????????????????????????????????????
+
+        [HttpGet("export/excel")]
+        [RequirePermission(Permission.ReadWrite)]
+        public async Task<IActionResult> ExportExcel()
+        {
+            var items    = await GetAllItemsInternal();
+            var settings = await _context.AppSettings.FirstOrDefaultAsync();
+            var bytes    = _exportService.ExportToExcel(items, settings?.CompanyName);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"stock_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+        }
+
+        [HttpGet("export/csv")]
+        [RequirePermission(Permission.ReadWrite)]
+        public async Task<IActionResult> ExportCsv()
+        {
+            var items = await GetAllItemsInternal();
+            var bytes = _exportService.ExportToCsv(items);
+            return File(bytes, "text/csv", $"stock_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        }
+
+        [HttpGet("export/pdf")]
+        [RequirePermission(Permission.ReadWrite)]
+        public async Task<IActionResult> ExportPdf()
+        {
+            var items    = await GetAllItemsInternal();
+            var settings = await _context.AppSettings.FirstOrDefaultAsync();
+            var bytes    = _exportService.ExportToPdf(items, settings?.LogoData, settings?.CompanyName);
+            return File(bytes, "application/pdf", $"stock_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+        }
+
+        [HttpGet("chart-data")]
+        [RequirePermission(Permission.ReadWrite)]
+        public async Task<IActionResult> GetChartData()
+        {
+            var items = await GetAllItemsInternal();
+
+            var barData = items
+                .OrderByDescending(i => i.CurrentStock)
+                .Take(15)
+                .Select(i => new { label = i.Name, value = i.CurrentStock, unit = i.Unit })
+                .ToList();
+
+            var statusData = new[]
+            {
+                new { label = "OK",          value = items.Count(i => i.Status == StockStatus.Ok) },
+                new { label = "Laag",        value = items.Count(i => i.Status == StockStatus.Low) },
+                new { label = "Uitverkocht", value = items.Count(i => i.Status == StockStatus.Out) }
+            };
+
+            var categoryData = items
+                .GroupBy(i => i.Category ?? "Overig")
+                .OrderBy(g => g.Key)
+                .Select(g => new { label = g.Key, value = (double)g.Sum(i => i.CurrentStock), count = g.Count() })
+                .ToList();
+
+            return Ok(new { barData, statusData, categoryData });
+        }
+
+        private async Task<List<StockItem>> GetAllItemsInternal() =>
+            await _context.StockItems
+                .AsNoTracking()
+                .OrderBy(s => s.Category)
+                .ThenBy(s => s.Name)
+                .ToListAsync();
     }
 
     public class StockItemRequest

@@ -56,6 +56,16 @@
                 </div>
             </div>
         </div>
+
+        <!-- Export -->
+        <div class="card" style="margin-top:16px;">
+            <div class="card-header"><span class="card-title">Export</span></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
+                <button class="btn btn-icon" onclick="showModal('exportModal')">
+                    <svg class="icon icon-md"><use href="#icon-download" /></svg> Export
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- ?? MAIN CONTENT ?? -->
@@ -76,6 +86,25 @@
                 <div class="stat-label">Out of Stock</div>
             </div>
         </div>
+
+        <!-- Charts -->
+        @if (Model.Items.Any())
+        {
+        <div class="stock-charts">
+            <div class="card stock-chart-card">
+                <div class="card-header"><span class="card-title">Stock per categorie</span></div>
+                <div class="card-body" style="padding:12px;">
+                    <canvas id="chartCategory" height="180"></canvas>
+                </div>
+            </div>
+            <div class="card stock-chart-card">
+                <div class="card-header"><span class="card-title">Status verdeling</span></div>
+                <div class="card-body" style="padding:12px;display:flex;justify-content:center;">
+                    <canvas id="chartStatus" style="max-width:220px;max-height:220px;"></canvas>
+                </div>
+            </div>
+        </div>
+        }
 
         <!-- Item list -->
         @if (Model.Items.Any())
@@ -149,6 +178,35 @@
 <!-- FAB -->
 <button class="fab-add" onclick="toggleFormPanel()" title="Add item">&#43;</button>
 
+<!-- ?? EXPORT MODAL ?? -->
+<div id="exportModal" class="modal" onclick="if(event.target===this)hideModal('exportModal')">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-head">
+            <h3>&#128229; Export Stock</h3>
+            <button class="modal-close-btn" onclick="hideModal('exportModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Formaat</label>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <label class="export-format-pill"><input type="radio" name="stockFmt" value="excel" checked /> Excel (.xlsx)</label>
+                    <label class="export-format-pill"><input type="radio" name="stockFmt" value="csv" /> CSV</label>
+                    <label class="export-format-pill"><input type="radio" name="stockFmt" value="pdf" /> PDF</label>
+                </div>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">
+                Exporteert alle stock-items inclusief categorie, hoeveelheid en status.
+                Excel bevat een extra tabblad met de samenvatting per categorie.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <span id="exportStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+            <button class="btn btn-icon" onclick="hideModal('exportModal')">Annuleer</button>
+            <button class="btn btn-accent" onclick="runExport()">&#128229; Download</button>
+        </div>
+    </div>
+</div>
+
 <!-- ?? MOVEMENT MODAL ?? -->
 <div id="movementModal" class="modal" onclick="if(event.target===this)hideModal('movementModal')">
     <div class="modal-box modal-box-sm">
@@ -216,6 +274,9 @@
         </div>
     </div>
 </div>
+
+<!-- Chart.js loaded before inline script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
 @section Scripts {
 <script>
@@ -364,5 +425,85 @@ async function openHistory(id, name) {
         document.getElementById('historyList').innerHTML = '<p style="color:var(--danger);font-size:13px;">Laden mislukt.</p>';
     }
 }
+// ?? Export ???????????????????????????????
+async function runExport() {
+    const fmt = document.querySelector('input[name="stockFmt"]:checked')?.value ?? 'excel';
+    const extMap  = { excel: 'xlsx', csv: 'csv', pdf: 'pdf' };
+    const mimeMap = {
+        excel: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        csv:   'text/csv',
+        pdf:   'application/pdf'
+    };
+    const statusEl = document.getElementById('exportStatus');
+    statusEl.textContent = 'Genereren…';
+    try {
+        const r = await fetch(`/api/stock/export/${fmt}`, { headers: authHeaders() });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const blob = await r.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = `stock_${new Date().toISOString().slice(0,10)}.${extMap[fmt]}`;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        statusEl.textContent = '';
+        hideModal('exportModal');
+    } catch(e) {
+        statusEl.textContent = '';
+        alert('Export mislukt: ' + e.message);
+    }
+}
+
+// ?? Charts ???????????????????????????????
+async function loadCharts() {
+    if (!document.getElementById('chartCategory')) return;
+    try {
+        const r    = await fetch('/api/stock/chart-data', { headers: authHeaders() });
+        const data = await r.json();
+
+        // Category bar chart
+        new Chart(document.getElementById('chartCategory'), {
+            type: 'bar',
+            data: {
+                labels:   data.categoryData.map(d => d.label),
+                datasets: [{
+                    label:           'Totale stock',
+                    data:            data.categoryData.map(d => d.value),
+                    backgroundColor: 'rgba(79,70,229,0.7)',
+                    borderColor:     'rgba(79,70,229,1)',
+                    borderWidth:     1,
+                    borderRadius:    4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { font: { size: 11 } } }, x: { ticks: { font: { size: 11 } } } }
+            }
+        });
+
+        // Status doughnut
+        new Chart(document.getElementById('chartStatus'), {
+            type: 'doughnut',
+            data: {
+                labels:   data.statusData.map(d => d.label),
+                datasets: [{
+                    data:            data.statusData.map(d => d.value),
+                    backgroundColor: ['#86efac', '#fed7aa', '#fca5a5'],
+                    borderColor:     ['#16a34a', '#ea580c', '#dc2626'],
+                    borderWidth:     1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 } } }
+                }
+            }
+        });
+    } catch(e) { console.warn('Charts failed:', e); }
+}
+
+document.addEventListener('DOMContentLoaded', loadCharts);
 </script>
 }

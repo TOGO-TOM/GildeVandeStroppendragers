@@ -373,6 +373,19 @@ body {
     margin-bottom: 4px;
 }
 
+.stock-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stock-chart-card { min-width: 0; }
+
+@media (max-width: 640px) {
+    .stock-charts { grid-template-columns: 1fr; }
+}
+
 /* ?? FORMS ????????????????????????????????? */
 .form-section-title {
     font-size: 13px;
