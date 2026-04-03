@@ -193,13 +193,13 @@
             <div class="card-header"><span class="card-title">Data</span></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
                 <button class="btn btn-icon" onclick="showModal('importModal')">
-                    <svg class="icon icon-md"><use href="/icons.svg#icon-upload" /></svg> Import CSV
+                    <svg class="icon icon-md"><use href="#icon-upload" /></svg> Import CSV
                 </button>
                 <button class="btn btn-icon" onclick="showModal('exportModal')">
-                    <svg class="icon icon-md"><use href="/icons.svg#icon-download" /></svg> Export
+                    <svg class="icon icon-md"><use href="#icon-download" /></svg> Export
                 </button>
                 <button class="btn btn-icon" onclick="showModal('bulkModal')">
-                    <svg class="icon icon-md"><use href="/icons.svg#icon-edit" /></svg> Bulk Update
+                    <svg class="icon icon-md"><use href="#icon-edit" /></svg> Bulk Update
                 </button>
             </div>
         </div>
@@ -211,7 +211,7 @@
             <div class="card-header"><span class="card-title">Members</span></div>
             <div class="card-body">
                 <div class="viewer-notice">
-                    <svg class="icon icon-xl" style="color:var(--text-muted);"><use href="/icons.svg#icon-lock" /></svg>
+                    <svg class="icon icon-xl" style="color:var(--text-muted);"><use href="#icon-lock" /></svg>
                     <div>
                         <div style="font-weight:600;font-size:13px;">Read-only access</div>
                         <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
@@ -411,7 +411,7 @@
         <div class="modal-tabs">
             <button class="modal-tab active" onclick="switchTab('info',this)">Info</button>
             <button class="modal-tab" onclick="switchTab('docs',this)">
-                <svg class="icon icon-sm" style="margin-right:4px;"><use href="/icons.svg#icon-paperclip" /></svg>Documents
+                <svg class="icon icon-sm" style="margin-right:4px;"><use href="#icon-paperclip" /></svg>Documents
             </button>
         </div>
         <div class="modal-body">
@@ -429,7 +429,7 @@
                      ondragover="event.preventDefault();this.classList.add('drag-over')"
                      ondragleave="this.classList.remove('drag-over')"
                      ondrop="handleDocDrop(event)">
-                    <svg class="icon icon-xl" style="margin-bottom:8px;color:var(--accent);"><use href="/icons.svg#icon-upload" /></svg>
+                    <svg class="icon icon-xl" style="margin-bottom:8px;color:var(--accent);"><use href="#icon-upload" /></svg>
                     <div style="font-weight:600;">Click or drag a file to upload</div>
                     <div style="font-size:12px;margin-top:4px;">PDF, Word, Excel, images — max 20 MB</div>
                     <input type="file" id="docFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp,.txt"
@@ -450,7 +450,7 @@
             <h3 id="viewerTitle" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 80px);">Document</h3>
             <div style="display:flex;gap:8px;flex-shrink:0;">
                 <button class="btn btn-xs btn-icon" id="viewerDownloadBtn">
-                    <svg class="icon icon-sm"><use href="/icons.svg#icon-download" /></svg> Download
+                    <svg class="icon icon-sm"><use href="#icon-download" /></svg> Download
                 </button>
                 <button class="modal-close-btn" onclick="closeViewer()">&times;</button>
             </div>
@@ -959,18 +959,18 @@ async function loadDocs(memberId) {
             const canPreview = ['pdf','png','jpg','jpeg','gif','webp','txt'].includes(ext);
             return `
             <div class="doc-item" id="doc-${d.Id}">
-                <svg class="icon icon-md doc-item-icon"><use href="/icons.svg#icon-paperclip" /></svg>
+                <svg class="icon icon-md doc-item-icon"><use href="#icon-paperclip" /></svg>
                 <span class="doc-item-name" title="${d.FileName}">${d.FileName}</span>
                 <span class="doc-item-meta">${formatBytes(d.FileSizeBytes)}</span>
                 <div class="doc-item-actions">
                     ${canPreview ? `<button class="btn btn-xs btn-icon" onclick="viewDoc(${memberId},${d.Id},'${d.FileName}','${d.ContentType}')">
-                        <svg class="icon icon-sm"><use href="/icons.svg#icon-eye" /></svg> View
+                        <svg class="icon icon-sm"><use href="#icon-eye" /></svg> View
                     </button>` : ''}
                     <button class="btn btn-xs btn-icon" onclick="downloadDoc(${memberId},${d.Id},'${d.FileName}')">
-                        <svg class="icon icon-sm"><use href="/icons.svg#icon-download" /></svg> Download
+                        <svg class="icon icon-sm"><use href="#icon-download" /></svg> Download
                     </button>
                     ${canWrite ? `<button class="btn btn-xs btn-danger" onclick="deleteDoc(${memberId},${d.Id})">
-                        <svg class="icon icon-sm"><use href="/icons.svg#icon-trash" /></svg> Delete
+                        <svg class="icon icon-sm"><use href="#icon-trash" /></svg> Delete
                     </button>` : ''}
                 </div>
             </div>`;
@@ -1039,11 +1039,11 @@ async function viewDoc(memberId, docId, fileName, contentType) {
             URL.revokeObjectURL(objUrl);
         } else {
             body.innerHTML = `<div class="doc-viewer-unsupported">
-                <svg class="icon icon-2xl" style="color:var(--text-muted);margin-bottom:12px;"><use href="/icons.svg#icon-download" /></svg>
+                <svg class="icon icon-2xl" style="color:var(--text-muted);margin-bottom:12px;"><use href="#icon-download" /></svg>
                 <div style="font-weight:600;margin-bottom:6px;">Preview not available</div>
                 <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">${fileName}</div>
                 <button class="btn btn-accent" onclick="downloadDoc(${memberId},${docId},'${fileName}')">
-                    <svg class="icon icon-sm"><use href="/icons.svg#icon-download" /></svg> Download file
+                    <svg class="icon icon-sm"><use href="#icon-download" /></svg> Download file
                 </button>
             </div>`;
             URL.revokeObjectURL(objUrl);
