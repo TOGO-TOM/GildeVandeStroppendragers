@@ -232,6 +232,10 @@
                 <label>Notitie</label>
                 <input id="mv_note" placeholder="Optionele notitie" />
             </div>
+            <div class="form-group">
+                <label>Datum <span style="color:var(--text-muted);font-weight:400;">(leeg = vandaag)</span></label>
+                <input id="mv_date" type="date" />
+            </div>
         </div>
         <div class="modal-footer">
             <span id="mv_status" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
@@ -365,6 +369,7 @@ function openMovement(id, name, unit) {
     document.getElementById('mv_unit').textContent = unit;
     document.getElementById('mv_quantity').value = '';
     document.getElementById('mv_note').value = '';
+    document.getElementById('mv_date').value = '';
     document.getElementById('mv_status').textContent = '';
     document.querySelector('input[name="mvType"][value="In"]').checked = true;
     showModal('movementModal');
@@ -375,8 +380,9 @@ async function saveMovement() {
     const qty = parseFloat(document.getElementById('mv_quantity').value);
     if (!qty || qty <= 0) { alert('Voer een geldige hoeveelheid in'); return; }
 
-    const type = document.querySelector('input[name="mvType"]:checked').value;
-    const note = document.getElementById('mv_note').value.trim() || null;
+    const type    = document.querySelector('input[name="mvType"]:checked').value;
+    const note    = document.getElementById('mv_note').value.trim() || null;
+    const dateVal = document.getElementById('mv_date').value || null;
     const statusEl = document.getElementById('mv_status');
     statusEl.textContent = 'Opslaan…';
 
@@ -384,7 +390,7 @@ async function saveMovement() {
         const r = await fetch(`/api/stock/${id}/movement`, {
             method: 'POST',
             headers: authHeaders(),
-            body: JSON.stringify({ type: type === 'In' ? 0 : type === 'Out' ? 1 : 2, quantity: qty, note })
+            body: JSON.stringify({ type: type === 'In' ? 0 : type === 'Out' ? 1 : 2, quantity: qty, note, movementDate: dateVal })
         });
         if (r.ok) { hideModal('movementModal'); location.reload(); }
         else { statusEl.textContent = ''; const d = await r.json().catch(() => ({})); alert(d.error ?? 'Failed'); }
@@ -406,19 +412,19 @@ async function openHistory(id, name) {
             return;
         }
 
-        const typeLabel = { 0: '+ In', 1: '? Out', 2: '= Correctie' };
+        const typeLabel = { 0: '+ In', 1: '\u2212 Out', 2: '= Correctie' };
         const typeClass = { 0: 'badge-green', 1: 'badge-red', 2: 'badge-purple' };
 
         document.getElementById('historyList').innerHTML = data.map(m => `
             <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
-                <span class="badge ${typeClass[m.type]}">${typeLabel[m.type]}</span>
+                <span class="badge ${typeClass[m.Type]}">${typeLabel[m.Type]}</span>
                 <div style="flex:1;">
-                    <div style="font-size:14px;font-weight:600;">${m.quantity}</div>
-                    <div style="font-size:12px;color:var(--text-muted);">${m.note ?? ''}</div>
+                    <div style="font-size:14px;font-weight:600;">${m.Quantity} <span style="font-size:12px;font-weight:400;color:var(--text-muted);">${m.Unit ?? ''}</span></div>
+                    <div style="font-size:12px;color:var(--text-muted);">${m.Note ?? ''}</div>
                 </div>
                 <div style="text-align:right;font-size:12px;color:var(--text-muted);">
-                    <div>${m.createdByUsername}</div>
-                    <div>${new Date(m.createdAt).toLocaleString('nl-BE')}</div>
+                    <div style="font-weight:600;">${m.CreatedByUsername}</div>
+                    <div>${new Date(m.MovementDate ?? m.CreatedAt).toLocaleString('nl-BE')}</div>
                 </div>
             </div>`).join('');
     } catch {

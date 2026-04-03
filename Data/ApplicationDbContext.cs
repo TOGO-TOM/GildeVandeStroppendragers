@@ -205,6 +205,7 @@ namespace AdminMembers.Data
                 entity.Property(e => e.Quantity).HasColumnType("decimal(18,3)");
                 entity.Property(e => e.Note).HasMaxLength(500);
                 entity.Property(e => e.CreatedByUsername).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.MovementDate).IsRequired(false);
                 entity.HasIndex(e => e.StockItemId);
                 entity.HasIndex(e => e.CreatedAt);
 

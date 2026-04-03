@@ -10,6 +10,7 @@ namespace AdminMembers.Models
         public int? CreatedByUserId { get; set; }
         public string CreatedByUsername { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? MovementDate { get; set; }
 
         public StockItem StockItem { get; set; } = null!;
     }

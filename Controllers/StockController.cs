@@ -170,7 +170,8 @@ namespace AdminMembers.Controllers
                 Note               = req.Note?.Trim(),
                 CreatedByUserId    = userId > 0 ? userId : null,
                 CreatedByUsername  = username,
-                CreatedAt          = DateTime.UtcNow
+                CreatedAt          = DateTime.UtcNow,
+                MovementDate       = req.MovementDate ?? DateTime.UtcNow
             };
             _context.StockMovements.Add(movement);
             await _context.SaveChangesAsync();
@@ -265,5 +266,6 @@ namespace AdminMembers.Controllers
         public StockMovementType Type { get; set; }
         public decimal Quantity { get; set; }
         public string? Note { get; set; }
+        public DateTime? MovementDate { get; set; }
     }
 }
