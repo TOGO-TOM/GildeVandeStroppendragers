@@ -90,7 +90,16 @@
                                     <div class="user-mgmt-badges">
                                         @foreach (var ur in u.UserRoles)
                                         {
-                                            <span class="badge badge-purple">@ur.Role.Name</span>
+                                            var roleClass = ur.Role.Name switch {
+                                                "Super Admin"   => "role-badge-superadmin",
+                                                "Admin"         => "role-badge-admin",
+                                                "Member Editor" => "role-badge-member-edit",
+                                                "Member Viewer" => "role-badge-member-view",
+                                                "Stock Editor"  => "role-badge-stock-edit",
+                                                "Stock Viewer"  => "role-badge-stock-view",
+                                                _               => "badge-gray"
+                                            };
+                                            <span class="role-badge @roleClass">@ur.Role.Name</span>
                                         }
                                         @if (!u.IsActive) { <span class="badge badge-gray">Inactive</span> }
                                         @if (u.TotpEnabled)  { <span class="badge badge-green" title="2FA active">&#128274; 2FA</span> }
@@ -174,14 +183,23 @@
                                         <form method="post" asp-page-handler="UpdateRoles">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="userId" value="@u.Id" />
-                                            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+                                            <div style="margin-bottom:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Roles</div>
+                                            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
                                                 @foreach (var r in Model.Roles)
                                                 {
                                                     var isChecked = u.UserRoles.Any(ur => ur.RoleId == r.Id);
-                                                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                                    var pillClass = r.Name switch {
+                                                        "Super Admin"   => "role-pill-superadmin",
+                                                        "Admin"         => "role-pill-admin",
+                                                        "Member Editor" => "role-pill-member-edit",
+                                                        "Member Viewer" => "role-pill-member-view",
+                                                        "Stock Editor"  => "role-pill-stock-edit",
+                                                        "Stock Viewer"  => "role-pill-stock-view",
+                                                        _               => ""
+                                                    };
+                                                    <label class="role-pill-label @pillClass @(isChecked ? "checked" : "")">
                                                         <input type="checkbox" name="roleIds" value="@r.Id" @(isChecked ? "checked" : "") />
-                                                        <span>@r.Name</span>
-                                                        <span class="badge badge-gray" style="font-size:10px;">@r.Permission</span>
+                                                        @r.Name
                                                     </label>
                                                 }
                                             </div>
@@ -294,13 +312,21 @@
                                 </div>
                                 <div>
                                     <label class="form-label">Roles</label>
-                                    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;">
+                                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
                                         @foreach (var r in Model.Roles)
                                         {
-                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                            var pillClass = r.Name switch {
+                                                "Super Admin"   => "role-pill-superadmin",
+                                                "Admin"         => "role-pill-admin",
+                                                "Member Editor" => "role-pill-member-edit",
+                                                "Member Viewer" => "role-pill-member-view",
+                                                "Stock Editor"  => "role-pill-stock-edit",
+                                                "Stock Viewer"  => "role-pill-stock-view",
+                                                _               => ""
+                                            };
+                                            <label class="role-pill-label @pillClass">
                                                 <input type="checkbox" name="NewRoleIds" value="@r.Id" />
-                                                <span>@r.Name</span>
-                                                <span class="badge badge-gray" style="font-size:10px;">@r.Permission</span>
+                                                @r.Name
                                             </label>
                                         }
                                     </div>
@@ -364,6 +390,50 @@
     border-color: var(--accent, #6366f1);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #6366f1) 20%, transparent);
 }
+
+/* ?? Role badges (display on user row) ????????????????????????????? */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .3px;
+}
+.role-badge-superadmin  { background: #1e1b4b; color: #c7d2fe; }
+.role-badge-admin       { background: #312e81; color: #e0e7ff; }
+.role-badge-member-edit { background: #3730a3; color: #e0e7ff; }
+.role-badge-member-view { background: #ede9fe; color: #4338ca; }
+.role-badge-stock-edit  { background: #064e3b; color: #a7f3d0; }
+.role-badge-stock-view  { background: #d1fae5; color: #065f46; }
+
+/* ?? Role pill labels (checkboxes in edit/create forms) ???????????? */
+.role-pill-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: opacity .15s, border-color .15s;
+    user-select: none;
+}
+.role-pill-label input[type="checkbox"] { width: 13px; height: 13px; cursor: pointer; accent-color: currentColor; }
+
+/* unchecked: muted */
+.role-pill-label                { background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
+
+/* checked state toggled via JS */
+.role-pill-label.checked.role-pill-superadmin  { background: #1e1b4b; color: #c7d2fe; border-color: #4338ca; }
+.role-pill-label.checked.role-pill-admin       { background: #312e81; color: #e0e7ff; border-color: #4f46e5; }
+.role-pill-label.checked.role-pill-member-edit { background: #3730a3; color: #e0e7ff; border-color: #6366f1; }
+.role-pill-label.checked.role-pill-member-view { background: #ede9fe; color: #4338ca; border-color: #818cf8; }
+.role-pill-label.checked.role-pill-stock-edit  { background: #064e3b; color: #a7f3d0; border-color: #059669; }
+.role-pill-label.checked.role-pill-stock-view  { background: #d1fae5; color: #065f46; border-color: #34d399; }
 </style>
 }
 
@@ -395,5 +465,19 @@ function togglePanel(id) {
     if (!el) return;
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
+
+// Sync role pill checked class with checkbox state
+function syncPills(root) {
+    root.querySelectorAll('.role-pill-label input[type="checkbox"]').forEach(cb => {
+        cb.closest('.role-pill-label').classList.toggle('checked', cb.checked);
+        cb.addEventListener('change', () => {
+            cb.closest('.role-pill-label').classList.toggle('checked', cb.checked);
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    syncPills(document);
+});
 </script>
 }
