@@ -66,22 +66,45 @@ namespace AdminMembers.Pages
             if (CurrentUser == null || CurrentUser.Roles == null)
                 return false;
 
-            // Admin has all permissions
-            if (CurrentUser.Roles.Contains("Admin"))
+            var roles = CurrentUser.Roles;
+
+            // Super Admin & Admin have full access to everything (except audit logs, handled separately)
+            if (roles.Contains("Super Admin") || roles.Contains("Admin"))
                 return true;
 
-            // Editor has read/write
-            if (permission == "Read" && (CurrentUser.Roles.Contains("Editor") || CurrentUser.Roles.Contains("Viewer")))
-                return true;
-
-            if (permission == "Write" && CurrentUser.Roles.Contains("Editor"))
-                return true;
-
-            if (permission == "ReadWrite" && CurrentUser.Roles.Contains("Editor"))
-                return true;
-
-            return false;
+            return permission switch
+            {
+                "Read"      => roles.Contains("Member Editor") || roles.Contains("Member Viewer") ||
+                               roles.Contains("Stock Editor")  || roles.Contains("Stock Viewer"),
+                "Write"     => roles.Contains("Member Editor") || roles.Contains("Stock Editor"),
+                "ReadWrite" => roles.Contains("Member Editor") || roles.Contains("Stock Editor"),
+                "MemberRead"  => roles.Contains("Member Editor") || roles.Contains("Member Viewer"),
+                "MemberWrite" => roles.Contains("Member Editor"),
+                "StockRead"   => roles.Contains("Stock Editor")  || roles.Contains("Stock Viewer"),
+                "StockWrite"  => roles.Contains("Stock Editor"),
+                "AuditLogs"   => roles.Contains("Super Admin"),
+                _             => false
+            };
         }
+
+        protected internal bool IsSuperAdmin()
+            => CurrentUser?.Roles?.Contains("Super Admin") == true;
+
+        protected internal bool IsAdmin()
+            => CurrentUser?.Roles?.Contains("Super Admin") == true ||
+               CurrentUser?.Roles?.Contains("Admin") == true;
+
+        protected internal bool CanManageMembers()
+            => IsAdmin() || HasPermission("MemberWrite");
+
+        protected internal bool CanViewMembers()
+            => IsAdmin() || HasPermission("MemberRead");
+
+        protected internal bool CanManageStock()
+            => IsAdmin() || HasPermission("StockWrite");
+
+        protected internal bool CanViewStock()
+            => IsAdmin() || HasPermission("StockRead");
 
         protected IActionResult RedirectToLoginWithReturnUrl()
         {

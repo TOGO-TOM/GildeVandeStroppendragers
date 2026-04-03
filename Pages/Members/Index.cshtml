@@ -9,6 +9,7 @@
     var sortBy      = (string?)ViewContext.HttpContext.Request.Query["sortBy"];
     var filterRole  = (string?)ViewContext.HttpContext.Request.Query["filterRole"];
     var filterAlive = (string?)ViewContext.HttpContext.Request.Query["filterAlive"];
+    var filterAliveNorm = (filterAlive ?? string.Empty).Trim().ToLowerInvariant();
     // Collect active custom field filters from query string
     var cfFilters = ViewContext.HttpContext.Request.Query.Keys
         .Where(k => k.StartsWith("filterCf_"))
@@ -237,19 +238,19 @@
 
         <!-- Stats (also act as alive/deceased filter) -->
         <div class="stat-strip">
-            <a class="stat-item @(string.IsNullOrEmpty(filterAlive) ? "active" : "")"
+            <a class="stat-item @(string.IsNullOrEmpty(filterAliveNorm) ? "active" : "")"
                href="?search=@search&sortBy=@sortBy&filterRole=@filterRole@CfFilterQs()"
                style="text-decoration:none;">
                 <div class="stat-value">@Model.TotalMembers</div>
                 <div class="stat-label">@(string.IsNullOrEmpty(filterRole) ? "Total" : filterRole)</div>
             </a>
-            <a class="stat-item @(filterAlive == "alive" ? "active" : "")"
+            <a class="stat-item @(filterAliveNorm == "alive" ? "active" : "")"
                href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=alive@CfFilterQs()"
                style="text-decoration:none;">
                 <div class="stat-value green">@Model.ActiveMembers</div>
                 <div class="stat-label">Alive</div>
             </a>
-            <a class="stat-item @(filterAlive == "deceased" ? "active" : "")"
+            <a class="stat-item @(filterAliveNorm == "deceased" ? "active" : "")"
                href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=deceased@CfFilterQs()"
                style="text-decoration:none;">
                 <div class="stat-value">@Model.DeceasedMembers</div>

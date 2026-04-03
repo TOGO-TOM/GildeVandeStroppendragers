@@ -41,5 +41,21 @@
             </div>
         </a>
 
+        @if (Model.CurrentUser?.Roles?.Contains("Admin") == true ||
+             Model.CurrentUser?.Roles?.Contains("Super Admin") == true ||
+             Model.CurrentUser?.Roles?.Contains("Stock Editor") == true ||
+             Model.CurrentUser?.Roles?.Contains("Stock Viewer") == true)
+        {
+        <a href="/Stock" class="dash-card">
+            <div class="dash-icon green">
+                <svg class="icon" style="width:22px;height:22px;"><use href="#icon-box" /></svg>
+            </div>
+            <div>
+                <div class="dash-title">Stock</div>
+                <div class="dash-desc">Beheer voorraden, log bewegingen en bekijk de stockgeschiedenis.</div>
+                <div class="dash-arrow">Bekijk stock &rarr;</div>
+            </div>
+        </a>
+        }
     </div>
 </div>

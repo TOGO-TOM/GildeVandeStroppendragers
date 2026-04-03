@@ -55,6 +55,7 @@ else
 }
 
 builder.Services.AddScoped<ExportService>();
+builder.Services.AddScoped<StockExportService>();
 builder.Services.AddScoped<AuditLogService>();
 builder.Services.AddScoped<PasswordPolicyService>();
 builder.Services.AddScoped<EmailService>();

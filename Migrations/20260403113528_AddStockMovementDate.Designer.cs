@@ -4,6 +4,7 @@ using AdminMembers.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdminMembers.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260403113528_AddStockMovementDate")]
+    partial class AddStockMovementDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -391,43 +394,22 @@ namespace AdminMembers.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "All rights including audit logs",
-                            Name = "Super Admin",
-                            Permission = 3
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "All rights except audit logs",
+                            Description = "Full access with read and write permissions",
                             Name = "Admin",
                             Permission = 3
                         },
                         new
                         {
+                            Id = 2,
+                            Description = "Can read and write data",
+                            Name = "Editor",
+                            Permission = 3
+                        },
+                        new
+                        {
                             Id = 3,
-                            Description = "Can add, edit and delete members",
-                            Name = "Member Editor",
-                            Permission = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Read-only access to members",
-                            Name = "Member Viewer",
-                            Permission = 1
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Description = "Can add, edit and manage stock",
-                            Name = "Stock Editor",
-                            Permission = 3
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Description = "Read-only access to stock",
-                            Name = "Stock Viewer",
+                            Description = "Read-only access",
+                            Name = "Viewer",
                             Permission = 1
                         });
                 });

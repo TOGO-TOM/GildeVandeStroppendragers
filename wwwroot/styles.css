@@ -358,7 +358,33 @@ body {
 .badge-green  { background: #dcfce7; color: var(--success); }
 .badge-gray   { background: #f3f4f6; color: var(--text-muted); }
 .badge-red    { background: #fee2e2; color: var(--danger); }
+.badge-orange { background: #ffedd5; color: #c2410c; }
 .badge-purple { background: #ede9fe; color: var(--accent); }
+
+/* ?? STOCK ????????????????????????????????? */
+.stock-category-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    padding: 16px 4px 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+}
+
+.stock-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stock-chart-card { min-width: 0; }
+
+@media (max-width: 640px) {
+    .stock-charts { grid-template-columns: 1fr; }
+}
 
 /* ?? FORMS ????????????????????????????????? */
 .form-section-title {
@@ -597,7 +623,6 @@ body {
 
 /* ?? HOME DASHBOARD ???????????????????????? */
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-
 .dash-card {
     display: flex;
     flex-direction: column;

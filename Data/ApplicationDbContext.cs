@@ -23,6 +23,8 @@ namespace AdminMembers.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<StockItem> StockItems { get; set; }
+        public DbSet<StockMovement> StockMovements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -183,11 +185,44 @@ namespace AdminMembers.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
+            modelBuilder.Entity<StockItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("StockItems");
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.Category).HasMaxLength(100);
+                entity.Property(e => e.Unit).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.CurrentStock).HasColumnType("decimal(18,3)");
+                entity.Property(e => e.MinimumStock).HasColumnType("decimal(18,3)");
+                entity.Ignore(e => e.Status);
+            });
+
+            modelBuilder.Entity<StockMovement>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("StockMovements");
+                entity.Property(e => e.Quantity).HasColumnType("decimal(18,3)");
+                entity.Property(e => e.Note).HasMaxLength(500);
+                entity.Property(e => e.CreatedByUsername).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.MovementDate).IsRequired(false);
+                entity.HasIndex(e => e.StockItemId);
+                entity.HasIndex(e => e.CreatedAt);
+
+                entity.HasOne(sm => sm.StockItem)
+                      .WithMany(si => si.Movements)
+                      .HasForeignKey(sm => sm.StockItemId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
             // Seed default roles
             modelBuilder.Entity<Role>().HasData(
-                new Role { Id = 1, Name = "Admin", Description = "Full access with read and write permissions", Permission = Permission.ReadWrite },
-                new Role { Id = 2, Name = "Editor", Description = "Can read and write data", Permission = Permission.ReadWrite },
-                new Role { Id = 3, Name = "Viewer", Description = "Read-only access", Permission = Permission.Read }
+                new Role { Id = 1, Name = "Super Admin",     Description = "All rights including audit logs",          Permission = Permission.ReadWrite },
+                new Role { Id = 2, Name = "Admin",           Description = "All rights except audit logs",             Permission = Permission.ReadWrite },
+                new Role { Id = 3, Name = "Member Editor",   Description = "Can add, edit and delete members",         Permission = Permission.ReadWrite },
+                new Role { Id = 4, Name = "Member Viewer",   Description = "Read-only access to members",              Permission = Permission.Read },
+                new Role { Id = 5, Name = "Stock Editor",    Description = "Can add, edit and manage stock",           Permission = Permission.ReadWrite },
+                new Role { Id = 6, Name = "Stock Viewer",    Description = "Read-only access to stock",                Permission = Permission.Read }
             );
         }
     }

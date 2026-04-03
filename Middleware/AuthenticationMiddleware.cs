@@ -39,7 +39,7 @@ namespace AdminMembers.Middleware
                     {
                         var cacheKey = $"auth_user_{userId}";
 
-                        if (!cache.TryGetValue(cacheKey, out (string username, string permissions) cached))
+                        if (!cache.TryGetValue(cacheKey, out (string username, string permissions, string roles) cached))
                         {
                             var user = await dbContext.Users
                                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
@@ -53,7 +53,10 @@ namespace AdminMembers.Middleware
                                     .Distinct()
                                     .Select(p => p.ToString()));
 
-                                cached = (user.Username, perms);
+                                var roleNames = string.Join(",", user.UserRoles
+                                    .Select(ur => ur.Role.Name));
+
+                                cached = (user.Username, perms, roleNames);
                                 cache.Set(cacheKey, cached, TimeSpan.FromMinutes(5));
                             }
                         }
@@ -63,6 +66,7 @@ namespace AdminMembers.Middleware
                             context.Request.Headers["X-User-Id"]          = userId.ToString();
                             context.Request.Headers["X-Username"]          = cached.username;
                             context.Request.Headers["X-User-Permissions"]  = cached.permissions;
+                            context.Request.Headers["X-User-Roles"]        = cached.roles;
                         }
                     }
                 }

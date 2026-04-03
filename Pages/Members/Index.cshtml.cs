@@ -64,7 +64,8 @@ namespace AdminMembers.Pages.Members
         public async Task<IActionResult> OnGetAsync(string? search, string? sortBy, string? filterRole, string? filterAlive)
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
-            CanWrite = HasPermission("Write");
+            if (!CanViewMembers()) return RedirectToPage("/Home");
+            CanWrite = CanManageMembers();
             AuthToken = HttpContext.Session.GetString("AuthToken");
             await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
             return Page();
@@ -196,17 +197,8 @@ namespace AdminMembers.Pages.Members
         // ?? Helpers ????????????????????????????????????????????
         private async Task LoadPageDataAsync(string? search, string? sortBy, string? filterRole, string? filterAlive)
         {
-            // Single query for role counts and total � no need to load full entities
-            var roleCounts = await _context.Members
-                .AsNoTracking()
-                .GroupBy(m => m.Role)
-                .Select(g => new { Role = g.Key, Count = g.Count() })
-                .ToListAsync();
-
-            AllMembersCount = roleCounts.Sum(r => r.Count);
-            RoleCounts = roleCounts.ToDictionary(g => g.Role, g => g.Count);
-
-            var query = _context.Members
+            // Base query shared for counts and list
+            var baseQuery = _context.Members
                 .Include(m => m.Address)
                 .Include(m => m.CustomFieldValues)
                 .AsNoTracking()
@@ -214,34 +206,47 @@ namespace AdminMembers.Pages.Members
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(m =>
+                baseQuery = baseQuery.Where(m =>
                     m.FirstName.Contains(search) ||
                     m.LastName.Contains(search) ||
                     (m.Email != null && m.Email.Contains(search)) ||
                     (m.MemberNumber != null && m.MemberNumber.ToString()!.Contains(search)));
             }
 
-            if (!string.IsNullOrWhiteSpace(filterRole) && filterRole != "all")
-                query = query.Where(m => m.Role == filterRole);
-
-            // Custom field filters: ?filterCf_<id>=<value>
+            // Custom field filters
             foreach (var key in Request.Query.Keys.Where(k => k.StartsWith("filterCf_")))
             {
                 if (!int.TryParse(key[9..], out var cfId)) continue;
                 var cfVal = Request.Query[key].ToString();
                 if (!string.IsNullOrEmpty(cfVal))
-                    query = query.Where(m => m.CustomFieldValues.Any(cv => cv.CustomFieldId == cfId && cv.Value == cfVal));
+                    baseQuery = baseQuery.Where(m => m.CustomFieldValues.Any(cv => cv.CustomFieldId == cfId && cv.Value == cfVal));
             }
 
-            // Compute alive/deceased counts BEFORE applying the alive filter so stat tiles always show accurate totals
+            // Role counts from base query (respects search+cf filters, ignores alive filter)
+            // This makes role-btn counts accurate when alive/deceased filter is active
+            var roleCountsRaw = await baseQuery
+                .GroupBy(m => m.Role)
+                .Select(g => new { Role = g.Key, Count = g.Count() })
+                .ToListAsync();
+            AllMembersCount = roleCountsRaw.Sum(r => r.Count);
+            RoleCounts = roleCountsRaw.ToDictionary(g => g.Role, g => g.Count);
+
+            var query = baseQuery;
+
+            if (!string.IsNullOrWhiteSpace(filterRole) && filterRole != "all")
+                query = query.Where(m => m.Role == filterRole);
+
+            // Compute alive/deceased counts AFTER role filter but BEFORE alive filter
+            // so stat tiles reflect the currently filtered role
             var aliveFlags = await query.Select(m => m.IsAlive).ToListAsync();
             TotalMembers    = aliveFlags.Count;
             ActiveMembers   = aliveFlags.Count(a => a);
             DeceasedMembers = aliveFlags.Count(a => !a);
 
-            if (filterAlive == "alive")
+            var aliveFilter = (filterAlive ?? string.Empty).Trim().ToLowerInvariant();
+            if (aliveFilter is "alive" or "true" or "1")
                 query = query.Where(m => m.IsAlive);
-            else if (filterAlive == "deceased")
+            else if (aliveFilter is "deceased" or "false" or "0")
                 query = query.Where(m => !m.IsAlive);
 
             query = sortBy switch
