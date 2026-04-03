@@ -35,6 +35,10 @@
             <a href="/Admin/AuditLogs" class="@(layoutPage == "admin-audit" ? "active" : "")">Audit Logs</a>
         }
         <a href="/Settings" class="@(layoutPage == "settings" ? "active" : "")">Settings</a>
+        @if (layoutUser?.Roles?.Contains("Admin") == true)
+        {
+            <a href="/Stock" class="@(layoutPage == "stock" ? "active" : "")">Stock</a>
+        }
     </nav>
 
     <div class="header-right">
@@ -74,6 +78,10 @@
         <a href="/Admin/AuditLogs" class="mobile-nav-item @(layoutPage == "admin-audit" ? "active" : "")" onclick="closeMobileMenu()">Audit Logs</a>
     }
     <a href="/Settings" class="mobile-nav-item @(layoutPage == "settings" ? "active" : "")" onclick="closeMobileMenu()">Settings</a>
+    @if (layoutUser?.Roles?.Contains("Admin") == true)
+    {
+        <a href="/Stock" class="mobile-nav-item @(layoutPage == "stock" ? "active" : "")" onclick="closeMobileMenu()">Stock</a>
+    }
     @if (layoutUser != null)
     {
         <form method="post" asp-page="/Home" asp-page-handler="Logout" style="padding:16px 20px;">

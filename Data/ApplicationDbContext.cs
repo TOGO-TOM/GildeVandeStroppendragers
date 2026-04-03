@@ -23,6 +23,8 @@ namespace AdminMembers.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<StockItem> StockItems { get; set; }
+        public DbSet<StockMovement> StockMovements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -180,6 +182,35 @@ namespace AdminMembers.Data
                 entity.HasOne(d => d.Member)
                       .WithMany(m => m.Documents)
                       .HasForeignKey(d => d.MemberId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<StockItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("StockItems");
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.Category).HasMaxLength(100);
+                entity.Property(e => e.Unit).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.CurrentStock).HasColumnType("decimal(18,3)");
+                entity.Property(e => e.MinimumStock).HasColumnType("decimal(18,3)");
+                entity.Ignore(e => e.Status);
+            });
+
+            modelBuilder.Entity<StockMovement>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("StockMovements");
+                entity.Property(e => e.Quantity).HasColumnType("decimal(18,3)");
+                entity.Property(e => e.Note).HasMaxLength(500);
+                entity.Property(e => e.CreatedByUsername).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.StockItemId);
+                entity.HasIndex(e => e.CreatedAt);
+
+                entity.HasOne(sm => sm.StockItem)
+                      .WithMany(si => si.Movements)
+                      .HasForeignKey(sm => sm.StockItemId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 

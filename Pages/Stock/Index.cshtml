@@ -1,0 +1,368 @@
+@page
+@model AdminMembers.Pages.Stock.IndexModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Stock";
+    ViewData["LayoutPage"] = "stock";
+    ViewData["LayoutUser"] = Model.CurrentUser;
+}
+
+<div class="page-body">
+
+    <!-- ?? SIDEBAR ?? -->
+    <div class="sidebar form-panel" id="formPanel">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title" id="formTitle">Add Item</span>
+                <button type="button" class="btn btn-xs btn-icon" onclick="resetForm()">Reset</button>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input id="f_name" placeholder="Item name" required />
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input id="f_category" placeholder="e.g. Dranken, Materiaal" />
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input id="f_description" placeholder="Optional description" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Unit</label>
+                        <select id="f_unit">
+                            <option value="stuks">stuks</option>
+                            <option value="kg">kg</option>
+                            <option value="liter">liter</option>
+                            <option value="dozen">dozen</option>
+                            <option value="pakken">pakken</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Stock</label>
+                        <input id="f_stock" type="number" min="0" step="0.001" placeholder="0" value="0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Minimum Stock <span style="color:var(--text-muted);font-weight:400;">(alert threshold)</span></label>
+                    <input id="f_minstock" type="number" min="0" step="0.001" placeholder="Optional" />
+                </div>
+                <input type="hidden" id="f_id" value="0" />
+                <div style="display:flex;gap:8px;margin-top:16px;">
+                    <button class="btn btn-primary" style="flex:1;" onclick="saveItem()">Add Item</button>
+                    <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ?? MAIN CONTENT ?? -->
+    <div class="main-col">
+
+        <!-- Stats -->
+        <div class="stat-strip">
+            <div class="stat-item">
+                <div class="stat-value">@Model.TotalItems</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" style="color:var(--warning, #f59e0b);">@Model.LowStockItems</div>
+                <div class="stat-label">Low Stock</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" style="color:var(--danger);">@Model.OutOfStockItems</div>
+                <div class="stat-label">Out of Stock</div>
+            </div>
+        </div>
+
+        <!-- Item list -->
+        @if (Model.Items.Any())
+        {
+            <!-- Group by category -->
+            @foreach (var group in Model.Items.GroupBy(i => i.Category ?? "Overig").OrderBy(g => g.Key))
+            {
+                <div class="stock-category-header">@group.Key</div>
+                <div class="member-list">
+                    @foreach (var item in group)
+                    {
+                        var statusClass = item.Status switch {
+                            AdminMembers.Models.StockStatus.Out => "badge-red",
+                            AdminMembers.Models.StockStatus.Low => "badge-orange",
+                            _                                   => "badge-green"
+                        };
+                        var statusLabel = item.Status switch {
+                            AdminMembers.Models.StockStatus.Out => "Uitverkocht",
+                            AdminMembers.Models.StockStatus.Low => "Laag",
+                            _                                   => "OK"
+                        };
+                        <div class="member-list-item" style="cursor:default;">
+                            <div class="member-avatar" style="background:var(--primary-light,#ede9fe);color:var(--primary);font-size:18px;">
+                                <svg class="icon icon-md"><use href="#icon-box" /></svg>
+                            </div>
+                            <div class="member-info">
+                                <div class="member-name">@item.Name</div>
+                                <div class="member-details">
+                                    @(item.Description ?? "")
+                                    @if (item.MinimumStock.HasValue)
+                                    {
+                                        <span style="color:var(--text-muted);">· Min: @item.MinimumStock @item.Unit</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="member-meta" style="gap:8px;align-items:flex-end;">
+                                <div style="font-size:20px;font-weight:800;text-align:right;">
+                                    @item.CurrentStock.ToString("G29") <span style="font-size:12px;font-weight:400;color:var(--text-muted);">@item.Unit</span>
+                                </div>
+                                <span class="badge @statusClass">@statusLabel</span>
+                                <div style="display:flex;gap:4px;margin-top:4px;">
+                                    <button class="btn btn-xs btn-accent" onclick="openMovement(@item.Id, '@item.Name.Replace("'","\\'")', '@item.Unit')">
+                                        <svg class="icon icon-sm"><use href="#icon-plus" /></svg>
+                                    </button>
+                                    <button class="btn btn-xs btn-icon" onclick="openEdit(@item.Id,'@item.Name.Replace("'","\\'")', '@(item.Description ?? "")','@(item.Category ?? "")','@item.Unit',@item.CurrentStock,@(item.MinimumStock.HasValue ? item.MinimumStock.Value.ToString() : "null"))">
+                                        <svg class="icon icon-sm"><use href="#icon-edit" /></svg>
+                                    </button>
+                                    <button class="btn btn-xs btn-danger" onclick="deleteItem(@item.Id, '@item.Name.Replace("'","\\'")')">
+                                        <svg class="icon icon-sm"><use href="#icon-trash" /></svg>
+                                    </button>
+                                    <button class="btn btn-xs btn-icon" onclick="openHistory(@item.Id, '@item.Name.Replace("'","\\'")')">
+                                        <svg class="icon icon-sm"><use href="#icon-clock" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-members">
+                <h3>Geen items</h3>
+                <p>Gebruik het formulier om een eerste stock-item toe te voegen.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- FAB -->
+<button class="fab-add" onclick="toggleFormPanel()" title="Add item">&#43;</button>
+
+<!-- ?? MOVEMENT MODAL ?? -->
+<div id="movementModal" class="modal" onclick="if(event.target===this)hideModal('movementModal')">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-head">
+            <h3 id="movementTitle">Stock Beweging</h3>
+            <button class="modal-close-btn" onclick="hideModal('movementModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="mv_itemId" />
+            <div class="form-group">
+                <label>Type</label>
+                <div style="display:flex;gap:8px;">
+                    <label class="export-format-pill"><input type="radio" name="mvType" value="In" checked /> &#43; Toevoegen</label>
+                    <label class="export-format-pill"><input type="radio" name="mvType" value="Out" /> &#8722; Verwijderen</label>
+                    <label class="export-format-pill"><input type="radio" name="mvType" value="Correction" /> &#61; Correctie</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Hoeveelheid <span id="mv_unit" style="color:var(--text-muted);"></span></label>
+                <input id="mv_quantity" type="number" min="0.001" step="0.001" placeholder="0" />
+            </div>
+            <div class="form-group">
+                <label>Notitie</label>
+                <input id="mv_note" placeholder="Optionele notitie" />
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span id="mv_status" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+            <button class="btn btn-icon" onclick="hideModal('movementModal')">Annuleer</button>
+            <button class="btn btn-accent" onclick="saveMovement()">Opslaan</button>
+        </div>
+    </div>
+</div>
+
+<!-- ?? HISTORY MODAL ?? -->
+<div id="historyModal" class="modal" onclick="if(event.target===this)hideModal('historyModal')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3 id="historyTitle">Geschiedenis</h3>
+            <button class="modal-close-btn" onclick="hideModal('historyModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="historyList" style="max-height:400px;overflow-y:auto;"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-icon" onclick="hideModal('historyModal')">Sluiten</button>
+        </div>
+    </div>
+</div>
+
+<!-- ?? DELETE MODAL ?? -->
+<div id="deleteModal" class="modal" onclick="if(event.target===this)hideModal('deleteModal')">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-head">
+            <h3>Item verwijderen</h3>
+            <button class="modal-close-btn" onclick="hideModal('deleteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:14px;">Verwijder <strong id="deleteName"></strong>? Dit kan niet ongedaan worden gemaakt.</p>
+        </div>
+        <div class="modal-footer">
+            <input type="hidden" id="deleteId" />
+            <button class="btn btn-icon" onclick="hideModal('deleteModal')">Annuleer</button>
+            <button class="btn btn-danger" onclick="confirmDelete()">Verwijderen</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const AUTH_TOKEN = '@Model.AuthToken';
+
+function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
+function hideModal(id) { document.getElementById(id).style.display = 'none';  document.body.style.overflow = ''; }
+function toggleFormPanel() { document.getElementById('formPanel').classList.toggle('show'); }
+
+function authHeaders() {
+    return { 'Content-Type': 'application/json', ...(AUTH_TOKEN ? { 'Authorization': `Bearer ${AUTH_TOKEN}` } : {}) };
+}
+
+// ?? Form ??????????????????????????????????
+function resetForm() {
+    document.getElementById('f_id').value          = '0';
+    document.getElementById('f_name').value        = '';
+    document.getElementById('f_category').value    = '';
+    document.getElementById('f_description').value = '';
+    document.getElementById('f_unit').value        = 'stuks';
+    document.getElementById('f_stock').value       = '0';
+    document.getElementById('f_minstock').value    = '';
+    document.getElementById('formTitle').textContent = 'Add Item';
+    document.querySelector('[onclick="saveItem()"]').textContent = 'Add Item';
+    document.getElementById('formPanel').classList.remove('show');
+}
+
+function openEdit(id, name, desc, cat, unit, stock, minstock) {
+    document.getElementById('f_id').value          = id;
+    document.getElementById('f_name').value        = name;
+    document.getElementById('f_description').value = desc;
+    document.getElementById('f_category').value    = cat;
+    document.getElementById('f_unit').value        = unit;
+    document.getElementById('f_stock').value       = stock;
+    document.getElementById('f_minstock').value    = minstock === 'null' ? '' : minstock;
+    document.getElementById('formTitle').textContent = 'Edit Item';
+    document.querySelector('[onclick="saveItem()"]').textContent = 'Update Item';
+    document.getElementById('formPanel').classList.add('show');
+    document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function saveItem() {
+    const id   = parseInt(document.getElementById('f_id').value);
+    const name = document.getElementById('f_name').value.trim();
+    if (!name) { alert('Name is required'); return; }
+
+    const body = {
+        name,
+        description:  document.getElementById('f_description').value.trim() || null,
+        category:     document.getElementById('f_category').value.trim()    || null,
+        unit:         document.getElementById('f_unit').value,
+        currentStock: parseFloat(document.getElementById('f_stock').value)   || 0,
+        minimumStock: document.getElementById('f_minstock').value ? parseFloat(document.getElementById('f_minstock').value) : null
+    };
+
+    const url    = id === 0 ? '/api/stock' : `/api/stock/${id}`;
+    const method = id === 0 ? 'POST' : 'PUT';
+
+    try {
+        const r = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+        if (r.ok) { location.reload(); }
+        else { const d = await r.json().catch(() => ({})); alert(d.error ?? 'Save failed'); }
+    } catch { alert('Request failed'); }
+}
+
+// ?? Delete ????????????????????????????????
+function deleteItem(id, name) {
+    document.getElementById('deleteId').value = id;
+    document.getElementById('deleteName').textContent = name;
+    showModal('deleteModal');
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('deleteId').value;
+    try {
+        const r = await fetch(`/api/stock/${id}`, { method: 'DELETE', headers: authHeaders() });
+        if (r.ok) { hideModal('deleteModal'); location.reload(); }
+        else { const d = await r.json().catch(() => ({})); alert(d.error ?? 'Delete failed'); }
+    } catch { alert('Request failed'); }
+}
+
+// ?? Movement ??????????????????????????????
+function openMovement(id, name, unit) {
+    document.getElementById('mv_itemId').value = id;
+    document.getElementById('movementTitle').textContent = `Beweging: ${name}`;
+    document.getElementById('mv_unit').textContent = unit;
+    document.getElementById('mv_quantity').value = '';
+    document.getElementById('mv_note').value = '';
+    document.getElementById('mv_status').textContent = '';
+    document.querySelector('input[name="mvType"][value="In"]').checked = true;
+    showModal('movementModal');
+}
+
+async function saveMovement() {
+    const id  = document.getElementById('mv_itemId').value;
+    const qty = parseFloat(document.getElementById('mv_quantity').value);
+    if (!qty || qty <= 0) { alert('Voer een geldige hoeveelheid in'); return; }
+
+    const type = document.querySelector('input[name="mvType"]:checked').value;
+    const note = document.getElementById('mv_note').value.trim() || null;
+    const statusEl = document.getElementById('mv_status');
+    statusEl.textContent = 'Opslaan…';
+
+    try {
+        const r = await fetch(`/api/stock/${id}/movement`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ type: type === 'In' ? 0 : type === 'Out' ? 1 : 2, quantity: qty, note })
+        });
+        if (r.ok) { hideModal('movementModal'); location.reload(); }
+        else { statusEl.textContent = ''; const d = await r.json().catch(() => ({})); alert(d.error ?? 'Failed'); }
+    } catch { statusEl.textContent = ''; alert('Request failed'); }
+}
+
+// ?? History ???????????????????????????????
+async function openHistory(id, name) {
+    document.getElementById('historyTitle').textContent = `Geschiedenis: ${name}`;
+    document.getElementById('historyList').innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Laden…</p>';
+    showModal('historyModal');
+
+    try {
+        const r = await fetch(`/api/stock/${id}/movements`, { headers: authHeaders() });
+        const data = await r.json();
+
+        if (!data.length) {
+            document.getElementById('historyList').innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Geen bewegingen gevonden.</p>';
+            return;
+        }
+
+        const typeLabel = { 0: '+ In', 1: '? Out', 2: '= Correctie' };
+        const typeClass = { 0: 'badge-green', 1: 'badge-red', 2: 'badge-purple' };
+
+        document.getElementById('historyList').innerHTML = data.map(m => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+                <span class="badge ${typeClass[m.type]}">${typeLabel[m.type]}</span>
+                <div style="flex:1;">
+                    <div style="font-size:14px;font-weight:600;">${m.quantity}</div>
+                    <div style="font-size:12px;color:var(--text-muted);">${m.note ?? ''}</div>
+                </div>
+                <div style="text-align:right;font-size:12px;color:var(--text-muted);">
+                    <div>${m.createdByUsername}</div>
+                    <div>${new Date(m.createdAt).toLocaleString('nl-BE')}</div>
+                </div>
+            </div>`).join('');
+    } catch {
+        document.getElementById('historyList').innerHTML = '<p style="color:var(--danger);font-size:13px;">Laden mislukt.</p>';
+    }
+}
+</script>
+}
