@@ -27,7 +27,7 @@ namespace AdminMembers.Controllers
 
         // GET /api/stock
         [HttpGet]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> GetAll()
         {
             var items = await _context.StockItems
@@ -40,7 +40,7 @@ namespace AdminMembers.Controllers
 
         // GET /api/stock/{id}
         [HttpGet("{id}")]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> Get(int id)
         {
             var item = await _context.StockItems.FindAsync(id);
@@ -50,7 +50,7 @@ namespace AdminMembers.Controllers
 
         // GET /api/stock/{id}/movements
         [HttpGet("{id}/movements")]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> GetMovements(int id)
         {
             var movements = await _context.StockMovements
@@ -186,7 +186,7 @@ namespace AdminMembers.Controllers
         // ?? Export endpoints ?????????????????????????????????????????????
 
         [HttpGet("export/excel")]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> ExportExcel()
         {
             var items    = await GetAllItemsInternal();
@@ -197,7 +197,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpGet("export/csv")]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> ExportCsv()
         {
             var items = await GetAllItemsInternal();
@@ -206,7 +206,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpGet("export/pdf")]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> ExportPdf()
         {
             var items    = await GetAllItemsInternal();
@@ -216,7 +216,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpGet("chart-data")]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.Read)]
         public async Task<IActionResult> GetChartData()
         {
             var items = await GetAllItemsInternal();

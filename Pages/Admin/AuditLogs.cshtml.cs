@@ -27,7 +27,7 @@ namespace AdminMembers.Pages.Admin
         public async Task<IActionResult> OnGetAsync()
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
-            if (!CurrentUser!.Roles.Contains("Admin")) return Forbid();
+            if (!HasPermission("AuditLogs")) return Forbid();
 
             var (logs, total) = await _auditLogService.GetFilteredLogsAsync(
                 FilterUsername, FilterAction, FilterEntity, CurrentPage, PageSize);

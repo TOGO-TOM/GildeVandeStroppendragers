@@ -35,7 +35,7 @@ namespace AdminMembers.Pages.Admin.Users
         public async Task<IActionResult> OnGetAsync()
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
-            if (!HasPermission("ReadWrite")) return Forbid();
+            if (!IsAdmin()) return Forbid();
             await LoadDataAsync();
             return Page();
         }

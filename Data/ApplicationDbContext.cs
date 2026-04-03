@@ -217,9 +217,12 @@ namespace AdminMembers.Data
 
             // Seed default roles
             modelBuilder.Entity<Role>().HasData(
-                new Role { Id = 1, Name = "Admin", Description = "Full access with read and write permissions", Permission = Permission.ReadWrite },
-                new Role { Id = 2, Name = "Editor", Description = "Can read and write data", Permission = Permission.ReadWrite },
-                new Role { Id = 3, Name = "Viewer", Description = "Read-only access", Permission = Permission.Read }
+                new Role { Id = 1, Name = "Super Admin",     Description = "All rights including audit logs",          Permission = Permission.ReadWrite },
+                new Role { Id = 2, Name = "Admin",           Description = "All rights except audit logs",             Permission = Permission.ReadWrite },
+                new Role { Id = 3, Name = "Member Editor",   Description = "Can add, edit and delete members",         Permission = Permission.ReadWrite },
+                new Role { Id = 4, Name = "Member Viewer",   Description = "Read-only access to members",              Permission = Permission.Read },
+                new Role { Id = 5, Name = "Stock Editor",    Description = "Can add, edit and manage stock",           Permission = Permission.ReadWrite },
+                new Role { Id = 6, Name = "Stock Viewer",    Description = "Read-only access to stock",                Permission = Permission.Read }
             );
         }
     }

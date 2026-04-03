@@ -64,7 +64,7 @@ namespace AdminMembers.Pages.Members
         public async Task<IActionResult> OnGetAsync(string? search, string? sortBy, string? filterRole, string? filterAlive)
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
-            CanWrite = HasPermission("Write");
+            CanWrite = CanManageMembers();
             AuthToken = HttpContext.Session.GetString("AuthToken");
             await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
             return Page();

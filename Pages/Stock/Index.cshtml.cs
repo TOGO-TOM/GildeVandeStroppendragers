@@ -21,16 +21,18 @@ namespace AdminMembers.Pages.Stock
         public int LowStockItems { get; set; }
         public int OutOfStockItems { get; set; }
         public string? AuthToken { get; set; }
+        public bool CanWrite { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
 
-            // Admin only
-            if (!CurrentUser!.Roles.Contains("Admin"))
+            // Stock module: Super Admin, Admin, Stock Editor, Stock Viewer
+            if (!IsAdmin() && !CanViewStock())
                 return RedirectToPage("/Home");
 
             AuthToken = HttpContext.Session.GetString("AuthToken");
+            CanWrite = CanManageStock();
 
             Items = await _context.StockItems
                 .AsNoTracking()

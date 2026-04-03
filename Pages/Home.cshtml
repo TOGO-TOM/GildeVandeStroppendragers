@@ -41,7 +41,10 @@
             </div>
         </a>
 
-        @if (Model.CurrentUser?.Roles?.Contains("Admin") == true)
+        @if (Model.CurrentUser?.Roles?.Contains("Admin") == true ||
+             Model.CurrentUser?.Roles?.Contains("Super Admin") == true ||
+             Model.CurrentUser?.Roles?.Contains("Stock Editor") == true ||
+             Model.CurrentUser?.Roles?.Contains("Stock Viewer") == true)
         {
         <a href="/Stock" class="dash-card">
             <div class="dash-icon green">
