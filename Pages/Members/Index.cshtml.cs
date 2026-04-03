@@ -243,9 +243,10 @@ namespace AdminMembers.Pages.Members
             ActiveMembers   = aliveFlags.Count(a => a);
             DeceasedMembers = aliveFlags.Count(a => !a);
 
-            if (filterAlive == "alive")
+            var aliveFilter = (filterAlive ?? string.Empty).Trim().ToLowerInvariant();
+            if (aliveFilter is "alive" or "true" or "1")
                 query = query.Where(m => m.IsAlive);
-            else if (filterAlive == "deceased")
+            else if (aliveFilter is "deceased" or "false" or "0")
                 query = query.Where(m => !m.IsAlive);
 
             query = sortBy switch
