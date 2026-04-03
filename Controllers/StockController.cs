@@ -27,7 +27,7 @@ namespace AdminMembers.Controllers
 
         // GET /api/stock
         [HttpGet]
-        [RequirePermission(Permission.Read)]
+        [RequirePermission(Permission.Read, ResourceType.Stock)]
         public async Task<IActionResult> GetAll()
         {
             var items = await _context.StockItems
@@ -40,7 +40,7 @@ namespace AdminMembers.Controllers
 
         // GET /api/stock/{id}
         [HttpGet("{id}")]
-        [RequirePermission(Permission.Read)]
+        [RequirePermission(Permission.Read, ResourceType.Stock)]
         public async Task<IActionResult> Get(int id)
         {
             var item = await _context.StockItems.FindAsync(id);
@@ -50,13 +50,14 @@ namespace AdminMembers.Controllers
 
         // GET /api/stock/{id}/movements
         [HttpGet("{id}/movements")]
-        [RequirePermission(Permission.Read)]
+        [RequirePermission(Permission.Read, ResourceType.Stock)]
         public async Task<IActionResult> GetMovements(int id)
         {
             var movements = await _context.StockMovements
                 .Where(m => m.StockItemId == id)
                 .AsNoTracking()
-                .OrderByDescending(m => m.CreatedAt)
+                .OrderByDescending(m => m.MovementDate ?? m.CreatedAt)
+                .ThenByDescending(m => m.CreatedAt)
                 .Take(50)
                 .ToListAsync();
             return Ok(movements);
@@ -64,7 +65,7 @@ namespace AdminMembers.Controllers
 
         // POST /api/stock
         [HttpPost]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.ReadWrite, ResourceType.Stock)]
         public async Task<IActionResult> Create([FromBody] StockItemRequest req)
         {
             if (string.IsNullOrWhiteSpace(req.Name))
@@ -94,7 +95,7 @@ namespace AdminMembers.Controllers
 
         // PUT /api/stock/{id}
         [HttpPut("{id}")]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.ReadWrite, ResourceType.Stock)]
         public async Task<IActionResult> Update(int id, [FromBody] StockItemRequest req)
         {
             var item = await _context.StockItems.FindAsync(id);
@@ -121,7 +122,7 @@ namespace AdminMembers.Controllers
 
         // DELETE /api/stock/{id}
         [HttpDelete("{id}")]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.ReadWrite, ResourceType.Stock)]
         public async Task<IActionResult> Delete(int id)
         {
             var item = await _context.StockItems.FindAsync(id);
@@ -140,7 +141,7 @@ namespace AdminMembers.Controllers
 
         // POST /api/stock/{id}/movement
         [HttpPost("{id}/movement")]
-        [RequirePermission(Permission.ReadWrite)]
+        [RequirePermission(Permission.ReadWrite, ResourceType.Stock)]
         public async Task<IActionResult> AddMovement(int id, [FromBody] StockMovementRequest req)
         {
             var item = await _context.StockItems.FindAsync(id);
@@ -148,6 +149,9 @@ namespace AdminMembers.Controllers
 
             if (req.Quantity <= 0)
                 return BadRequest(new { error = "Quantity must be greater than 0" });
+
+            if (req.Type == StockMovementType.Out && req.Quantity > item.CurrentStock)
+                return BadRequest(new { error = $"Insufficient stock: available {item.CurrentStock} {item.Unit}" });
 
             var username = Request.Headers["X-Username"].ToString();
             var userId   = int.TryParse(Request.Headers["X-User-Id"], out var uid) ? uid : 0;
@@ -186,7 +190,7 @@ namespace AdminMembers.Controllers
         // ?? Export endpoints ?????????????????????????????????????????????
 
         [HttpGet("export/excel")]
-        [RequirePermission(Permission.Read)]
+        [RequirePermission(Permission.Read, ResourceType.Stock)]
         public async Task<IActionResult> ExportExcel()
         {
             var items    = await GetAllItemsInternal();
@@ -197,7 +201,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpGet("export/csv")]
-        [RequirePermission(Permission.Read)]
+        [RequirePermission(Permission.Read, ResourceType.Stock)]
         public async Task<IActionResult> ExportCsv()
         {
             var items = await GetAllItemsInternal();
@@ -206,7 +210,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpGet("export/pdf")]
-        [RequirePermission(Permission.Read)]
+        [RequirePermission(Permission.Read, ResourceType.Stock)]
         public async Task<IActionResult> ExportPdf()
         {
             var items    = await GetAllItemsInternal();
@@ -216,7 +220,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpGet("chart-data")]
-        [RequirePermission(Permission.Read)]
+        [RequirePermission(Permission.Read, ResourceType.Stock)]
         public async Task<IActionResult> GetChartData()
         {
             var items = await GetAllItemsInternal();

@@ -1,18 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using AdminMembers.Models;
 
 namespace AdminMembers.Attributes
 {
+    public enum ResourceType { Member, Stock }
+
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class RequirePermissionAttribute : Attribute, IAuthorizationFilter
     {
         private readonly Permission _requiredPermission;
+        private readonly ResourceType _resource;
 
-        public RequirePermissionAttribute(Permission permission)
+        public RequirePermissionAttribute(Permission permission, ResourceType resource = ResourceType.Member)
         {
             _requiredPermission = permission;
+            _resource = resource;
         }
 
         public void OnAuthorization(AuthorizationFilterContext context)
@@ -33,15 +36,16 @@ namespace AdminMembers.Attributes
             if (roles.Contains("Super Admin") || roles.Contains("Admin"))
                 return;
 
-            bool hasPermission = _requiredPermission switch
+            bool hasPermission = (_resource, _requiredPermission) switch
             {
-                Permission.Read =>
-                    roles.Contains("Member Editor") || roles.Contains("Member Viewer") ||
-                    roles.Contains("Stock Editor")  || roles.Contains("Stock Viewer"),
-                Permission.Write =>
-                    roles.Contains("Member Editor") || roles.Contains("Stock Editor"),
-                Permission.ReadWrite =>
-                    roles.Contains("Member Editor") || roles.Contains("Stock Editor"),
+                (ResourceType.Member, Permission.Read) =>
+                    roles.Contains("Member Editor") || roles.Contains("Member Viewer"),
+                (ResourceType.Member, Permission.Write) or (ResourceType.Member, Permission.ReadWrite) =>
+                    roles.Contains("Member Editor"),
+                (ResourceType.Stock, Permission.Read) =>
+                    roles.Contains("Stock Editor") || roles.Contains("Stock Viewer"),
+                (ResourceType.Stock, Permission.Write) or (ResourceType.Stock, Permission.ReadWrite) =>
+                    roles.Contains("Stock Editor"),
                 _ => false
             };
 
