@@ -162,7 +162,7 @@
                                     @(item.Description ?? "")
                                     @if (item.MinimumStock.HasValue)
                                     {
-                                        <span style="color:var(--text-muted);">· Min: @item.MinimumStock @item.Unit</span>
+                                        <span style="color:var(--text-muted);">&middot; Min: @item.MinimumStock @item.Unit</span>
                                     }
                                 </div>
                             </div>
@@ -215,10 +215,16 @@
             <div class="form-group">
                 <label>Formaat</label>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <label class="export-format-pill"><input type="radio" name="stockFmt" value="excel" checked /> Excel (.xlsx)</label>
-                    <label class="export-format-pill"><input type="radio" name="stockFmt" value="csv" /> CSV</label>
-                    <label class="export-format-pill"><input type="radio" name="stockFmt" value="pdf" /> PDF</label>
+                    <label class="export-format-pill"><input type="radio" name="stockFmt" value="excel" checked onchange="onFmtChange()" /> Excel (.xlsx)</label>
+                    <label class="export-format-pill"><input type="radio" name="stockFmt" value="csv" onchange="onFmtChange()" /> CSV</label>
+                    <label class="export-format-pill"><input type="radio" name="stockFmt" value="pdf" onchange="onFmtChange()" /> PDF</label>
                 </div>
+            </div>
+            <div id="exportMovementsRow" style="display:none;margin-top:10px;">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+                    <input type="checkbox" id="exportIncludeMovements" />
+                    Inclusief bewegingsgeschiedenis per item
+                </label>
             </div>
             <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">
                 Exporteert alle stock-items inclusief categorie, hoeveelheid en status.
@@ -411,7 +417,7 @@ async function saveMovement() {
     const note    = document.getElementById('mv_note').value.trim() || null;
     const dateVal = document.getElementById('mv_date').value || null;
     const statusEl = document.getElementById('mv_status');
-    statusEl.textContent = 'Opslaan…';
+    statusEl.textContent = 'Opslaanï¿½';
 
     try {
         const r = await fetch(`/api/stock/${id}/movement`, {
@@ -427,7 +433,7 @@ async function saveMovement() {
 // ?? History ???????????????????????????????
 async function openHistory(id, name) {
     document.getElementById('historyTitle').textContent = `Geschiedenis: ${name}`;
-    document.getElementById('historyList').innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Laden…</p>';
+    document.getElementById('historyList').innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Ladenï¿½</p>';
     showModal('historyModal');
 
     try {
@@ -459,26 +465,28 @@ async function openHistory(id, name) {
     }
 }
 // ?? Export ???????????????????????????????
+function onFmtChange() {
+    const fmt = document.querySelector('input[name="stockFmt"]:checked')?.value;
+    document.getElementById('exportMovementsRow').style.display = fmt === 'pdf' ? '' : 'none';
+    if (fmt !== 'pdf') document.getElementById('exportIncludeMovements').checked = false;
+}
 async function runExport() {
     const fmt = document.querySelector('input[name="stockFmt"]:checked')?.value ?? 'excel';
+    const includeMovements = fmt === 'pdf' && document.getElementById('exportIncludeMovements').checked;
     const extMap  = { excel: 'xlsx', csv: 'csv', pdf: 'pdf' };
-    const mimeMap = {
-        excel: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        csv:   'text/csv',
-        pdf:   'application/pdf'
-    };
     const statusEl = document.getElementById('exportStatus');
-    statusEl.textContent = 'Genereren…';
+    statusEl.textContent = 'Genereren\u2026';
     try {
-        const r = await fetch(`/api/stock/export/${fmt}`, { headers: authHeaders() });
+        const url = `/api/stock/export/${fmt}${includeMovements ? '?includeMovements=true' : ''}`;
+        const r = await fetch(url, { headers: authHeaders() });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const blob = await r.blob();
-        const url  = URL.createObjectURL(blob);
+        const dlUrl = URL.createObjectURL(blob);
         const a    = document.createElement('a');
-        a.href     = url;
+        a.href     = dlUrl;
         a.download = `stock_${new Date().toISOString().slice(0,10)}.${extMap[fmt]}`;
         document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(dlUrl);
         statusEl.textContent = '';
         hideModal('exportModal');
     } catch(e) {

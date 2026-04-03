@@ -141,7 +141,7 @@ namespace AdminMembers.Services
                 FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18, accentColor))
             { Alignment = Element.ALIGN_CENTER, SpacingAfter = 4 });
 
-            document.Add(new Paragraph($"Geëxporteerd op: {DateTime.Now:dd/MM/yyyy HH:mm}",
+            document.Add(new Paragraph($"Ge\u00ebxporteerd op: {DateTime.Now:dd/MM/yyyy HH:mm}",
                 FontFactory.GetFont(FontFactory.HELVETICA, 9, new BaseColor(130, 130, 130)))
             { Alignment = Element.ALIGN_CENTER, SpacingAfter = 20 });
 
@@ -194,7 +194,7 @@ namespace AdminMembers.Services
 
                     AddDataCell(table, item.Name,                          dFont, bg);
                     AddDataCell(table, item.CurrentStock.ToString("G29"),  dFont, bg, Element.ALIGN_RIGHT);
-                    AddDataCell(table, item.MinimumStock?.ToString("G29") ?? "—", dFont, bg, Element.ALIGN_RIGHT);
+                    AddDataCell(table, item.MinimumStock?.ToString("G29") ?? "-", dFont, bg, Element.ALIGN_RIGHT);
                     AddDataCell(table, item.Unit,                          dFont, bg, Element.ALIGN_CENTER);
                     table.AddCell(new PdfPCell(new Phrase(statusLabel, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8)))
                     { BackgroundColor = statusBg, Padding = 5, HorizontalAlignment = Element.ALIGN_CENTER });
@@ -203,6 +203,131 @@ namespace AdminMembers.Services
                 }
 
                 document.Add(table);
+            }
+
+            document.Close();
+            return stream.ToArray();
+        }
+
+        // ?? PDF with movements ????????????????????????????????????????????
+        public byte[] ExportToPdfWithMovements(List<StockItem> items, byte[]? logoData, string? companyName)
+        {
+            using var stream = new MemoryStream();
+            var document = new Document(PageSize.A4, 30, 30, 40, 30);
+            PdfWriter.GetInstance(document, stream);
+            document.Open();
+
+            var accentColor = new BaseColor(79, 70, 229);
+            var mutedColor  = new BaseColor(130, 130, 130);
+
+            // Logo
+            if (logoData?.Length > 0)
+            {
+                try
+                {
+                    var logo = iTextSharp.text.Image.GetInstance(logoData);
+                    logo.ScaleToFit(100f, 50f);
+                    logo.Alignment = Element.ALIGN_CENTER;
+                    logo.SpacingAfter = 8;
+                    document.Add(logo);
+                }
+                catch { /* skip bad logo */ }
+            }
+
+            document.Add(new Paragraph(companyName ?? "Stock Overzicht",
+                FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18, accentColor))
+            { Alignment = Element.ALIGN_CENTER, SpacingAfter = 4 });
+
+            document.Add(new Paragraph($"Ge\u00ebxporteerd op: {DateTime.Now:dd/MM/yyyy HH:mm} \u2014 inclusief bewegingsgeschiedenis",
+                FontFactory.GetFont(FontFactory.HELVETICA, 9, mutedColor))
+            { Alignment = Element.ALIGN_CENTER, SpacingAfter = 20 });
+
+            // Summary
+            var summaryTable = new PdfPTable(3) { WidthPercentage = 60, SpacingAfter = 20, HorizontalAlignment = Element.ALIGN_CENTER };
+            AddSummaryCell(summaryTable, items.Count.ToString(),                             "Totaal",       new BaseColor(79, 70, 229));
+            AddSummaryCell(summaryTable, items.Count(i => i.Status == StockStatus.Low).ToString(),  "Laag",  new BaseColor(194, 65, 12));
+            AddSummaryCell(summaryTable, items.Count(i => i.Status == StockStatus.Out).ToString(),  "Uitverkocht", new BaseColor(185, 28, 28));
+            document.Add(summaryTable);
+
+            var hFont  = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9, new BaseColor(255, 255, 255));
+            var dFont  = FontFactory.GetFont(FontFactory.HELVETICA, 9);
+            var mvFont = FontFactory.GetFont(FontFactory.HELVETICA, 8);
+            var mvHFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8, new BaseColor(255, 255, 255));
+            var mvHeaderColor = new BaseColor(107, 99, 200);
+
+            foreach (var grp in items.GroupBy(i => i.Category ?? "Overig").OrderBy(g => g.Key))
+            {
+                document.Add(new Paragraph(grp.Key,
+                    FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 11, accentColor))
+                { SpacingBefore = 12, SpacingAfter = 4 });
+
+                foreach (var item in grp.OrderBy(i => i.Name))
+                {
+                    var statusBg = item.Status switch
+                    {
+                        StockStatus.Out => new BaseColor(254, 226, 226),
+                        StockStatus.Low => new BaseColor(255, 237, 213),
+                        _               => new BaseColor(220, 252, 231)
+                    };
+                    var statusLabel = item.Status switch
+                    {
+                        StockStatus.Out => "Uitverkocht",
+                        StockStatus.Low => "Laag",
+                        _               => "OK"
+                    };
+
+                    // Item header row
+                    var itemTable = new PdfPTable(5) { WidthPercentage = 100, SpacingAfter = 2 };
+                    itemTable.SetWidths(new float[] { 30, 12, 12, 14, 10 });
+                    foreach (var h in new[] { "Naam", "Hoeveelheid", "Minimum", "Eenheid", "Status" })
+                        itemTable.AddCell(new PdfPCell(new Phrase(h, hFont))
+                        { BackgroundColor = accentColor, Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    var rowBg = new BaseColor(255, 255, 255);
+                    AddDataCell(itemTable, item.Name, dFont, rowBg);
+                    AddDataCell(itemTable, item.CurrentStock.ToString("G29"), dFont, rowBg, Element.ALIGN_RIGHT);
+                    AddDataCell(itemTable, item.MinimumStock?.ToString("G29") ?? "-", dFont, rowBg, Element.ALIGN_RIGHT);
+                    AddDataCell(itemTable, item.Unit, dFont, rowBg, Element.ALIGN_CENTER);
+                    itemTable.AddCell(new PdfPCell(new Phrase(statusLabel, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8)))
+                    { BackgroundColor = statusBg, Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER });
+                    document.Add(itemTable);
+
+                    // Movement history
+                    if (item.Movements?.Any() == true)
+                    {
+                        var mvTable = new PdfPTable(4) { WidthPercentage = 96, SpacingAfter = 8, HorizontalAlignment = Element.ALIGN_RIGHT };
+                        mvTable.SetWidths(new float[] { 22, 10, 40, 18 });
+                        foreach (var h in new[] { "Datum", "Type", "Notitie", "Hoeveelheid" })
+                            mvTable.AddCell(new PdfPCell(new Phrase(h, mvHFont))
+                            { BackgroundColor = mvHeaderColor, Padding = 3, HorizontalAlignment = Element.ALIGN_CENTER });
+
+                        bool alt = false;
+                        foreach (var mv in item.Movements)
+                        {
+                            var bg = alt ? new BaseColor(245, 244, 255) : new BaseColor(255, 255, 255);
+                            var date = (mv.MovementDate ?? mv.CreatedAt).ToString("dd/MM/yyyy HH:mm");
+                            var typeLabel = mv.Type switch
+                            {
+                                AdminMembers.Models.StockMovementType.In         => "+ In",
+                                AdminMembers.Models.StockMovementType.Out        => "- Uit",
+                                AdminMembers.Models.StockMovementType.Correction => "= Correctie",
+                                _                                                => mv.Type.ToString()
+                            };
+                            AddDataCell(mvTable, date, mvFont, bg);
+                            AddDataCell(mvTable, typeLabel, mvFont, bg, Element.ALIGN_CENTER);
+                            AddDataCell(mvTable, mv.Note ?? "", mvFont, bg);
+                            AddDataCell(mvTable, mv.Quantity.ToString("G29"), mvFont, bg, Element.ALIGN_RIGHT);
+                            alt = !alt;
+                        }
+                        document.Add(mvTable);
+                    }
+                    else
+                    {
+                        document.Add(new Paragraph("  Geen bewegingen geregistreerd.",
+                            FontFactory.GetFont(FontFactory.HELVETICA, 8, mutedColor))
+                        { SpacingAfter = 8 });
+                    }
+                }
             }
 
             document.Close();

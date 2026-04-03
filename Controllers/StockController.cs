@@ -211,11 +211,25 @@ namespace AdminMembers.Controllers
 
         [HttpGet("export/pdf")]
         [RequirePermission(Permission.Read, ResourceType.Stock)]
-        public async Task<IActionResult> ExportPdf()
+        public async Task<IActionResult> ExportPdf([FromQuery] bool includeMovements = false)
         {
-            var items    = await GetAllItemsInternal();
             var settings = await _context.AppSettings.FirstOrDefaultAsync();
-            var bytes    = _exportService.ExportToPdf(items, settings?.LogoData, settings?.CompanyName);
+            byte[] bytes;
+            if (includeMovements)
+            {
+                var items = await _context.StockItems
+                    .AsNoTracking()
+                    .Include(s => s.Movements.OrderByDescending(m => m.MovementDate ?? m.CreatedAt).Take(100))
+                    .OrderBy(s => s.Category)
+                    .ThenBy(s => s.Name)
+                    .ToListAsync();
+                bytes = _exportService.ExportToPdfWithMovements(items, settings?.LogoData, settings?.CompanyName);
+            }
+            else
+            {
+                var items = await GetAllItemsInternal();
+                bytes = _exportService.ExportToPdf(items, settings?.LogoData, settings?.CompanyName);
+            }
             return File(bytes, "application/pdf", $"stock_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
         }
 
