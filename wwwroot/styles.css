@@ -772,6 +772,9 @@ body {
 
     .modal-box { margin: 20px auto; width: 95%; }
 
+    .doc-item-meta { width: 100%; }
+    .doc-item-actions { flex-wrap: wrap; gap: 4px; }
+
     .info-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
 
     .settings-grid { gap: 12px; }
@@ -782,6 +785,12 @@ body {
     .stat-strip { grid-template-columns: 1fr; }
     .info-grid  { grid-template-columns: 1fr; }
     .modal-box  { margin: 0; border-radius: 0; width: 100%; min-height: 100vh; }
+
+    .doc-item { gap: 8px; }
+    .doc-item-name { min-width: 80px; }
+    .doc-item-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; gap: 4px; }
+    .doc-item-actions .btn { flex: 0 0 auto; }
+    .doc-upload-area { padding: 16px 12px; }
 }
 
 /* ?? NO-MEMBERS ???????????????????????????? */

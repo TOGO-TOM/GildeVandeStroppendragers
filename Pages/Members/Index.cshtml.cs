@@ -224,11 +224,6 @@ namespace AdminMembers.Pages.Members
             if (!string.IsNullOrWhiteSpace(filterRole) && filterRole != "all")
                 query = query.Where(m => m.Role == filterRole);
 
-            if (filterAlive == "alive")
-                query = query.Where(m => m.IsAlive);
-            else if (filterAlive == "deceased")
-                query = query.Where(m => !m.IsAlive);
-
             // Custom field filters: ?filterCf_<id>=<value>
             foreach (var key in Request.Query.Keys.Where(k => k.StartsWith("filterCf_")))
             {
@@ -237,6 +232,17 @@ namespace AdminMembers.Pages.Members
                 if (!string.IsNullOrEmpty(cfVal))
                     query = query.Where(m => m.CustomFieldValues.Any(cv => cv.CustomFieldId == cfId && cv.Value == cfVal));
             }
+
+            // Compute alive/deceased counts BEFORE applying the alive filter so stat tiles always show accurate totals
+            var aliveFlags = await query.Select(m => m.IsAlive).ToListAsync();
+            TotalMembers    = aliveFlags.Count;
+            ActiveMembers   = aliveFlags.Count(a => a);
+            DeceasedMembers = aliveFlags.Count(a => !a);
+
+            if (filterAlive == "alive")
+                query = query.Where(m => m.IsAlive);
+            else if (filterAlive == "deceased")
+                query = query.Where(m => !m.IsAlive);
 
             query = sortBy switch
             {
@@ -247,10 +253,7 @@ namespace AdminMembers.Pages.Members
                 _                   => query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName)
             };
 
-            Members         = await query.ToListAsync();
-            TotalMembers    = Members.Count;
-            ActiveMembers   = Members.Count(m => m.IsAlive);
-            DeceasedMembers = Members.Count(m => !m.IsAlive);
+            Members = await query.ToListAsync();
 
             CustomFields = await _context.CustomFields
                 .Where(cf => cf.IsActive)
