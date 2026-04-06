@@ -238,23 +238,23 @@
 
         <!-- Stats (also act as alive/deceased filter) -->
         <div class="stat-strip">
-            <a class="stat-item @(string.IsNullOrEmpty(filterAliveNorm) ? "active" : "")"
-               href="?search=@search&sortBy=@sortBy&filterRole=@filterRole@CfFilterQs()"
-               style="text-decoration:none;">
-                <div class="stat-value">@Model.TotalMembers</div>
-                <div class="stat-label">@(string.IsNullOrEmpty(filterRole) ? "Total" : filterRole)</div>
-            </a>
             <a class="stat-item @(filterAliveNorm == "alive" ? "active" : "")"
-               href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=alive@CfFilterQs()"
+               href="?search=@search&sortBy=@sortBy&filterRole=@Uri.EscapeDataString(filterRole ?? "")&filterAlive=alive@CfFilterQs()"
                style="text-decoration:none;">
                 <div class="stat-value green">@Model.ActiveMembers</div>
                 <div class="stat-label">Alive</div>
             </a>
             <a class="stat-item @(filterAliveNorm == "deceased" ? "active" : "")"
-               href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=deceased@CfFilterQs()"
+               href="?search=@search&sortBy=@sortBy&filterRole=@Uri.EscapeDataString(filterRole ?? "")&filterAlive=deceased@CfFilterQs()"
                style="text-decoration:none;">
                 <div class="stat-value">@Model.DeceasedMembers</div>
                 <div class="stat-label">Deceased</div>
+            </a>
+            <a class="stat-item @(filterAliveNorm != "alive" && filterAliveNorm != "deceased" ? "active" : "")"
+               href="?search=@search&sortBy=@sortBy&filterRole=@Uri.EscapeDataString(filterRole ?? "")&filterAlive=all@CfFilterQs()"
+               style="text-decoration:none;">
+                <div class="stat-value">@Model.TotalMembers</div>
+                <div class="stat-label">@(string.IsNullOrEmpty(filterRole) ? "Total" : filterRole)</div>
             </a>
         </div>
 
@@ -272,9 +272,9 @@
             <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-asc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">A&ndash;Z</a>
             <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-desc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">Z&ndash;A</a>
             <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=memberNumber-asc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">By&nbsp;#</a>
-            @if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(filterRole) || !string.IsNullOrEmpty(filterAlive) || cfFilters.Any())
+            @if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(filterRole) || (filterAlive != null && filterAlive != "alive") || cfFilters.Any())
             {
-                <a class="btn btn-icon btn-sm" href="/Members">Clear</a>
+                <a class="btn btn-icon btn-sm" href="?filterAlive=alive">Clear</a>
             }
         </div>
 
@@ -378,7 +378,7 @@
                          }>
                         <div class="member-avatar">@av</div>
                         <div class="member-info">
-                            <div class="member-name">@m.FirstName @m.LastName</div>
+                            <div class="member-name">@m.LastName @m.FirstName</div>
                             <div class="member-details">@string.Join(" · ", det)</div>
                         </div>
                         <div class="member-meta">
@@ -386,6 +386,15 @@
                             <span class="badge @(m.IsAlive ? "badge-green" : "badge-gray")">
                                 @(m.IsAlive ? "Alive" : "Deceased")
                             </span>
+                            @{
+                                var roleBadgeClass = m.Role switch {
+                                    "Stappend Lid"  => "badge-purple",
+                                    "Kandidaat"     => "badge-orange",
+                                    "Steunend Lid"  => "badge-blue",
+                                    _               => "badge-gray"
+                                };
+                            }
+                            <span class="badge @roleBadgeClass">@m.Role</span>
                         </div>
                     </div>
                 }
@@ -688,14 +697,16 @@ function openCard(el) {
         ? Math.floor((Date.now() - new Date(d.seniority)) / (365.25 * 864e5))
         : null;
 
-    document.getElementById('cardTitle').textContent = d.first + ' ' + d.last;
+    document.getElementById('cardTitle').textContent = d.last + ' ' + d.first;
+
+    const roleBadgeClass = {'Stappend Lid':'badge-purple','Kandidaat':'badge-orange','Steunend Lid':'badge-blue'}[d.role] || 'badge-gray';
 
     document.getElementById('cardBody').innerHTML = `
         <div style="text-align:center;padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:18px;">
             <div class="contact-avatar-lg">${initials}</div>
-            <div class="contact-name">${d.first} ${d.last}</div>
+            <div class="contact-name">${d.last} ${d.first}</div>
             <div class="contact-sub" style="margin-top:8px;">
-                <span class="badge badge-purple">${d.role || '—'}</span>
+                <span class="badge ${roleBadgeClass}">${d.role || '—'}</span>
                 <span class="badge ${alive ? 'badge-green' : 'badge-gray'}">${alive ? 'Alive' : 'Deceased'}</span>
                 <span class="badge badge-gray">${num}</span>
             </div>
@@ -717,7 +728,7 @@ function openCard(el) {
         <button class="btn btn-icon" onclick="closeCard()">Close</button>
         ${canWrite ? `
         <button class="btn btn-accent" onclick="loadEdit(document.querySelector('[data-id=\\'${d.id}\\']'));closeCard()">Edit</button>
-        <button class="btn btn-danger" onclick="confirmDelete('${d.id}','${d.first} ${d.last}')">Delete</button>
+        <button class="btn btn-danger" onclick="confirmDelete('${d.id}','${d.last} ${d.first}')">Delete</button>
         ` : ''}`;
 
     showModal('contactModal');
