@@ -9,7 +9,8 @@
     var sortBy      = (string?)ViewContext.HttpContext.Request.Query["sortBy"];
     var filterRole  = (string?)ViewContext.HttpContext.Request.Query["filterRole"];
     var filterAlive = (string?)ViewContext.HttpContext.Request.Query["filterAlive"];
-    var filterAliveNorm = (filterAlive ?? string.Empty).Trim().ToLowerInvariant();
+    var filterAliveNorm   = (filterAlive ?? string.Empty).Trim().ToLowerInvariant();
+    var filterRoleEncoded = Uri.EscapeDataString(filterRole ?? string.Empty);
     // Collect active custom field filters from query string
     var cfFilters = ViewContext.HttpContext.Request.Query.Keys
         .Where(k => k.StartsWith("filterCf_"))
@@ -239,19 +240,19 @@
         <!-- Stats (also act as alive/deceased filter) -->
         <div class="stat-strip">
             <a class="stat-item @(filterAliveNorm == "alive" ? "active" : "")"
-               href="?search=@search&sortBy=@sortBy&filterRole=@Uri.EscapeDataString(filterRole ?? "")&filterAlive=alive@CfFilterQs()"
+               href="?search=@search&sortBy=@sortBy&filterRole=@filterRoleEncoded&filterAlive=alive@CfFilterQs()"
                style="text-decoration:none;">
                 <div class="stat-value green">@Model.ActiveMembers</div>
                 <div class="stat-label">Alive</div>
             </a>
             <a class="stat-item @(filterAliveNorm == "deceased" ? "active" : "")"
-               href="?search=@search&sortBy=@sortBy&filterRole=@Uri.EscapeDataString(filterRole ?? "")&filterAlive=deceased@CfFilterQs()"
+               href="?search=@search&sortBy=@sortBy&filterRole=@filterRoleEncoded&filterAlive=deceased@CfFilterQs()"
                style="text-decoration:none;">
                 <div class="stat-value">@Model.DeceasedMembers</div>
                 <div class="stat-label">Deceased</div>
             </a>
             <a class="stat-item @(filterAliveNorm != "alive" && filterAliveNorm != "deceased" ? "active" : "")"
-               href="?search=@search&sortBy=@sortBy&filterRole=@Uri.EscapeDataString(filterRole ?? "")&filterAlive=all@CfFilterQs()"
+               href="?search=@search&sortBy=@sortBy&filterRole=@filterRoleEncoded&filterAlive=all@CfFilterQs()"
                style="text-decoration:none;">
                 <div class="stat-value">@Model.TotalMembers</div>
                 <div class="stat-label">@(string.IsNullOrEmpty(filterRole) ? "Total" : filterRole)</div>
