@@ -5,8 +5,31 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Azure.Storage.Blobs;
 using Azure.Identity;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure localization
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+var supportedCultures = new[]
+{
+    new CultureInfo("en"),
+    new CultureInfo("nl")
+};
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("nl");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders = new List<IRequestCultureProvider>
+    {
+        new AcceptLanguageHeaderRequestCultureProvider(),
+        new CookieRequestCultureProvider()
+    };
+});
 
 // JSON options shared by Razor Pages and API controllers
 var jsonOptions = new Action<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
@@ -16,7 +39,10 @@ var jsonOptions = new Action<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
 });
 
-builder.Services.AddRazorPages().AddJsonOptions(jsonOptions);
+builder.Services.AddRazorPages()
+    .AddJsonOptions(jsonOptions)
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
 builder.Services.AddControllers().AddJsonOptions(jsonOptions);
 builder.Services.AddMemoryCache();
 builder.Services.AddResponseCaching();
@@ -78,6 +104,9 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var app = builder.Build();
+
+// Enable request localization
+app.UseRequestLocalization();
 
 if (app.Environment.IsDevelopment())
 {
