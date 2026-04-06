@@ -65,6 +65,9 @@ namespace AdminMembers.Pages.Members
         {
             if (!CheckAuthentication()) return RedirectToLoginWithReturnUrl();
             if (!CanViewMembers()) return RedirectToPage("/Home");
+            // Default to showing alive members when no filter is specified
+            if (filterAlive == null)
+                return RedirectToPage(new { search, sortBy, filterRole, filterAlive = "alive" });
             CanWrite = CanManageMembers();
             AuthToken = HttpContext.Session.GetString("AuthToken");
             await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
