@@ -4,6 +4,10 @@ azure/publish-profile.xml
 # Copilot workspace internals
 .claude/
 
+# .NET Upgrade Agent scaffold files
+.appmod/
+.github/upgrades/
+
 # Temp SQL scripts
 *.sql
 

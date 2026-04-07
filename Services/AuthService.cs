@@ -458,8 +458,9 @@ namespace AdminMembers.Services
             if (!passwordHash.StartsWith("pbkdf2$"))
             {
                 using var sha256 = System.Security.Cryptography.SHA256.Create();
-                var legacy = Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(password)));
-                return legacy == passwordHash;
+                var legacyBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                var storedBytes = Convert.FromBase64String(passwordHash);
+                return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(legacyBytes, storedBytes);
             }
 
             var parts = passwordHash.Split('$');
