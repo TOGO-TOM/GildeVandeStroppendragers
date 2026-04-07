@@ -60,4 +60,405 @@
         </a>
         }
     </div>
+
+    <!-- ??? AGENDA CALENDAR ??? -->
+    <div class="agenda-section">
+        <div class="card">
+            <div class="cal-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h3>?? @Localizer["Agenda"]</h3>
+                    @if (Model.CanWriteAgenda)
+                    {
+                        <button class="btn btn-xs btn-accent" onclick="openEventForm()">
+                            <svg class="icon icon-sm"><use href="#icon-plus" /></svg> @Localizer["AddEvent"]
+                        </button>
+                    }
+                </div>
+                <div class="cal-nav">
+                    <button class="cal-today-btn" onclick="goToday()">@Localizer["Today"]</button>
+                    <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+                    <span class="cal-month-label" id="calMonthLabel"></span>
+                    <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+                </div>
+            </div>
+
+            <!-- Calendar grid -->
+            <div class="cal-grid" id="calGrid"></div>
+
+            <!-- Day detail panel -->
+            <div class="cal-day-panel" id="calDayPanel" style="display:none;">
+                <div class="cal-day-panel-title" id="calDayTitle"></div>
+                <div id="calDayEvents"></div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- ??? EVENT FORM MODAL ??? -->
+<div id="eventFormModal" class="modal" onclick="if(event.target===this)hideModal('eventFormModal')">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-head">
+            <h3 id="eventFormTitle">@Localizer["AddEvent"]</h3>
+            <button class="modal-close-btn" onclick="hideModal('eventFormModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="ev_id" value="0" />
+            <div class="form-group">
+                <label>@Localizer["EventTitle"] *</label>
+                <input id="ev_title" placeholder="@Localizer["EventTitle"]" required />
+            </div>
+            <div class="form-group">
+                <label>@Localizer["EventDescription"]</label>
+                <textarea id="ev_desc" rows="3" placeholder="@Localizer["Optional"]"
+                    style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;resize:vertical;background:var(--bg);"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>@Localizer["EventStartDate"] *</label>
+                    <input id="ev_start" type="date" required />
+                </div>
+                <div class="form-group">
+                    <label>@Localizer["EventEndDate"]</label>
+                    <input id="ev_end" type="date" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>@Localizer["EventLocation"]</label>
+                <input id="ev_location" placeholder="@Localizer["Optional"]" />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>@Localizer["EventColor"]</label>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;" id="colorPicker">
+                        <label class="color-swatch" style="background:#6366f1;"><input type="radio" name="evColor" value="#6366f1" checked /></label>
+                        <label class="color-swatch" style="background:#22c55e;"><input type="radio" name="evColor" value="#22c55e" /></label>
+                        <label class="color-swatch" style="background:#ef4444;"><input type="radio" name="evColor" value="#ef4444" /></label>
+                        <label class="color-swatch" style="background:#f59e0b;"><input type="radio" name="evColor" value="#f59e0b" /></label>
+                        <label class="color-swatch" style="background:#06b6d4;"><input type="radio" name="evColor" value="#06b6d4" /></label>
+                        <label class="color-swatch" style="background:#8b5cf6;"><input type="radio" name="evColor" value="#8b5cf6" /></label>
+                        <label class="color-swatch" style="background:#ec4899;"><input type="radio" name="evColor" value="#ec4899" /></label>
+                        <label class="color-swatch" style="background:#1e293b;"><input type="radio" name="evColor" value="#1e293b" /></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span id="ev_status" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+            <button class="btn btn-icon" onclick="hideModal('eventFormModal')">@Localizer["Cancel"]</button>
+            <button class="btn btn-accent" onclick="saveEvent()">@Localizer["Save"]</button>
+        </div>
+    </div>
+</div>
+
+<!-- ??? EVENT DETAIL MODAL ??? -->
+<div id="eventDetailModal" class="modal" onclick="if(event.target===this)hideModal('eventDetailModal')">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-head">
+            <h3 id="eventDetailTitle">@Localizer["EventDetails"]</h3>
+            <button class="modal-close-btn" onclick="hideModal('eventDetailModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="eventDetailBody"></div>
+        </div>
+        <div class="modal-footer" id="eventDetailFooter"></div>
+    </div>
+</div>
+
+<!-- ??? DELETE CONFIRM MODAL ??? -->
+<div id="deleteEventModal" class="modal" onclick="if(event.target===this)hideModal('deleteEventModal')">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-head">
+            <h3>@Localizer["DeleteEvent"]</h3>
+            <button class="modal-close-btn" onclick="hideModal('deleteEventModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:14px;">@Localizer["DeleteEventConfirm"]</p>
+        </div>
+        <div class="modal-footer">
+            <input type="hidden" id="deleteEventId" />
+            <button class="btn btn-icon" onclick="hideModal('deleteEventModal')">@Localizer["Cancel"]</button>
+            <button class="btn btn-danger" onclick="confirmDeleteEvent()">@Localizer["Delete"]</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.color-swatch {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:50%; cursor:pointer;
+    border:2px solid transparent; transition:all .15s;
+}
+.color-swatch:hover { transform:scale(1.15); }
+.color-swatch input { display:none; }
+.color-swatch:has(input:checked) { border-color:var(--text); box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text); }
+</style>
+
+@section Scripts {
+<script>
+const AUTH_TOKEN = '@Model.AuthToken';
+const canWrite   = @(Model.CanWriteAgenda ? "true" : "false");
+let calYear, calMonth;
+let calEvents = [];
+let selectedDay = null;
+
+const L = {
+    addEvent: '@Html.Raw(Localizer["AddEvent"].Value.Replace("'", "\\'"))',
+    editEvent: '@Html.Raw(Localizer["EditEvent"].Value.Replace("'", "\\'"))',
+    save: '@Html.Raw(Localizer["Save"].Value.Replace("'", "\\'"))',
+    cancel: '@Html.Raw(Localizer["Cancel"].Value.Replace("'", "\\'"))',
+    delete_: '@Html.Raw(Localizer["Delete"].Value.Replace("'", "\\'"))',
+    edit: '@Html.Raw(Localizer["Edit"].Value.Replace("'", "\\'"))',
+    close: '@Html.Raw(Localizer["Close"].Value.Replace("'", "\\'"))',
+    titleRequired: '@Html.Raw(Localizer["TitleRequired"].Value.Replace("'", "\\'"))',
+    saving: '@Html.Raw(Localizer["Saving"].Value.Replace("'", "\\'"))',
+    noEvents: '@Html.Raw(Localizer["NoEventsOnDay"].Value.Replace("'", "\\'"))',
+    location: '@Html.Raw(Localizer["EventLocation"].Value.Replace("'", "\\'"))',
+    description: '@Html.Raw(Localizer["EventDescription"].Value.Replace("'", "\\'"))',
+    startDate: '@Html.Raw(Localizer["EventStartDate"].Value.Replace("'", "\\'"))',
+    endDate: '@Html.Raw(Localizer["EventEndDate"].Value.Replace("'", "\\'"))',
+    createdBy: '@Html.Raw(Localizer["CreatedBy"].Value.Replace("'", "\\'"))',
+    eventDetails: '@Html.Raw(Localizer["EventDetails"].Value.Replace("'", "\\'"))',
+    failed: '@Html.Raw(Localizer["Failed"].Value.Replace("'", "\\'"))',
+    requestFailed: '@Html.Raw(Localizer["RequestFailed"].Value.Replace("'", "\\'"))',
+};
+
+const DOW = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+    System.Globalization.CultureInfo.CurrentUICulture.DateTimeFormat.AbbreviatedDayNames
+        .Skip(1).Concat(System.Globalization.CultureInfo.CurrentUICulture.DateTimeFormat.AbbreviatedDayNames.Take(1))
+        .ToArray()
+));
+const MONTHS = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+    System.Globalization.CultureInfo.CurrentUICulture.DateTimeFormat.MonthNames
+        .Where(m => m != "").ToArray()
+));
+
+function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
+function hideModal(id) { document.getElementById(id).style.display = 'none';  document.body.style.overflow = ''; }
+function authHeaders() {
+    return { 'Content-Type': 'application/json', ...(AUTH_TOKEN ? { 'Authorization': `Bearer ${AUTH_TOKEN}` } : {}) };
+}
+
+// ?? Calendar rendering ?????????????????
+function renderCalendar() {
+    const label = MONTHS[calMonth] + ' ' + calYear;
+    document.getElementById('calMonthLabel').textContent = label;
+
+    const firstDay = new Date(calYear, calMonth, 1);
+    const lastDay  = new Date(calYear, calMonth + 1, 0);
+    // Monday=0 start
+    let startDow = (firstDay.getDay() + 6) % 7;
+    const totalDays = lastDay.getDate();
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+    let html = DOW.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+    // Previous month filler
+    const prevLast = new Date(calYear, calMonth, 0).getDate();
+    for (let i = startDow - 1; i >= 0; i--) {
+        const day = prevLast - i;
+        html += `<div class="cal-day outside" data-date="${fmtDate(calYear, calMonth - 1, day)}"><div class="cal-day-num">${day}</div></div>`;
+    }
+
+    // Current month
+    for (let d = 1; d <= totalDays; d++) {
+        const dateStr = fmtDate(calYear, calMonth, d);
+        const isToday = dateStr === todayStr;
+        const isSel   = dateStr === selectedDay;
+        const dayEvents = getEventsForDate(dateStr);
+        const dots = dayEvents.slice(0, 3).map(e =>
+            `<div class="cal-event-dot" style="background:${e.Color}">${e.Title}</div>`
+        ).join('');
+        const moreCount = dayEvents.length > 3 ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - 3}</div>` : '';
+        html += `<div class="cal-day${isToday ? ' today' : ''}${isSel ? ' selected' : ''}" data-date="${dateStr}" onclick="selectDay('${dateStr}')">
+            <div class="cal-day-num">${d}</div>${dots}${moreCount}
+        </div>`;
+    }
+
+    // Next month filler
+    const totalCells = startDow + totalDays;
+    const remaining = (7 - totalCells % 7) % 7;
+    for (let d = 1; d <= remaining; d++) {
+        html += `<div class="cal-day outside" data-date="${fmtDate(calYear, calMonth + 1, d)}"><div class="cal-day-num">${d}</div></div>`;
+    }
+
+    document.getElementById('calGrid').innerHTML = html;
+
+    // If a day is selected, show its events
+    if (selectedDay) showDayPanel(selectedDay);
+}
+
+function fmtDate(y, m, d) {
+    const dt = new Date(y, m, d);
+    return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+
+function getEventsForDate(dateStr) {
+    return calEvents.filter(e => {
+        const start = e.StartDate;
+        const end   = e.EndDate || e.StartDate;
+        return dateStr >= start && dateStr <= end;
+    });
+}
+
+function selectDay(dateStr) {
+    selectedDay = dateStr;
+    renderCalendar();
+}
+
+function showDayPanel(dateStr) {
+    const panel = document.getElementById('calDayPanel');
+    const evts  = getEventsForDate(dateStr);
+    const dt    = new Date(dateStr + 'T00:00:00');
+    const opts  = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('calDayTitle').textContent = dt.toLocaleDateString(document.documentElement.lang || 'nl', opts);
+
+    if (!evts.length) {
+        document.getElementById('calDayEvents').innerHTML = `<div class="cal-empty-day">${L.noEvents}</div>`;
+    } else {
+        document.getElementById('calDayEvents').innerHTML = evts.map(e => `
+            <div class="cal-event-card" onclick="viewEvent(${e.Id})">
+                <div class="cal-event-bar" style="background:${e.Color}"></div>
+                <div class="cal-event-card-body">
+                    <div class="cal-event-card-title">${e.Title}</div>
+                    <div class="cal-event-card-meta">
+                        ${e.Location ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-location"/></svg>' + e.Location + ' · ' : ''}
+                        ${e.StartDate}${e.EndDate && e.EndDate !== e.StartDate ? ' ? ' + e.EndDate : ''}
+                    </div>
+                </div>
+            </div>`).join('');
+    }
+    panel.style.display = '';
+}
+
+// ?? Navigation ?????????????????????????
+function changeMonth(delta) {
+    calMonth += delta;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    selectedDay = null;
+    document.getElementById('calDayPanel').style.display = 'none';
+    loadEvents();
+}
+function goToday() {
+    const now = new Date();
+    calYear = now.getFullYear(); calMonth = now.getMonth();
+    selectedDay = fmtDate(calYear, calMonth, now.getDate());
+    loadEvents();
+}
+
+// ?? API calls ??????????????????????????
+async function loadEvents() {
+    try {
+        const r = await fetch(`/api/agenda?year=${calYear}&month=${calMonth + 1}`, { headers: authHeaders() });
+        calEvents = await r.json();
+    } catch { calEvents = []; }
+    renderCalendar();
+}
+
+// ?? Event form ?????????????????????????
+function openEventForm(ev) {
+    document.getElementById('ev_id').value = ev ? ev.Id : '0';
+    document.getElementById('ev_title').value = ev ? ev.Title : '';
+    document.getElementById('ev_desc').value = ev ? (ev.Description || '') : '';
+    document.getElementById('ev_start').value = ev ? ev.StartDate : (selectedDay || fmtDate(calYear, calMonth, new Date().getDate()));
+    document.getElementById('ev_end').value = ev ? (ev.EndDate || '') : '';
+    document.getElementById('ev_location').value = ev ? (ev.Location || '') : '';
+    const color = ev ? ev.Color : '#6366f1';
+    const radio = document.querySelector(`input[name="evColor"][value="${color}"]`);
+    if (radio) radio.checked = true;
+    document.getElementById('ev_status').textContent = '';
+    document.getElementById('eventFormTitle').textContent = ev ? L.editEvent : L.addEvent;
+    showModal('eventFormModal');
+}
+
+async function saveEvent() {
+    const title = document.getElementById('ev_title').value.trim();
+    if (!title) { alert(L.titleRequired); return; }
+
+    const id = parseInt(document.getElementById('ev_id').value);
+    const body = {
+        title,
+        description: document.getElementById('ev_desc').value.trim() || null,
+        startDate: document.getElementById('ev_start').value,
+        endDate: document.getElementById('ev_end').value || null,
+        location: document.getElementById('ev_location').value.trim() || null,
+        isAllDay: true,
+        color: document.querySelector('input[name="evColor"]:checked')?.value || '#6366f1'
+    };
+
+    const statusEl = document.getElementById('ev_status');
+    statusEl.textContent = L.saving;
+
+    try {
+        const url = id === 0 ? '/api/agenda' : `/api/agenda/${id}`;
+        const method = id === 0 ? 'POST' : 'PUT';
+        const r = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+        if (r.ok) {
+            hideModal('eventFormModal');
+            await loadEvents();
+            if (selectedDay) showDayPanel(selectedDay);
+        } else {
+            const d = await r.json().catch(() => ({}));
+            statusEl.textContent = d.error ?? L.failed;
+        }
+    } catch { statusEl.textContent = L.requestFailed; }
+}
+
+// ?? View event detail ??????????????????
+function viewEvent(id) {
+    const ev = calEvents.find(e => e.Id === id);
+    if (!ev) return;
+
+    document.getElementById('eventDetailTitle').textContent = ev.Title;
+    document.getElementById('eventDetailBody').innerHTML = `
+        <div style="text-align:center;padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:18px;">
+            <div style="width:48px;height:48px;border-radius:12px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:24px;background:${ev.Color}20;color:${ev.Color};">??</div>
+            <div style="font-size:18px;font-weight:800;">${ev.Title}</div>
+        </div>
+        <div class="info-grid">
+            <div class="info-block"><div class="info-label">${L.startDate}</div><div class="info-value">${ev.StartDate}</div></div>
+            <div class="info-block"><div class="info-label">${L.endDate}</div><div class="info-value">${ev.EndDate || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.location}</div><div class="info-value">${ev.Location || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.createdBy}</div><div class="info-value">${ev.CreatedByUsername}</div></div>
+        </div>
+        ${ev.Description ? `<div style="margin-top:16px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;color:var(--text);">${ev.Description.replace(/\n/g, '<br>')}</div>` : ''}`;
+
+    document.getElementById('eventDetailFooter').innerHTML = `
+        <button class="btn btn-icon" onclick="hideModal('eventDetailModal')">${L.close}</button>
+        ${canWrite ? `
+        <button class="btn btn-accent" onclick="hideModal('eventDetailModal');openEventForm(calEvents.find(e=>e.Id===${ev.Id}))">${L.edit}</button>
+        <button class="btn btn-danger" onclick="hideModal('eventDetailModal');promptDeleteEvent(${ev.Id})">${L.delete_}</button>
+        ` : ''}`;
+
+    showModal('eventDetailModal');
+}
+
+// ?? Delete event ???????????????????????
+function promptDeleteEvent(id) {
+    document.getElementById('deleteEventId').value = id;
+    showModal('deleteEventModal');
+}
+
+async function confirmDeleteEvent() {
+    const id = document.getElementById('deleteEventId').value;
+    try {
+        const r = await fetch(`/api/agenda/${id}`, { method: 'DELETE', headers: authHeaders() });
+        if (r.ok) {
+            hideModal('deleteEventModal');
+            await loadEvents();
+            if (selectedDay) showDayPanel(selectedDay);
+        } else { alert(L.failed); }
+    } catch { alert(L.requestFailed); }
+}
+
+// ?? Init ???????????????????????????????
+document.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    calYear = now.getFullYear();
+    calMonth = now.getMonth();
+    loadEvents();
+});
+</script>
+}

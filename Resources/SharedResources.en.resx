@@ -690,4 +690,25 @@
   <data name="AddMovement" xml:space="preserve"><value>Add Movement</value></data>
   <data name="MinimumStockLabel" xml:space="preserve"><value>Minimum Stock</value></data>
   <data name="NotSet" xml:space="preserve"><value>Not set</value></data>
+
+  <!-- Agenda -->
+  <data name="Agenda" xml:space="preserve"><value>Agenda</value></data>
+  <data name="AddEvent" xml:space="preserve"><value>Add Event</value></data>
+  <data name="EditEvent" xml:space="preserve"><value>Edit Event</value></data>
+  <data name="DeleteEvent" xml:space="preserve"><value>Delete Event</value></data>
+  <data name="EventTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="EventDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="EventStartDate" xml:space="preserve"><value>Start Date</value></data>
+  <data name="EventEndDate" xml:space="preserve"><value>End Date</value></data>
+  <data name="EventLocation" xml:space="preserve"><value>Location</value></data>
+  <data name="EventColor" xml:space="preserve"><value>Color</value></data>
+  <data name="AllDay" xml:space="preserve"><value>All day</value></data>
+  <data name="NoEventsOnDay" xml:space="preserve"><value>No events on this day</value></data>
+  <data name="DeleteEventConfirm" xml:space="preserve"><value>Are you sure you want to delete this event?</value></data>
+  <data name="Today" xml:space="preserve"><value>Today</value></data>
+  <data name="EventSaved" xml:space="preserve"><value>Event saved</value></data>
+  <data name="EventDeleted" xml:space="preserve"><value>Event deleted</value></data>
+  <data name="TitleRequired" xml:space="preserve"><value>Title is required</value></data>
+  <data name="EventDetails" xml:space="preserve"><value>Event Details</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Created by</value></data>
 </root>

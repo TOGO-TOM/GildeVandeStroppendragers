@@ -25,6 +25,7 @@ namespace AdminMembers.Data
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<StockItem> StockItems { get; set; }
         public DbSet<StockMovement> StockMovements { get; set; }
+        public DbSet<AgendaEvent> AgendaEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -213,6 +214,18 @@ namespace AdminMembers.Data
                       .WithMany(si => si.Movements)
                       .HasForeignKey(sm => sm.StockItemId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AgendaEvent>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("AgendaEvents");
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Description).HasMaxLength(2000);
+                entity.Property(e => e.Location).HasMaxLength(200);
+                entity.Property(e => e.Color).HasMaxLength(20);
+                entity.Property(e => e.CreatedByUsername).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.StartDate);
             });
 
             // Seed default roles

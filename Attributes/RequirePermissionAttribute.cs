@@ -4,7 +4,7 @@ using AdminMembers.Models;
 
 namespace AdminMembers.Attributes
 {
-    public enum ResourceType { Member, Stock }
+    public enum ResourceType { Member, Stock, Agenda }
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class RequirePermissionAttribute : Attribute, IAuthorizationFilter
@@ -46,6 +46,9 @@ namespace AdminMembers.Attributes
                     roles.Contains("Stock Editor") || roles.Contains("Stock Viewer"),
                 (ResourceType.Stock, Permission.Write) or (ResourceType.Stock, Permission.ReadWrite) =>
                     roles.Contains("Stock Editor"),
+                (ResourceType.Agenda, Permission.Read) => true,
+                (ResourceType.Agenda, Permission.Write) or (ResourceType.Agenda, Permission.ReadWrite) =>
+                    roles.Contains("Member Editor"),
                 _ => false
             };
 

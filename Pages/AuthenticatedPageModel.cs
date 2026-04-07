@@ -83,9 +83,17 @@ namespace AdminMembers.Pages
                 "StockRead"   => roles.Contains("Stock Editor")  || roles.Contains("Stock Viewer"),
                 "StockWrite"  => roles.Contains("Stock Editor"),
                 "AuditLogs"   => roles.Contains("Super Admin"),
+                "AgendaRead"  => true,
+                "AgendaWrite" => roles.Contains("Member Editor"),
                 _             => false
             };
         }
+
+        protected internal bool CanManageAgenda()
+            => IsAdmin() || HasPermission("AgendaWrite");
+
+        protected internal bool CanViewAgenda()
+            => IsAuthenticated;
 
         protected internal bool IsSuperAdmin()
             => CurrentUser?.Roles?.Contains("Super Admin") == true;

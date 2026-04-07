@@ -690,4 +690,25 @@
   <data name="AddMovement" xml:space="preserve"><value>Beweging toevoegen</value></data>
   <data name="MinimumStockLabel" xml:space="preserve"><value>Minimale Voorraad</value></data>
   <data name="NotSet" xml:space="preserve"><value>Niet ingesteld</value></data>
+
+  <!-- Agenda -->
+  <data name="Agenda" xml:space="preserve"><value>Agenda</value></data>
+  <data name="AddEvent" xml:space="preserve"><value>Activiteit toevoegen</value></data>
+  <data name="EditEvent" xml:space="preserve"><value>Activiteit bewerken</value></data>
+  <data name="DeleteEvent" xml:space="preserve"><value>Activiteit verwijderen</value></data>
+  <data name="EventTitle" xml:space="preserve"><value>Titel</value></data>
+  <data name="EventDescription" xml:space="preserve"><value>Beschrijving</value></data>
+  <data name="EventStartDate" xml:space="preserve"><value>Startdatum</value></data>
+  <data name="EventEndDate" xml:space="preserve"><value>Einddatum</value></data>
+  <data name="EventLocation" xml:space="preserve"><value>Locatie</value></data>
+  <data name="EventColor" xml:space="preserve"><value>Kleur</value></data>
+  <data name="AllDay" xml:space="preserve"><value>Hele dag</value></data>
+  <data name="NoEventsOnDay" xml:space="preserve"><value>Geen activiteiten op deze dag</value></data>
+  <data name="DeleteEventConfirm" xml:space="preserve"><value>Weet u zeker dat u deze activiteit wilt verwijderen?</value></data>
+  <data name="Today" xml:space="preserve"><value>Vandaag</value></data>
+  <data name="EventSaved" xml:space="preserve"><value>Activiteit opgeslagen</value></data>
+  <data name="EventDeleted" xml:space="preserve"><value>Activiteit verwijderd</value></data>
+  <data name="TitleRequired" xml:space="preserve"><value>Titel is verplicht</value></data>
+  <data name="EventDetails" xml:space="preserve"><value>Activiteit Details</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Aangemaakt door</value></data>
 </root>

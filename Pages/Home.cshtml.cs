@@ -11,12 +11,18 @@ namespace AdminMembers.Pages
             _logger = logger;
         }
 
+        public bool CanWriteAgenda { get; set; }
+        public string? AuthToken { get; set; }
+
         public IActionResult OnGet()
         {
             if (!CheckAuthentication())
             {
                 return RedirectToLoginWithReturnUrl();
             }
+
+            CanWriteAgenda = CanManageAgenda();
+            AuthToken = HttpContext.Session.GetString("AuthToken");
 
             return Page();
         }
