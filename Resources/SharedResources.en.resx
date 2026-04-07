@@ -711,4 +711,6 @@
   <data name="TitleRequired" xml:space="preserve"><value>Title is required</value></data>
   <data name="EventDetails" xml:space="preserve"><value>Event Details</value></data>
   <data name="CreatedBy" xml:space="preserve"><value>Created by</value></data>
+  <data name="StartTime" xml:space="preserve"><value>Start Time</value></data>
+  <data name="EndTime" xml:space="preserve"><value>End Time</value></data>
 </root>

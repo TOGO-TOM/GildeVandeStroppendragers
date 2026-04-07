@@ -711,4 +711,6 @@
   <data name="TitleRequired" xml:space="preserve"><value>Titel is verplicht</value></data>
   <data name="EventDetails" xml:space="preserve"><value>Activiteit Details</value></data>
   <data name="CreatedBy" xml:space="preserve"><value>Aangemaakt door</value></data>
+  <data name="StartTime" xml:space="preserve"><value>Starttijd</value></data>
+  <data name="EndTime" xml:space="preserve"><value>Eindtijd</value></data>
 </root>

@@ -123,6 +123,23 @@
                 </div>
             </div>
             <div class="form-group">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" id="ev_allday" checked onchange="toggleAllDay()"
+                        style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
+                    <span style="font-size:13px;font-weight:600;">@Localizer["AllDay"]</span>
+                </label>
+            </div>
+            <div class="form-row" id="timeRow" style="display:none;">
+                <div class="form-group">
+                    <label>@Localizer["StartTime"]</label>
+                    <input id="ev_start_time" type="time" value="09:00" />
+                </div>
+                <div class="form-group">
+                    <label>@Localizer["EndTime"]</label>
+                    <input id="ev_end_time" type="time" value="10:00" />
+                </div>
+            </div>
+            <div class="form-group">
                 <label>@Localizer["EventLocation"]</label>
                 <input id="ev_location" placeholder="@Localizer["Optional"]" />
             </div>
@@ -323,6 +340,7 @@ function showDayPanel(dateStr) {
                 <div class="cal-event-card-body">
                     <div class="cal-event-card-title">${e.Title}</div>
                     <div class="cal-event-card-meta">
+                        ${!e.IsAllDay && e.StartTime ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-clock"/></svg>' + e.StartTime + (e.EndTime ? ' – ' + e.EndTime : '') + ' · ' : ''}
                         ${e.Location ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-location"/></svg>' + e.Location + ' · ' : ''}
                         ${e.StartDate}${e.EndDate && e.EndDate !== e.StartDate ? ' ? ' + e.EndDate : ''}
                     </div>
@@ -365,6 +383,11 @@ function openEventForm(ev) {
     document.getElementById('ev_start').value = ev ? ev.StartDate : (selectedDay || fmtDate(calYear, calMonth, new Date().getDate()));
     document.getElementById('ev_end').value = ev ? (ev.EndDate || '') : '';
     document.getElementById('ev_location').value = ev ? (ev.Location || '') : '';
+    const isAllDay = ev ? ev.IsAllDay : true;
+    document.getElementById('ev_allday').checked = isAllDay;
+    document.getElementById('ev_start_time').value = ev && ev.StartTime ? ev.StartTime : '09:00';
+    document.getElementById('ev_end_time').value = ev && ev.EndTime ? ev.EndTime : '10:00';
+    document.getElementById('timeRow').style.display = isAllDay ? 'none' : '';
     const color = ev ? ev.Color : '#6366f1';
     const radio = document.querySelector(`input[name="evColor"][value="${color}"]`);
     if (radio) radio.checked = true;
@@ -373,18 +396,26 @@ function openEventForm(ev) {
     showModal('eventFormModal');
 }
 
+function toggleAllDay() {
+    const allDay = document.getElementById('ev_allday').checked;
+    document.getElementById('timeRow').style.display = allDay ? 'none' : '';
+}
+
 async function saveEvent() {
     const title = document.getElementById('ev_title').value.trim();
     if (!title) { alert(L.titleRequired); return; }
 
     const id = parseInt(document.getElementById('ev_id').value);
+    const isAllDay = document.getElementById('ev_allday').checked;
     const body = {
         title,
         description: document.getElementById('ev_desc').value.trim() || null,
         startDate: document.getElementById('ev_start').value,
+        startTime: !isAllDay ? document.getElementById('ev_start_time').value : null,
         endDate: document.getElementById('ev_end').value || null,
+        endTime: !isAllDay ? document.getElementById('ev_end_time').value : null,
         location: document.getElementById('ev_location').value.trim() || null,
-        isAllDay: true,
+        isAllDay: isAllDay,
         color: document.querySelector('input[name="evColor"]:checked')?.value || '#6366f1'
     };
 
@@ -418,8 +449,8 @@ function viewEvent(id) {
             <div style="font-size:18px;font-weight:800;">${ev.Title}</div>
         </div>
         <div class="info-grid">
-            <div class="info-block"><div class="info-label">${L.startDate}</div><div class="info-value">${ev.StartDate}</div></div>
-            <div class="info-block"><div class="info-label">${L.endDate}</div><div class="info-value">${ev.EndDate || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.startDate}</div><div class="info-value">${ev.StartDate}${ev.StartTime ? ' ' + ev.StartTime : ''}</div></div>
+            <div class="info-block"><div class="info-label">${L.endDate}</div><div class="info-value">${ev.EndDate ? ev.EndDate + (ev.EndTime ? ' ' + ev.EndTime : '') : '—'}</div></div>
             <div class="info-block"><div class="info-label">${L.location}</div><div class="info-value">${ev.Location || '—'}</div></div>
             <div class="info-block"><div class="info-label">${L.createdBy}</div><div class="info-value">${ev.CreatedByUsername}</div></div>
         </div>

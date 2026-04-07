@@ -45,7 +45,9 @@ namespace AdminMembers.Controllers
                     e.Title,
                     e.Description,
                     StartDate = e.StartDate.ToString("yyyy-MM-dd"),
+                    StartTime = e.IsAllDay ? (string?)null : e.StartDate.ToString("HH:mm"),
                     EndDate = e.EndDate.HasValue ? e.EndDate.Value.ToString("yyyy-MM-dd") : null,
+                    EndTime = (!e.IsAllDay && e.EndDate.HasValue) ? e.EndDate.Value.ToString("HH:mm") : null,
                     e.Location,
                     e.IsAllDay,
                     e.Color,
@@ -69,12 +71,20 @@ namespace AdminMembers.Controllers
             var username = Request.Headers["X-Username"].ToString();
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
+            var startDate = dto.StartDate.Date;
+            if (!dto.IsAllDay && !string.IsNullOrEmpty(dto.StartTime) && TimeSpan.TryParse(dto.StartTime, out var st))
+                startDate = startDate.Add(st);
+
+            DateTime? endDate = dto.EndDate?.Date;
+            if (!dto.IsAllDay && endDate.HasValue && !string.IsNullOrEmpty(dto.EndTime) && TimeSpan.TryParse(dto.EndTime, out var et))
+                endDate = endDate.Value.Add(et);
+
             var ev = new AgendaEvent
             {
                 Title = dto.Title.Trim(),
                 Description = dto.Description?.Trim(),
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
+                StartDate = startDate,
+                EndDate = endDate,
                 Location = dto.Location?.Trim(),
                 IsAllDay = dto.IsAllDay,
                 Color = dto.Color ?? "#6366f1",
@@ -108,10 +118,18 @@ namespace AdminMembers.Controllers
             var username = Request.Headers["X-Username"].ToString();
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
+            var startDate = dto.StartDate.Date;
+            if (!dto.IsAllDay && !string.IsNullOrEmpty(dto.StartTime) && TimeSpan.TryParse(dto.StartTime, out var st))
+                startDate = startDate.Add(st);
+
+            DateTime? endDate = dto.EndDate?.Date;
+            if (!dto.IsAllDay && endDate.HasValue && !string.IsNullOrEmpty(dto.EndTime) && TimeSpan.TryParse(dto.EndTime, out var et))
+                endDate = endDate.Value.Add(et);
+
             ev.Title = dto.Title.Trim();
             ev.Description = dto.Description?.Trim();
-            ev.StartDate = dto.StartDate;
-            ev.EndDate = dto.EndDate;
+            ev.StartDate = startDate;
+            ev.EndDate = endDate;
             ev.Location = dto.Location?.Trim();
             ev.IsAllDay = dto.IsAllDay;
             ev.Color = dto.Color ?? ev.Color;
@@ -153,7 +171,9 @@ namespace AdminMembers.Controllers
             public string Title { get; set; } = string.Empty;
             public string? Description { get; set; }
             public DateTime StartDate { get; set; }
+            public string? StartTime { get; set; }
             public DateTime? EndDate { get; set; }
+            public string? EndTime { get; set; }
             public string? Location { get; set; }
             public bool IsAllDay { get; set; } = true;
             public string? Color { get; set; }
