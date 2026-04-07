@@ -773,6 +773,8 @@ body {
     .user-name-label { display: none; }
     .brand-text { max-width: 160px; font-size: 14px; }
 
+    .app-header { padding: 0 14px; gap: 10px; }
+
     :root { --sidebar-w: 100%; }
 
     .stat-strip { grid-template-columns: repeat(3,1fr); gap: 8px; }
@@ -813,12 +815,18 @@ body {
     .stat-strip { grid-template-columns: 1fr; }
     .info-grid  { grid-template-columns: 1fr; }
     .modal-box  { margin: 0; border-radius: 0; width: 100%; min-height: 100vh; }
+    .modal-footer { flex-wrap: wrap; gap: 8px; }
+
+    .member-list-item { flex-wrap: wrap; }
+    .member-meta { width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; margin-top: 4px; }
 
     .doc-item { gap: 8px; }
     .doc-item-name { min-width: 80px; }
     .doc-item-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; gap: 4px; }
     .doc-item-actions .btn { flex: 0 0 auto; }
     .doc-upload-area { padding: 16px 12px; }
+
+    .settings-row-value { word-break: break-word; }
 }
 
 /* ?? NO-MEMBERS ???????????????????????????? */
@@ -1356,5 +1364,12 @@ body {
     .cal-day { min-height: 52px; padding: 4px; }
     .cal-event-dot { font-size: 0; height: 6px; padding: 0; margin: 1px auto; width: 6px; border-radius: 50%; }
     .cal-month-label { font-size: 13px; min-width: 120px; }
+    .cal-header { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
+    .cal-header h3 { font-size: 14px; }
+    .cal-nav { width: 100%; justify-content: space-between; }
+    .cal-today-btn { padding: 4px 10px; font-size: 11px; }
+    .cal-day-panel { padding: 0 14px 14px; }
+    .cal-event-card { padding: 10px 12px; gap: 8px; }
+    .cal-event-card-title { font-size: 13px; }
 }
 

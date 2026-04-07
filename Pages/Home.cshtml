@@ -66,7 +66,7 @@
         <div class="card">
             <div class="cal-header">
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <h3>?? @Localizer["Agenda"]</h3>
+                    <h3><svg class="icon" style="width:20px;height:20px;vertical-align:-3px;margin-right:4px;color:var(--accent);"><use href="#icon-calendar" /></svg> @Localizer["Agenda"]</h3>
                     @if (Model.CanWriteAgenda)
                     {
                         <button class="btn btn-xs btn-accent" onclick="openEventForm()">
@@ -414,7 +414,7 @@ function viewEvent(id) {
     document.getElementById('eventDetailTitle').textContent = ev.Title;
     document.getElementById('eventDetailBody').innerHTML = `
         <div style="text-align:center;padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:18px;">
-            <div style="width:48px;height:48px;border-radius:12px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:24px;background:${ev.Color}20;color:${ev.Color};">??</div>
+            <div style="width:48px;height:48px;border-radius:12px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:${ev.Color}20;color:${ev.Color};"><svg class="icon" style="width:24px;height:24px;"><use href="#icon-calendar"/></svg></div>
             <div style="font-size:18px;font-weight:800;">${ev.Title}</div>
         </div>
         <div class="info-grid">
