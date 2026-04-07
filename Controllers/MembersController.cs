@@ -40,13 +40,13 @@ namespace AdminMembers.Controllers
                 }
 
                 var members = await query.ToListAsync();
-                _logger.LogInformation($"Returning {members.Count} members");
+                _logger.LogInformation("Returning {MemberCount} members", members.Count);
                 return members;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in GetMembers");
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new { error = "An error occurred while retrieving members." });
             }
         }
 
@@ -171,7 +171,7 @@ namespace AdminMembers.Controllers
             {
                 _logger.LogError(ex, "Error creating member: {Message}", ex.Message);
                 _logger.LogError("Inner exception: {InnerException}", ex.InnerException?.Message);
-                return StatusCode(500, new { error = "Failed to create member. Please try again.", details = ex.Message });
+                return StatusCode(500, new { error = "Failed to create member. Please try again." });
             }
 
             return CreatedAtAction(nameof(GetMember), new { id = member.Id }, member);
@@ -301,7 +301,7 @@ namespace AdminMembers.Controllers
                 await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Members', RESEED, 0)");
                 await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Addresses', RESEED, 0)");
 
-                _logger.LogInformation($"Deleted all {count} members");
+                _logger.LogInformation("Deleted all {MemberCount} members", count);
 
                 return Ok(new { success = true, deletedCount = count, message = $"Successfully deleted {count} members" });
             }
@@ -365,7 +365,7 @@ namespace AdminMembers.Controllers
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation($"Bulk updated {updatedCount} members");
+                _logger.LogInformation("Bulk updated {UpdatedCount} members", updatedCount);
 
                 return Ok(new { success = true, updatedCount, message = $"Successfully updated {updatedCount} members" });
             }

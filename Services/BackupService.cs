@@ -52,7 +52,7 @@ namespace AdminMembers.Services
                 // Encrypt the data
                 var encryptedData = EncryptData(jsonData, GetBackupPassword(password));
 
-                _logger.LogInformation($"Backup created successfully with {members.Count} members");
+                _logger.LogInformation("Backup created successfully with {MemberCount} members", members.Count);
 
                 return encryptedData;
             }

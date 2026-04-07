@@ -102,7 +102,19 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+    {
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        }
+        else
+        {
+            // In production, restrict origins to your own domain
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? ["https://app-gilde-prod.azurewebsites.net"];
+            policy.WithOrigins(allowedOrigins).AllowAnyMethod().AllowAnyHeader();
+        }
+    }));
 
 var app = builder.Build();
 
@@ -121,14 +133,19 @@ else
     app.UseHsts();
 }
 
-// Temporary: expose detailed errors when SHOW_DETAILED_ERRORS=true env var is set
-if (builder.Configuration.GetValue<bool>("SHOW_DETAILED_ERRORS"))
-{
-    app.UseDeveloperExceptionPage();
-}
-
 app.UseResponseCompression();
 app.UseHttpsRedirection();
+
+// Security headers
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+    await next();
+});
+
 app.UseStaticFiles();
 app.UseResponseCaching();
 app.UseSession();
