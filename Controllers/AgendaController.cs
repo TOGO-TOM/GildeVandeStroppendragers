@@ -35,10 +35,11 @@ namespace AdminMembers.Controllers
             var rangeStart = new DateTime(y, m, 1).AddDays(-7);
             var rangeEnd = new DateTime(y, m, 1).AddMonths(1).AddDays(7);
 
-            var events = await _context.AgendaEvents
+            var events = (await _context.AgendaEvents
                 .AsNoTracking()
                 .Where(e => e.StartDate < rangeEnd && (e.EndDate ?? e.StartDate) >= rangeStart)
                 .OrderBy(e => e.StartDate)
+                .ToListAsync())
                 .Select(e => new
                 {
                     e.Id,
@@ -54,7 +55,7 @@ namespace AdminMembers.Controllers
                     e.CreatedByUsername,
                     CreatedAt = e.CreatedAt.ToString("yyyy-MM-dd")
                 })
-                .ToListAsync();
+                .ToList();
 
             return Ok(events);
         }

@@ -284,9 +284,10 @@ function renderCalendar() {
         const isToday = dateStr === todayStr;
         const isSel   = dateStr === selectedDay;
         const dayEvents = getEventsForDate(dateStr);
-        const dots = dayEvents.slice(0, 3).map(e =>
-            `<div class="cal-event-dot" style="background:${e.Color}">${e.Title}</div>`
-        ).join('');
+        const dots = dayEvents.slice(0, 3).map(e => {
+            const timeLabel = !e.IsAllDay && e.StartTime ? e.StartTime + ' ' : '';
+            return `<div class="cal-event-dot" style="background:${e.Color}" onclick="event.stopPropagation();viewEvent(${e.Id})" title="${e.Title}">${timeLabel}${e.Title}</div>`;
+        }).join('');
         const moreCount = dayEvents.length > 3 ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - 3}</div>` : '';
         html += `<div class="cal-day${isToday ? ' today' : ''}${isSel ? ' selected' : ''}" data-date="${dateStr}" onclick="selectDay('${dateStr}')">
             <div class="cal-day-num">${d}</div>${dots}${moreCount}

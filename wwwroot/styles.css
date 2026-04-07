@@ -1318,7 +1318,10 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.5;
+    cursor: pointer;
+    transition: opacity .12s, transform .12s;
 }
+.cal-event-dot:hover { opacity: .85; transform: scale(1.03); }
 .cal-day-panel {
     margin-top: 16px;
     padding: 0 20px 20px;
