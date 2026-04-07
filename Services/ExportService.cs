@@ -201,28 +201,29 @@ namespace AdminMembers.Services
 
         private string GetFieldValue(Member member, string field)
         {
-            return field switch
+            var value = field switch
             {
                 "Id" => member.Id.ToString(),
                 "MemberNumber" => member.MemberNumber.ToString(),
-                "FirstName" => member.FirstName ?? "",
-                "LastName" => member.LastName ?? "",
-                "Gender" => member.Gender ?? "",
-                "Role" => member.Role ?? "",
-                "BirthDate" => member.BirthDate?.ToString("yyyy-MM-dd") ?? "",
-                "Email" => member.Email ?? "",
-                "PhoneNumber" => member.PhoneNumber ?? "",
+                "FirstName" => member.FirstName,
+                "LastName" => member.LastName,
+                "Gender" => member.Gender,
+                "Role" => member.Role,
+                "BirthDate" => member.BirthDate?.ToString("yyyy-MM-dd"),
+                "Email" => member.Email,
+                "PhoneNumber" => member.PhoneNumber,
                 "IsAlive" => member.IsAlive ? "Alive" : "Deceased",
-                "SeniorityDate" => member.SeniorityDate?.ToString("yyyy-MM-dd") ?? "",
-                "Street" => member.Address?.Street ?? "",
-                "HouseNumber" => member.Address?.HouseNumber ?? "",
-                "City" => member.Address?.City ?? "",
-                "PostalCode" => member.Address?.PostalCode ?? "",
-                "Country" => member.Address?.Country ?? "",
+                "SeniorityDate" => member.SeniorityDate?.ToString("yyyy-MM-dd"),
+                "Street" => member.Address?.Street,
+                "HouseNumber" => member.Address?.HouseNumber,
+                "City" => member.Address?.City,
+                "PostalCode" => member.Address?.PostalCode,
+                "Country" => member.Address?.Country,
                 "CreatedAt" => member.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                "UpdatedAt" => member.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "",
-                _ => ""
+                "UpdatedAt" => member.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss"),
+                _ => null
             };
+            return value ?? string.Empty;
         }
     }
 }

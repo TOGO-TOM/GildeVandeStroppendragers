@@ -68,7 +68,7 @@ namespace AdminMembers.Pages.Account
             var ok = await _authService.ChangePasswordAsync(
                 CurrentUser!.Id, NewPassword, CurrentUser!.Id, CurrentUser!.Username, ip);
 
-            SuccessMessage = ok ? _localizer["PasswordUpdatedSuccessfully"] : null;
+            SuccessMessage = ok ? (string?)_localizer["PasswordUpdatedSuccessfully"] : null;
             if (!ok) ErrorMessage = _localizer["PasswordUpdateFailed"];
             return Page();
         }

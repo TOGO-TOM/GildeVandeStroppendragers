@@ -141,15 +141,11 @@ namespace AdminMembers.Services
         private byte[] EncryptData(string plainText, string password)
         {
             using var aes = Aes.Create();
-            
-            // Generate key from password
-            using var keyDerivation = new Rfc2898DeriveBytes(password, 
-                Encoding.UTF8.GetBytes("AdminMembersSalt2024"), // Salt
-                10000, // Iterations
-                HashAlgorithmName.SHA256);
-            
-            aes.Key = keyDerivation.GetBytes(32); // 256-bit key
-            aes.IV = keyDerivation.GetBytes(16);  // 128-bit IV
+
+            // Generate key and IV from password using static Pbkdf2 method
+            var salt = Encoding.UTF8.GetBytes("AdminMembersSalt2024");
+            aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);
+            aes.IV = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 16);
 
             using var encryptor = aes.CreateEncryptor();
             using var msEncrypt = new MemoryStream();
@@ -169,14 +165,10 @@ namespace AdminMembers.Services
         private string DecryptData(byte[] cipherText, string password)
         {
             using var aes = Aes.Create();
-            
-            // Generate key from password
-            using var keyDerivation = new Rfc2898DeriveBytes(password, 
-                Encoding.UTF8.GetBytes("AdminMembersSalt2024"), // Same salt as encryption
-                10000,
-                HashAlgorithmName.SHA256);
-            
-            aes.Key = keyDerivation.GetBytes(32);
+
+            // Generate key from password using static Pbkdf2 method
+            var salt = Encoding.UTF8.GetBytes("AdminMembersSalt2024");
+            aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);
 
             // Extract IV from the beginning of the data
             var iv = new byte[16];
