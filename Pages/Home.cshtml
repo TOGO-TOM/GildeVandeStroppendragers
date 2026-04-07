@@ -115,7 +115,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>@Localizer["EventStartDate"] *</label>
-                    <input id="ev_start" type="date" required />
+                    <input id="ev_start" type="date" required onchange="syncEndDate()" />
                 </div>
                 <div class="form-group">
                     <label>@Localizer["EventEndDate"]</label>
@@ -133,11 +133,11 @@
                 </div>
             </div>
             <div class="form-group" style="margin-top:2px;">
-                <button type="button" id="ev_allday_btn" class="allday-toggle active" onclick="toggleAllDay()">
+                <button type="button" id="ev_allday_btn" class="allday-toggle" onclick="toggleAllDay()">
                     <span class="allday-toggle-dot"></span>
                     <span id="ev_allday_label">@Localizer["AllDay"]</span>
                 </button>
-                <input type="hidden" id="ev_allday" value="true" />
+                <input type="hidden" id="ev_allday" value="false" />
             </div>
             <div class="form-group">
                 <label>@Localizer["EventLocation"]</label>
@@ -413,8 +413,8 @@ function showDayPanel(dateStr) {
                 <div class="cal-event-card-body">
                     <div class="cal-event-card-title">${e.Title}</div>
                     <div class="cal-event-card-meta">
-                        ${!e.IsAllDay && e.StartTime ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-clock"/></svg>' + fmtLocalTime(e.StartTime) + (e.EndTime ? ' – ' + fmtLocalTime(e.EndTime) : '') + ' · ' : ''}
-                        ${e.Location ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-location"/></svg>' + e.Location + ' · ' : ''}
+                        ${!e.IsAllDay && e.StartTime ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-clock"/></svg>' + fmtLocalTime(e.StartTime) + (e.EndTime ? ' \u2013 ' + fmtLocalTime(e.EndTime) : '') + ' &middot; ' : ''}
+                        ${e.Location ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-location"/></svg>' + e.Location + ' &middot; ' : ''}
                         ${fmtLocalDateShort(e.StartDate)}${e.EndDate && e.EndDate !== e.StartDate ? ' ? ' + fmtLocalDateShort(e.EndDate) : ''}
                     </div>
                 </div>
@@ -453,10 +453,11 @@ function openEventForm(ev) {
     document.getElementById('ev_id').value = ev ? ev.Id : '0';
     document.getElementById('ev_title').value = ev ? ev.Title : '';
     document.getElementById('ev_desc').value = ev ? (ev.Description || '') : '';
-    document.getElementById('ev_start').value = ev ? ev.StartDate : (selectedDay || fmtDate(calYear, calMonth, new Date().getDate()));
-    document.getElementById('ev_end').value = ev ? (ev.EndDate || '') : '';
+    const defaultDate = selectedDay || fmtDate(calYear, calMonth, new Date().getDate());
+    document.getElementById('ev_start').value = ev ? ev.StartDate : defaultDate;
+    document.getElementById('ev_end').value = ev ? (ev.EndDate || ev.StartDate) : defaultDate;
     document.getElementById('ev_location').value = ev ? (ev.Location || '') : '';
-    const isAllDay = ev ? ev.IsAllDay : true;
+    const isAllDay = ev ? ev.IsAllDay : false;
     document.getElementById('ev_allday').value = isAllDay ? 'true' : 'false';
     document.getElementById('ev_start_time').value = ev && ev.StartTime ? ev.StartTime : '09:00';
     document.getElementById('ev_end_time').value = ev && ev.EndTime ? ev.EndTime : '10:00';
@@ -474,6 +475,14 @@ function toggleAllDay() {
     const next = !current;
     document.getElementById('ev_allday').value = next ? 'true' : 'false';
     applyAllDayState(next);
+}
+
+function syncEndDate() {
+    const start = document.getElementById('ev_start').value;
+    const end = document.getElementById('ev_end').value;
+    if (start && (!end || end < start)) {
+        document.getElementById('ev_end').value = start;
+    }
 }
 
 function applyAllDayState(isAllDay) {
@@ -533,8 +542,8 @@ function viewEvent(id) {
             <div style="font-size:18px;font-weight:800;">${ev.Title}</div>
         </div>
         <div class="info-grid">
-            <div class="info-block"><div class="info-label">${L.startDate}</div><div class="info-value">${fmtLocalDate(ev.StartDate)}${ev.StartTime ? ' · ' + fmtLocalTime(ev.StartTime) : ''}</div></div>
-            <div class="info-block"><div class="info-label">${L.endDate}</div><div class="info-value">${ev.EndDate ? fmtLocalDate(ev.EndDate) + (ev.EndTime ? ' · ' + fmtLocalTime(ev.EndTime) : '') : '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.startDate}</div><div class="info-value">${fmtLocalDate(ev.StartDate)}${ev.StartTime ? ' &middot; ' + fmtLocalTime(ev.StartTime) : ''}</div></div>
+            <div class="info-block"><div class="info-label">${L.endDate}</div><div class="info-value">${ev.EndDate ? fmtLocalDate(ev.EndDate) + (ev.EndTime ? ' &middot; ' + fmtLocalTime(ev.EndTime) : '') : '\u2014'}</div></div>
             <div class="info-block"><div class="info-label">${L.location}</div><div class="info-value">${ev.Location || '—'}</div></div>
             <div class="info-block"><div class="info-label">${L.createdBy}</div><div class="info-value">${ev.CreatedByUsername}</div></div>
         </div>
