@@ -1,0 +1,1367 @@
+{
+  "settings": {
+    "components": {
+      "code": true,
+      "binaries": false
+    },
+    "targetId": "net10.0",
+    "targetDisplayName": ".NETCoreApp,Version=v10.0"
+  },
+  "analysisStartTime": "2026-04-07T13:27:15.3784396Z",
+  "analysisEndTime": "2026-04-07T13:27:25.4100557Z",
+  "privacyModeHelpUrl": "https://go.microsoft.com/fwlink/?linkid=2270980",
+  "stats": {
+    "summary": {
+      "projects": 1,
+      "issues": 6,
+      "incidents": 46,
+      "effort": 46
+    },
+    "charts": {
+      "severity": {
+        "Mandatory": 11,
+        "Optional": 1,
+        "Potential": 34,
+        "Information": 0
+      },
+      "category": {
+        "NuGet": 4,
+        "Project": 1,
+        "Api": 41
+      }
+    }
+  },
+  "projects": [
+    {
+      "path": "AdminMembers.csproj",
+      "startingProject": true,
+      "issues": 6,
+      "storyPoints": 46,
+      "properties": {
+        "appName": "AdminMembers",
+        "projectKind": "AspNetCore",
+        "frameworks": [
+          "net8.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 126,
+        "numberOfCodeFiles": 119,
+        "linesTotal": 25961,
+        "linesOfCode": 22941,
+        "totalApiScanned": 44966,
+        "minLinesOfCodeToChange": 41,
+        "maxLinesOfCodeToChange": 41
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "ce4368a1-88c2-4194-93c1-9ccbf963a066",
+          "ruleId": "NuGet.0002",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.EntityFrameworkCore.InMemory, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.InMemory, and replace with new package Microsoft.EntityFrameworkCore.InMemory 10.0.5",
+              "protected": "Microsoft.EntityFrameworkCore.InMemory, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.InMemory, and replace with new package Microsoft.EntityFrameworkCore.InMemory 10.0.5"
+            },
+            "kind": "File",
+            "path": "AdminMembers.csproj",
+            "snippet": "Microsoft.EntityFrameworkCore.InMemory, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.InMemory, and replace with new package Microsoft.EntityFrameworkCore.InMemory 10.0.5",
+            "protectedSnippet": "Microsoft.EntityFrameworkCore.InMemory, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.InMemory, and replace with new package Microsoft.EntityFrameworkCore.InMemory 10.0.5",
+            "label": "Microsoft.EntityFrameworkCore.InMemory 8.0.0",
+            "properties": {
+              "PackageId": "Microsoft.EntityFrameworkCore.InMemory",
+              "PackageVersion": "8.0.0",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "c67d9981-5ed1-4e16-883c-ee627280fadd",
+          "ruleId": "NuGet.0002",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.EntityFrameworkCore.SqlServer, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.SqlServer, and replace with new package Microsoft.EntityFrameworkCore.SqlServer 10.0.5",
+              "protected": "Microsoft.EntityFrameworkCore.SqlServer, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.SqlServer, and replace with new package Microsoft.EntityFrameworkCore.SqlServer 10.0.5"
+            },
+            "kind": "File",
+            "path": "AdminMembers.csproj",
+            "snippet": "Microsoft.EntityFrameworkCore.SqlServer, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.SqlServer, and replace with new package Microsoft.EntityFrameworkCore.SqlServer 10.0.5",
+            "protectedSnippet": "Microsoft.EntityFrameworkCore.SqlServer, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.SqlServer, and replace with new package Microsoft.EntityFrameworkCore.SqlServer 10.0.5",
+            "label": "Microsoft.EntityFrameworkCore.SqlServer 8.0.0",
+            "properties": {
+              "PackageId": "Microsoft.EntityFrameworkCore.SqlServer",
+              "PackageVersion": "8.0.0",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "9f804c2f-2667-4354-af98-bce2f4f93232",
+          "ruleId": "NuGet.0002",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.EntityFrameworkCore.Tools, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.Tools, and replace with new package Microsoft.EntityFrameworkCore.Tools 10.0.5",
+              "protected": "Microsoft.EntityFrameworkCore.Tools, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.Tools, and replace with new package Microsoft.EntityFrameworkCore.Tools 10.0.5"
+            },
+            "kind": "File",
+            "path": "AdminMembers.csproj",
+            "snippet": "Microsoft.EntityFrameworkCore.Tools, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.Tools, and replace with new package Microsoft.EntityFrameworkCore.Tools 10.0.5",
+            "protectedSnippet": "Microsoft.EntityFrameworkCore.Tools, 8.0.0\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.Tools, and replace with new package Microsoft.EntityFrameworkCore.Tools 10.0.5",
+            "label": "Microsoft.EntityFrameworkCore.Tools 8.0.0",
+            "properties": {
+              "PackageId": "Microsoft.EntityFrameworkCore.Tools",
+              "PackageVersion": "8.0.0",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "f37e4c9c-8e37-4eeb-9f52-ae756e583452",
+          "ruleId": "NuGet.0005",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Azure.Identity, 1.14.0\n\nRecommendation:\n\nThis version takes a dependency on a deprecated version of MSAL .NET (Microsoft.Identity.Client).\nRemove Azure.Identity, and replace with new package Azure.Identity, 1.20.0",
+              "protected": "Azure.Identity, 1.14.0\n\nRecommendation:\n\nThis version takes a dependency on a deprecated version of MSAL .NET (Microsoft.Identity.Client).\nRemove Azure.Identity, and replace with new package Azure.Identity, 1.20.0"
+            },
+            "kind": "File",
+            "path": "AdminMembers.csproj",
+            "snippet": "Azure.Identity, 1.14.0\n\nRecommendation:\n\nThis version takes a dependency on a deprecated version of MSAL .NET (Microsoft.Identity.Client).\nRemove Azure.Identity, and replace with new package Azure.Identity, 1.20.0",
+            "protectedSnippet": "Azure.Identity, 1.14.0\n\nRecommendation:\n\nThis version takes a dependency on a deprecated version of MSAL .NET (Microsoft.Identity.Client).\nRemove Azure.Identity, and replace with new package Azure.Identity, 1.20.0",
+            "label": "Azure.Identity 1.14.0",
+            "properties": {
+              "PackageId": "Azure.Identity",
+              "PackageVersion": "1.14.0",
+              "PackageNewVersion": null,
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "928df332-af8e-4966-a4d6-0e49dcdef74d",
+          "ruleId": "Project.0002",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net8.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: net8.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "AdminMembers.csproj",
+            "snippet": "Current target framework: net8.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: net8.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net8.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        },
+        {
+          "incidentId": "d878d906-808b-4dfc-ab99-5901b86810ff",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "cache.Set(cacheKey, cached, TimeSpan.FromMinutes(5));",
+              "protected": "M:System.TimeSpan.FromMinutes(System.Double)"
+            },
+            "kind": "File",
+            "path": "Middleware\\AuthenticationMiddleware.cs",
+            "snippet": "cache.Set(cacheKey, cached, TimeSpan.FromMinutes(5));",
+            "protectedSnippet": "M:System.TimeSpan.FromMinutes(System.Double)",
+            "label": "M:System.TimeSpan.FromMinutes(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 59,
+            "column": 32
+          }
+        },
+        {
+          "incidentId": "324a639d-472c-435e-8d47-716b37131a4b",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:LogoContainerName\u0022) ?? \u0022logos\u0022;",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Controllers\\SettingsController.cs",
+            "snippet": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:LogoContainerName\u0022) ?? \u0022logos\u0022;",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 210,
+            "column": 28
+          }
+        },
+        {
+          "incidentId": "7e5520a5-c0da-4adf-b7c8-84e2325878f9",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:LogoContainerName\u0022) ?? \u0022logos\u0022;",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Controllers\\SettingsController.cs",
+            "snippet": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:LogoContainerName\u0022) ?? \u0022logos\u0022;",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 129,
+            "column": 28
+          }
+        },
+        {
+          "incidentId": "2d0b3712-759f-4070-9681-61a9181db434",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:LogoContainerName\u0022) ?? \u0022logos\u0022;",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Controllers\\SettingsController.cs",
+            "snippet": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:LogoContainerName\u0022) ?? \u0022logos\u0022;",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 64,
+            "column": 20
+          }
+        },
+        {
+          "incidentId": "ee2185c6-90c1-44e7-bfd1-74f2d4bcb47d",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "WriteAttributeValue(\u0022\u0022, 16277, \r\n#nullable restore\r\n#line (301,73)-(301,99) \u0022C:\\Users\\goderist\\source\\repos\\GildeVanDeStroppendragersNew\\Pages\\Members\\Index.cshtml\u0022\r\nUri.EscapeDataString(role)\r\n\r\n#line default\r\n#line hidden\r\n#nullable disable\r\n            , 16277, 27, false);",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "obj\\Debug\\net8.0\\Microsoft.CodeAnalysis.Razor.Compiler\\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\\Pages/Members/Index_cshtml.g.cs",
+            "snippet": "WriteAttributeValue(\u0022\u0022, 16277, \r\n#nullable restore\r\n#line (301,73)-(301,99) \u0022C:\\Users\\goderist\\source\\repos\\GildeVanDeStroppendragersNew\\Pages\\Members\\Index.cshtml\u0022\r\nUri.EscapeDataString(role)\r\n\r\n#line default\r\n#line hidden\r\n#nullable disable\r\n            , 16277, 27, false);",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 2140,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "e098d931-52c1-4a80-8317-3ec4df3ab3d3",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "string CfFilterQs(int? excludeId = null) =\u003E string.Join(\u0022\u0022,\r\n        cfFilters.Where(kv =\u003E excludeId == null || kv.Key != $\u0022filterCf_{excludeId}\u0022)\r\n                 .Select(kv =\u003E $\u0022\u0026{kv.Key}={Uri.EscapeDataString(kv.Value ?? \u0022\u0022)}\u0022)\r\n    );",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "obj\\Debug\\net8.0\\Microsoft.CodeAnalysis.Razor.Compiler\\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\\Pages/Members/Index_cshtml.g.cs",
+            "snippet": "string CfFilterQs(int? excludeId = null) =\u003E string.Join(\u0022\u0022,\r\n        cfFilters.Where(kv =\u003E excludeId == null || kv.Key != $\u0022filterCf_{excludeId}\u0022)\r\n                 .Select(kv =\u003E $\u0022\u0026{kv.Key}={Uri.EscapeDataString(kv.Value ?? \u0022\u0022)}\u0022)\r\n    );",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 105,
+            "column": 4
+          }
+        },
+        {
+          "incidentId": "981c3887-61f1-4d43-8d38-914d5673f106",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var sortByEncoded     = Uri.EscapeDataString(sortBy ?? string.Empty);",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "obj\\Debug\\net8.0\\Microsoft.CodeAnalysis.Razor.Compiler\\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\\Pages/Members/Index_cshtml.g.cs",
+            "snippet": "var sortByEncoded     = Uri.EscapeDataString(sortBy ?? string.Empty);",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 99,
+            "column": 4
+          }
+        },
+        {
+          "incidentId": "e8f1a974-2e3f-4f77-a93e-0970cb8b96ab",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var searchEncoded     = Uri.EscapeDataString(search ?? string.Empty);",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "obj\\Debug\\net8.0\\Microsoft.CodeAnalysis.Razor.Compiler\\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\\Pages/Members/Index_cshtml.g.cs",
+            "snippet": "var searchEncoded     = Uri.EscapeDataString(search ?? string.Empty);",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 98,
+            "column": 4
+          }
+        },
+        {
+          "incidentId": "fa29cba2-aa31-4634-a0ed-3b668c3f229d",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var filterRoleEncoded = Uri.EscapeDataString(filterRole ?? string.Empty);",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "obj\\Debug\\net8.0\\Microsoft.CodeAnalysis.Razor.Compiler\\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\\Pages/Members/Index_cshtml.g.cs",
+            "snippet": "var filterRoleEncoded = Uri.EscapeDataString(filterRole ?? string.Empty);",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 97,
+            "column": 4
+          }
+        },
+        {
+          "incidentId": "a4f6c0d6-10bd-42a0-a932-f12cc0e12215",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Uri.EscapeDataString(Issuer)",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Services\\TotpService.cs",
+            "snippet": "Uri.EscapeDataString(Issuer)",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 27,
+            "column": 42
+          }
+        },
+        {
+          "incidentId": "0cd3930b-8808-458e-a9f5-801667d9b7d0",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Uri.EscapeDataString(username)",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Services\\TotpService.cs",
+            "snippet": "Uri.EscapeDataString(username)",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 26,
+            "column": 64
+          }
+        },
+        {
+          "incidentId": "fbda1b95-bd73-4966-b4d4-c81ae2617063",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Uri.EscapeDataString(Issuer)",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Services\\TotpService.cs",
+            "snippet": "Uri.EscapeDataString(Issuer)",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 26,
+            "column": 33
+          }
+        },
+        {
+          "incidentId": "b5f5c356-d0f3-4709-bc84-92fe5d2d1f0d",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var useSsl  = _configuration.GetValue\u003Cbool\u003E(\u0022Email:UseSsl\u0022);",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Services\\EmailService.cs",
+            "snippet": "var useSsl  = _configuration.GetValue\u003Cbool\u003E(\u0022Email:UseSsl\u0022);",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 43,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "c94ef970-e91a-407b-8e8f-93c2dc8e86b3",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var resetUrl = $\u0022{appBaseUrl}/ResetPassword?token={Uri.EscapeDataString(resetToken)}\u0026email={Uri.EscapeDataString(toEmail)}\u0022;",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Services\\EmailService.cs",
+            "snippet": "var resetUrl = $\u0022{appBaseUrl}/ResetPassword?token={Uri.EscapeDataString(resetToken)}\u0026email={Uri.EscapeDataString(toEmail)}\u0022;",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 19,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "ff371e8e-9762-468e-8676-b70701d1e1d4",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var resetUrl = $\u0022{appBaseUrl}/ResetPassword?token={Uri.EscapeDataString(resetToken)}\u0026email={Uri.EscapeDataString(toEmail)}\u0022;",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Services\\EmailService.cs",
+            "snippet": "var resetUrl = $\u0022{appBaseUrl}/ResetPassword?token={Uri.EscapeDataString(resetToken)}\u0026email={Uri.EscapeDataString(toEmail)}\u0022;",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 19,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "9d738a88-d8d8-4552-8108-21dbc0706db8",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var inputHash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(\r\n                password, salt, 100_000,\r\n                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);",
+              "protected": "T:System.Security.Cryptography.Rfc2898DeriveBytes"
+            },
+            "kind": "File",
+            "path": "Services\\AuthService.cs",
+            "snippet": "var inputHash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(\r\n                password, salt, 100_000,\r\n                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);",
+            "protectedSnippet": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "label": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 468,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "c9363e96-d920-4726-bf32-88c5b729990a",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var inputHash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(\r\n                password, salt, 100_000,\r\n                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);",
+              "protected": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)"
+            },
+            "kind": "File",
+            "path": "Services\\AuthService.cs",
+            "snippet": "var inputHash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(\r\n                password, salt, 100_000,\r\n                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);",
+            "protectedSnippet": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "label": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 468,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "1935f5b5-9442-47a4-8958-1e691ad648b6",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(\r\n                password, salt, 100_000,\r\n                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);",
+              "protected": "T:System.Security.Cryptography.Rfc2898DeriveBytes"
+            },
+            "kind": "File",
+            "path": "Services\\AuthService.cs",
+            "snippet": "var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(\r\n                password, salt, 100_000,\r\n                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);",
+            "protectedSnippet": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "label": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 448,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "92a45823-30c4-4a7a-a872-ba144e444b3f",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(\r\n                password, salt, 100_000,\r\n                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);",
+              "protected": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)"
+            },
+            "kind": "File",
+            "path": "Services\\AuthService.cs",
+            "snippet": "var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(\r\n                password, salt, 100_000,\r\n                System.Security.Cryptography.HashAlgorithmName.SHA512, 64);",
+            "protectedSnippet": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "label": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 448,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "67f3809c-603a-40c6-8725-a623653a702c",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:BackupContainerName\u0022) ?? \u0022backups\u0022;",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:BackupContainerName\u0022) ?? \u0022backups\u0022;",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 277,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "85149579-c505-43df-815a-7de294ac9151",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:BackupContainerName\u0022) ?? \u0022backups\u0022;",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:BackupContainerName\u0022) ?? \u0022backups\u0022;",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 251,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "8bc578a0-0bfc-43bf-82fb-3d39e3389518",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:BackupContainerName\u0022) ?? \u0022backups\u0022;",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:BackupContainerName\u0022) ?? \u0022backups\u0022;",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 225,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "71a3c0db-76f7-45e0-9a34-31c57e3a6484",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:BackupContainerName\u0022) ?? \u0022backups\u0022;",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "var containerName = _configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:BackupContainerName\u0022) ?? \u0022backups\u0022;",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 197,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "6ef922c5-cda4-4726-95d5-631c89023ff4",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);",
+              "protected": "T:System.Security.Cryptography.Rfc2898DeriveBytes"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);",
+            "protectedSnippet": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "label": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 170,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "74838ec5-ee82-4199-9004-fbfbb32e685e",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);",
+              "protected": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);",
+            "protectedSnippet": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "label": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 170,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "85111e98-8356-47a6-8140-197eb9a8e1de",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "aes.IV = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 16);",
+              "protected": "T:System.Security.Cryptography.Rfc2898DeriveBytes"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "aes.IV = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 16);",
+            "protectedSnippet": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "label": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 147,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "a9e195cd-22b5-4ab7-81c5-dd7fc0ea131d",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "aes.IV = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 16);",
+              "protected": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "aes.IV = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 16);",
+            "protectedSnippet": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "label": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 147,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "36cb54a1-57aa-42e9-97fb-d0996b496d1a",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);",
+              "protected": "T:System.Security.Cryptography.Rfc2898DeriveBytes"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);",
+            "protectedSnippet": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "label": "T:System.Security.Cryptography.Rfc2898DeriveBytes",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 146,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "db1affe7-cf42-4ed2-8608-59236cd3fa25",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: .NET 10 obsoletions with custom IDs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);",
+              "protected": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)"
+            },
+            "kind": "File",
+            "path": "Services\\BackupService.cs",
+            "snippet": "aes.Key = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);",
+            "protectedSnippet": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "label": "M:System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(System.String,System.Byte[],System.Int32,System.Security.Cryptography.HashAlgorithmName,System.Int32)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/10.0/obsolete-apis.md",
+                "isCustom": false
+              }
+            ],
+            "line": 146,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "d0d64527-bdbe-4795-8c5b-70ebbf9d7c54",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return blobClient.Uri.ToString();",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Services\\BlobStorageService.cs",
+            "snippet": "return blobClient.Uri.ToString();",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 206,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "75b1d190-f513-439e-b53e-fd972ebc01af",
+          "ruleId": "Api.0002",
+          "description": "API is available in package System.Memory.Data, 8.0.0. Add package reference to System.Memory.Data, 8.0.0",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return downloadResult.Value.Content.ToArray();",
+              "protected": "T:System.BinaryData"
+            },
+            "kind": "File",
+            "path": "Services\\BlobStorageService.cs",
+            "snippet": "return downloadResult.Value.Content.ToArray();",
+            "protectedSnippet": "T:System.BinaryData",
+            "label": "T:System.BinaryData",
+            "properties": {
+              "PackageId": "System.Memory.Data",
+              "PackageNewVersion": "8.0.0"
+            },
+            "line": 82,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "452083f0-842b-4333-9c4f-0e67103b61aa",
+          "ruleId": "Api.0002",
+          "description": "API is available in package System.Memory.Data, 8.0.0. Add package reference to System.Memory.Data, 8.0.0",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return downloadResult.Value.Content.ToArray();",
+              "protected": "M:System.BinaryData.ToArray"
+            },
+            "kind": "File",
+            "path": "Services\\BlobStorageService.cs",
+            "snippet": "return downloadResult.Value.Content.ToArray();",
+            "protectedSnippet": "M:System.BinaryData.ToArray",
+            "label": "M:System.BinaryData.ToArray",
+            "properties": {
+              "PackageId": "System.Memory.Data",
+              "PackageNewVersion": "8.0.0"
+            },
+            "line": 82,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "0e1429ff-a293-41e5-8357-199a0edc1f58",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return blobClient.Uri.ToString();",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Services\\BlobStorageService.cs",
+            "snippet": "return blobClient.Uri.ToString();",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 43,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "b180071a-afdb-46a9-8872-5f3450d270bf",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "await Task.Delay(TimeSpan.FromSeconds(attempt * 5));",
+              "protected": "M:System.TimeSpan.FromSeconds(System.Double)"
+            },
+            "kind": "File",
+            "path": "Program.cs",
+            "snippet": "await Task.Delay(TimeSpan.FromSeconds(attempt * 5));",
+            "protectedSnippet": "M:System.TimeSpan.FromSeconds(System.Double)",
+            "label": "M:System.TimeSpan.FromSeconds(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 185,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "4783b892-b0de-4d3f-a7f0-76292b3c04dd",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "if (builder.Configuration.GetValue\u003Cbool\u003E(\u0022SHOW_DETAILED_ERRORS\u0022))\r\n{\r\n    app.UseDeveloperExceptionPage();\r\n}",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Program.cs",
+            "snippet": "if (builder.Configuration.GetValue\u003Cbool\u003E(\u0022SHOW_DETAILED_ERRORS\u0022))\r\n{\r\n    app.UseDeveloperExceptionPage();\r\n}",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 124,
+            "column": 0
+          }
+        },
+        {
+          "incidentId": "5af4461e-e275-460b-a27e-36e829e775ae",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: Exception diagnostics are suppressed when IExceptionHandler.TryHandleAsync returns true ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "app.UseExceptionHandler(\u0022/Error\u0022);",
+              "protected": "M:Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(Microsoft.AspNetCore.Builder.IApplicationBuilder,System.String)"
+            },
+            "kind": "File",
+            "path": "Program.cs",
+            "snippet": "app.UseExceptionHandler(\u0022/Error\u0022);",
+            "protectedSnippet": "M:Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(Microsoft.AspNetCore.Builder.IApplicationBuilder,System.String)",
+            "label": "M:Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(Microsoft.AspNetCore.Builder.IApplicationBuilder,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/aspnet-core/10/exception-handler-diagnostics-suppressed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 119,
+            "column": 4
+          }
+        },
+        {
+          "incidentId": "641e3bc8-ce63-4c4f-b3d0-020f92bc4ee9",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "options.IdleTimeout = TimeSpan.FromMinutes(15);",
+              "protected": "M:System.TimeSpan.FromMinutes(System.Double)"
+            },
+            "kind": "File",
+            "path": "Program.cs",
+            "snippet": "options.IdleTimeout = TimeSpan.FromMinutes(15);",
+            "protectedSnippet": "M:System.TimeSpan.FromMinutes(System.Double)",
+            "label": "M:System.TimeSpan.FromMinutes(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 95,
+            "column": 4
+          }
+        },
+        {
+          "incidentId": "415e3922-961c-4843-8369-5ead3145c3c1",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return new BlobServiceClient(new Uri(blobStorageEndpoint), new DefaultAzureCredential());",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Program.cs",
+            "snippet": "return new BlobServiceClient(new Uri(blobStorageEndpoint), new DefaultAzureCredential());",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 74,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "37014dd7-31ca-42a5-ac30-8a83c712b3bf",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return new BlobServiceClient(new Uri(blobStorageEndpoint), new DefaultAzureCredential());",
+              "protected": "M:System.Uri.#ctor(System.String)"
+            },
+            "kind": "File",
+            "path": "Program.cs",
+            "snippet": "return new BlobServiceClient(new Uri(blobStorageEndpoint), new DefaultAzureCredential());",
+            "protectedSnippet": "M:System.Uri.#ctor(System.String)",
+            "label": "M:System.Uri.#ctor(System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 74,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "af4df133-0742-40dd-bcf5-c1801b4d8055",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var blobStorageEndpoint = builder.Configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:Endpoint\u0022);",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "Program.cs",
+            "snippet": "var blobStorageEndpoint = builder.Configuration.GetValue\u003Cstring\u003E(\u0022AzureStorageBlob:Endpoint\u0022);",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 69,
+            "column": 0
+          }
+        },
+        {
+          "incidentId": "3bc00605-ffd6-45d7-98cc-979cbe8d9bae",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "AdminMembers.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "sql.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null);",
+              "protected": "M:System.TimeSpan.FromSeconds(System.Double)"
+            },
+            "kind": "File",
+            "path": "Program.cs",
+            "snippet": "sql.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null);",
+            "protectedSnippet": "M:System.TimeSpan.FromSeconds(System.Double)",
+            "label": "M:System.TimeSpan.FromSeconds(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 63,
+            "column": 12
+          }
+        }
+      ],
+      "features": []
+    }
+  ],
+  "rules": {
+    "NuGet.0002": {
+      "id": "NuGet.0002",
+      "isFeature": false,
+      "description": "NuGet package upgrade is recommended for selected target framework.\n\nStandard .NET packages are recommended to have versions matching version of .NET that project targets.\n\nSome other packages also are known to work better for selected target frameworks.",
+      "label": "NuGet package upgrade is recommended",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262530",
+          "isCustom": false
+        }
+      ]
+    },
+    "NuGet.0005": {
+      "id": "NuGet.0005",
+      "isFeature": false,
+      "description": "NuGet package is deprecated.\n\nGo to its documentation and if there is a guidance for replacement of functionality provided by this package.",
+      "label": "NuGet package is deprecated",
+      "severity": "Optional",
+      "effort": 1,
+      "links": [
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262531",
+          "isCustom": false
+        }
+      ]
+    },
+    "Project.0002": {
+      "id": "Project.0002",
+      "isFeature": false,
+      "description": "Project\u0027s target framework(s) needs to be changed to the new target framework that you selected for this upgrade.\n\nDuring upgrade target framework will be adjusted to corresponding platform when applicable. In some cases project would result in multiple target frameworks after the upgrade if it was using features that now have their own platforms in modern .NET frameworks (windows, iOS, Android etc).",
+      "label": "Project\u0027s target framework(s) needs to be changed",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Overview of porting from .NET Framework to .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265227",
+          "isCustom": false
+        },
+        {
+          "title": ".NET project SDKs",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265226",
+          "isCustom": false
+        }
+      ]
+    },
+    "Api.0002": {
+      "id": "Api.0002",
+      "isFeature": false,
+      "description": "API is source incompatible for selected .NET version: requires code changes to compile successfully when targeting a new version, such as removing obsolete APIs or changing method signatures.",
+      "label": "Source incompatible for selected .NET version",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Breaking changes in .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262679",
+          "isCustom": false
+        }
+      ]
+    },
+    "Api.0001": {
+      "id": "Api.0001",
+      "isFeature": false,
+      "description": "API is binary incompatible for selected .NET version: affects existing binaries, often requiring recompilation, because the API has changed in a way that prevents older binaries from loading or executing.",
+      "label": "Binary incompatible for selected .NET version",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Breaking changes in .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262679",
+          "isCustom": false
+        }
+      ]
+    },
+    "Api.0003": {
+      "id": "Api.0003",
+      "isFeature": false,
+      "description": "API has a behavioral change in selected .NET version: code and binaries may behave differently at runtime without needing recompilation, but the new behavior might be undesirable and require updates.",
+      "label": "Behavioral change in selected .NET version",
+      "severity": "Potential",
+      "effort": 1
+    }
+  }
+}
