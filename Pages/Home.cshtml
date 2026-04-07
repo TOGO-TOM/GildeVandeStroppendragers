@@ -387,7 +387,7 @@ function openEventForm(ev) {
     document.getElementById('ev_allday').checked = isAllDay;
     document.getElementById('ev_start_time').value = ev && ev.StartTime ? ev.StartTime : '09:00';
     document.getElementById('ev_end_time').value = ev && ev.EndTime ? ev.EndTime : '10:00';
-    document.getElementById('timeRow').style.display = isAllDay ? 'none' : '';
+    document.getElementById('timeRow').style.display = isAllDay ? 'none' : 'grid';
     const color = ev ? ev.Color : '#6366f1';
     const radio = document.querySelector(`input[name="evColor"][value="${color}"]`);
     if (radio) radio.checked = true;
@@ -398,7 +398,7 @@ function openEventForm(ev) {
 
 function toggleAllDay() {
     const allDay = document.getElementById('ev_allday').checked;
-    document.getElementById('timeRow').style.display = allDay ? 'none' : '';
+    document.getElementById('timeRow').style.display = allDay ? 'none' : 'grid';
 }
 
 async function saveEvent() {
