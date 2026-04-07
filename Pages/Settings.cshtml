@@ -1,8 +1,10 @@
 @page
 @model AdminMembers.Pages.SettingsModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Settings";
+    ViewData["Title"] = Localizer["Settings"];
     ViewData["LayoutPage"] = "settings";
     ViewData["LayoutUser"] = Model.CurrentUser;
 }
@@ -10,8 +12,8 @@
 <div class="page-body-full settings-page">
 
     <div class="page-heading">
-        <h1>Settings</h1>
-        <p>Manage application configuration, custom fields and users.</p>
+        <h1>@Localizer["Settings"]</h1>
+        <p>@Localizer["SettingsPageDescription"]</p>
     </div>
 
     <div class="settings-grid">
@@ -19,15 +21,15 @@
         <!-- NAV -->
         <div class="settings-nav card">
             <a class="settings-nav-item active" href="#" onclick="showSection('general',this)">
-                <span class="nav-icon">&#9881;&#65039;</span> General
+                <span class="nav-icon">&#9881;&#65039;</span> @Localizer["General"]
             </a>
             <a class="settings-nav-item" href="#" onclick="showSection('fields',this)">
-                <span class="nav-icon">&#9776;</span> Custom Fields
+                <span class="nav-icon">&#9776;</span> @Localizer["CustomFields"]
             </a>
             @if (Model.HasPermission("ReadWrite"))
             {
                 <a class="settings-nav-item" href="#" onclick="showSection('users',this)">
-                    <span class="nav-icon">&#128100;</span> Users
+                    <span class="nav-icon">&#128100;</span> @Localizer["Users"]
                 </a>
             }
         </div>
@@ -39,31 +41,31 @@
             <div id="sec-general" class="settings-section active">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">General Settings</span>
+                        <span class="card-title">@Localizer["GeneralSettings"]</span>
                     </div>
                     <div class="card-body">
                         <form id="generalForm" onsubmit="saveGeneralSettings(event)" enctype="multipart/form-data">
 
                             <div class="settings-row">
                                 <div>
-                                    <div class="settings-row-label">Company Name</div>
-                                    <div class="settings-row-desc">Displayed in exports and PDF headers.</div>
+                                    <div class="settings-row-label">@Localizer["CompanyName"]</div>
+                                    <div class="settings-row-desc">@Localizer["CompanyNameDescription"]</div>
                                 </div>
                                 <input id="companyName" name="companyName" type="text"
                                        value="@(Model.GeneralSettings?.CompanyName ?? "")"
-                                       placeholder="Enter company name"
+                                       placeholder="@Localizer["EnterCompanyName"]"
                                        style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
                             </div>
 
                             <div class="settings-row">
                                 <div>
-                                    <div class="settings-row-label">Logo</div>
-                                    <div class="settings-row-desc">PNG, JPEG or GIF � max 2 MB. Used in PDF exports.</div>
+                                    <div class="settings-row-label">@Localizer["Logo"]</div>
+                                    <div class="settings-row-desc">@Localizer["LogoDescription"]</div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
                                     @if (Model.HasLogo)
                                     {
-                                        <img id="logoPreview" src="/api/settings/logo" alt="Logo"
+                                        <img id="logoPreview" src="/api/settings/logo" alt="@Localizer["Logo"]"
                                              style="height:40px;border-radius:6px;border:1px solid var(--border);" />
                                     }
                                     else
@@ -71,34 +73,34 @@
                                         <img id="logoPreview" src="" alt="" style="height:40px;border-radius:6px;border:1px solid var(--border);display:none;" />
                                     }
                                     <label class="btn btn-icon btn-sm" style="cursor:pointer;margin:0;">
-                                        &#128247; Choose file
+                                        &#128247; @Localizer["ChooseFile"]
                                         <input type="file" id="logoFile" name="logo" accept="image/png,image/jpeg,image/gif"
                                                style="display:none;" onchange="previewLogo(this)" />
                                     </label>
                                     @if (Model.HasLogo)
                                     {
-                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteLogo()">&#128465; Remove</button>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteLogo()">&#128465; @Localizer["Remove"]</button>
                                     }
                                 </div>
                             </div>
 
                             <div class="settings-row" style="border-bottom:none;padding-bottom:0;justify-content:flex-end;gap:12px;align-items:center;">
                                 <span id="generalStatus" style="font-size:12px;color:var(--text-muted);"></span>
-                                <button type="submit" class="btn btn-accent">&#10003; Save Settings</button>
+                                <button type="submit" class="btn btn-accent">&#10003; @Localizer["SaveSettings"]</button>
                             </div>
                         </form>
                     </div>
                 </div>
 
                 <div class="card" style="margin-top:16px;">
-                    <div class="card-header"><span class="card-title">Export Members</span></div>
+                    <div class="card-header"><span class="card-title">@Localizer["ExportMembers"]</span></div>
                     <div class="card-body">
                         <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
                             <div>
-                                <div class="settings-row-label">Download member data</div>
-                                <div class="settings-row-desc">Choose fields and format, then download.</div>
+                                <div class="settings-row-label">@Localizer["DownloadMemberData"]</div>
+                                <div class="settings-row-desc">@Localizer["DownloadMemberDataDescription"]</div>
                             </div>
-                            <button class="btn btn-accent btn-sm" onclick="showModal('exportModal')">&#128229; Export</button>
+                            <button class="btn btn-accent btn-sm" onclick="showModal('exportModal')">&#128229; @Localizer["Export"]</button>
                         </div>
                     </div>
                 </div>
@@ -109,26 +111,26 @@
                 <div class="card">
                     <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
                         <span class="card-title">
-                            Custom Fields
+                            @Localizer["CustomFields"]
                             <span class="badge badge-gray" style="margin-left:6px;" id="fieldCount">@Model.CustomFields.Count</span>
                         </span>
-                        <button class="btn btn-accent btn-sm" onclick="openFieldModal()">&#43; Add Field</button>
+                        <button class="btn btn-accent btn-sm" onclick="openFieldModal()">&#43; @Localizer["AddField"]</button>
                     </div>
                     <div class="card-body" id="customFieldsList">
                         @if (Model.CustomFields.Any())
                         {
-                            @foreach (var f in Model.CustomFields)
+                            foreach (var f in Model.CustomFields)
                             {
                                 <div class="settings-row" id="field-row-@f.Id">
                                     <div class="field-tag">
                                         <span style="font-weight:700;">@f.FieldLabel</span>
                                         <span class="badge badge-gray">@f.FieldType</span>
-                                        @if (f.IsRequired) { <span class="badge badge-red">Required</span> }
-                                        @if (f.IsFilterable) { <span class="badge badge-purple">Filterable</span> }
-                                        @if (!f.IsActive) { <span class="badge badge-gray">Inactive</span> }
+                                        @if (f.IsRequired) { <span class="badge badge-red">@Localizer["Required"]</span> }
+                                        @if (f.IsFilterable) { <span class="badge badge-purple">@Localizer["Filterable"]</span> }
+                                        @if (!f.IsActive) { <span class="badge badge-gray">@Localizer["Inactive"]</span> }
                                     </div>
                                     <div style="display:flex;align-items:center;gap:8px;">
-                                        <span style="font-size:12px;color:var(--text-muted);">Order: @f.DisplayOrder</span>
+                                        <span style="font-size:12px;color:var(--text-muted);">@Localizer["Order"]: @f.DisplayOrder</span>
                                         <button class="btn btn-icon btn-sm" onclick="openFieldModal(@f.Id,'@f.FieldName','@f.FieldLabel','@f.FieldType',@(f.IsRequired ? "true" : "false"),@(f.IsActive ? "true" : "false"),@f.DisplayOrder,@(f.IsFilterable ? "true" : "false"))">&#9998;</button>
                                         <button class="btn btn-danger btn-sm" onclick="deleteField(@f.Id)">&#128465;</button>
                                     </div>
@@ -138,8 +140,8 @@
                         else
                         {
                             <div class="empty-state" id="fieldsEmptyState">
-                                <h3>No custom fields</h3>
-                                <p>Add custom fields to extend member profiles.</p>
+                                <h3>@Localizer["NoCustomFields"]</h3>
+                                <p>@Localizer["NoCustomFieldsDescription"]</p>
                             </div>
                         }
                     </div>
@@ -157,7 +159,7 @@
                         <div class="card pending-card" style="margin-bottom:16px;">
                             <div class="card-header">
                                 <span class="card-title">
-                                    &#9888; Pending Approvals
+                                    &#9888; @Localizer["PendingApprovals"]
                                     <span class="badge badge-red" style="margin-left:6px;">@Model.PendingUsers.Count</span>
                                 </span>
                             </div>
@@ -168,27 +170,27 @@
                                         <div class="pending-info">
                                             <div class="pending-name">@p.Username</div>
                                             <div class="pending-email">@p.Email</div>
-                                            <div class="pending-date">Requested @p.CreatedAt.ToString("d MMM yyyy HH:mm")</div>
+                                            <div class="pending-date">@Localizer["Requested"] @p.CreatedAt.ToString("d MMM yyyy HH:mm")</div>
                                         </div>
                                         <div class="pending-actions">
                                             <form method="post" asp-page-handler="Approve" style="display:inline;">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="userId" value="@p.Id" />
                                                 <select name="roleId" class="pending-role-select" required>
-                                                    <option value="">Assign role�</option>
+                                                    <option value="">@Localizer["AssignRole"]</option>
                                                     @foreach (var r in Model.Roles)
                                                     {
                                                         <option value="@r.Id">@r.Name</option>
                                                     }
                                                 </select>
-                                                <button type="submit" class="btn btn-sm btn-accent">&#10003; Approve</button>
+                                                <button type="submit" class="btn btn-sm btn-accent">&#10003; @Localizer["Approve"]</button>
                                             </form>
                                             <form method="post" asp-page-handler="Reject" style="display:inline;">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="userId" value="@p.Id" />
                                                 <button type="submit" class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('Reject and delete this registration request?')">
-                                                    &#10005; Reject
+                                                        onclick="return confirm('@Localizer["RejectRegistrationConfirm"]')">
+                                                    &#10005; @Localizer["Reject"]
                                                 </button>
                                             </form>
                                         </div>
@@ -202,14 +204,14 @@
                     <div class="card">
                         <div class="card-header">
                             <span class="card-title">
-                                Active Users
+                                @Localizer["ActiveUsers"]
                                 <span class="badge badge-gray" style="margin-left:6px;">@Model.Users.Count</span>
                             </span>
                         </div>
                         <div class="card-body">
                             @if (Model.Users.Any())
                             {
-                                @foreach (var u in Model.Users)
+                                foreach (var u in Model.Users)
                                 {
                                     var uInitials = u.Username?.Substring(0, 1).ToUpper() ?? "?";
                                     <div class="settings-row">
@@ -225,10 +227,10 @@
                                             {
                                                 <span class="badge badge-purple">@ur.Role.Name</span>
                                             }
-                                            @if (!u.IsActive) { <span class="badge badge-gray">Inactive</span> }
+                                            @if (!u.IsActive) { <span class="badge badge-gray">@Localizer["Inactive"]</span> }
                                             @if (u.LastLoginAt.HasValue)
                                             {
-                                                <span style="font-size:11px;color:var(--text-muted);">Last login: @u.LastLoginAt.Value.ToString("d MMM yyyy")</span>
+                                                <span style="font-size:11px;color:var(--text-muted);">@Localizer["LastLogin"]: @u.LastLoginAt.Value.ToString("d MMM yyyy")</span>
                                             }
                                         </div>
                                     </div>
@@ -236,7 +238,7 @@
                             }
                             else
                             {
-                                <div class="empty-state"><h3>No active users</h3><p>Approve pending requests to add users.</p></div>
+                                <div class="empty-state"><h3>@Localizer["NoActiveUsers"]</h3><p>@Localizer["NoActiveUsersDescription"]</p></div>
                             }
                         </div>
                     </div>
@@ -251,48 +253,48 @@
 <div id="fieldModal" class="modal" onclick="if(event.target===this)hideModal('fieldModal')">
     <div class="modal-box modal-box-sm">
         <div class="modal-head">
-            <h3 id="fieldModalTitle">Add Custom Field</h3>
+            <h3 id="fieldModalTitle">@Localizer["AddCustomField"]</h3>
             <button class="modal-close-btn" onclick="hideModal('fieldModal')">&times;</button>
         </div>
         <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
             <input type="hidden" id="fieldId" value="0" />
             <div class="form-group">
-                <label>Field Name <span style="font-size:11px;color:var(--text-muted);">(internal, no spaces)</span></label>
-                <input type="text" id="fieldName" placeholder="e.g. membershipType" style="width:100%;" />
+                <label>@Localizer["FieldName"] <span style="font-size:11px;color:var(--text-muted);">(@Localizer["InternalNoSpaces"])</span></label>
+                <input type="text" id="fieldName" placeholder="@Localizer["E.gMembershipType"]" style="width:100%;" />
             </div>
             <div class="form-group">
-                <label>Label <span style="font-size:11px;color:var(--text-muted);">(shown to users)</span></label>
-                <input type="text" id="fieldLabel" placeholder="e.g. Membership Type" style="width:100%;" />
+                <label>@Localizer["Label"] <span style="font-size:11px;color:var(--text-muted);">(@Localizer["ShownToUsers"])</span></label>
+                <input type="text" id="fieldLabel" placeholder="@Localizer["E.gMembershipType"]" style="width:100%;" />
             </div>
             <div class="form-group">
-                <label>Type</label>
+                <label>@Localizer["Type"]</label>
                 <select id="fieldType" style="width:100%;">
-                    <option value="Text">Text</option>
-                    <option value="Number">Number</option>
-                    <option value="Date">Date</option>
-                    <option value="Boolean">Yes / No</option>
+                    <option value="Text">@Localizer["Text"]</option>
+                    <option value="Number">@Localizer["Number"]</option>
+                    <option value="Date">@Localizer["Date"]</option>
+                    <option value="Boolean">@Localizer["YesNo"]</option>
                 </select>
             </div>
             <div class="form-row" style="gap:24px;">
                 <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
-                    <input type="checkbox" id="fieldRequired" /> Required
+                    <input type="checkbox" id="fieldRequired" /> @Localizer["Required"]
                 </label>
                 <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
-                    <input type="checkbox" id="fieldActive" checked /> Active
+                    <input type="checkbox" id="fieldActive" checked /> @Localizer["Active"]
                 </label>
                 <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
-                    <input type="checkbox" id="fieldFilterable" /> Filterable
+                    <input type="checkbox" id="fieldFilterable" /> @Localizer["Filterable"]
                 </label>
             </div>
             <div class="form-group">
-                <label>Display Order</label>
+                <label>@Localizer["DisplayOrder"]</label>
                 <input type="number" id="fieldOrder" value="0" min="0" style="width:100px;" />
             </div>
         </div>
         <div class="modal-footer">
             <span id="fieldStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
-            <button class="btn btn-icon" onclick="hideModal('fieldModal')">Cancel</button>
-            <button class="btn btn-accent" onclick="saveField()">&#10003; Save</button>
+            <button class="btn btn-icon" onclick="hideModal('fieldModal')">@Localizer["Cancel"]</button>
+            <button class="btn btn-accent" onclick="saveField()">&#10003; @Localizer["Save"]</button>
         </div>
     </div>
 </div>
@@ -301,14 +303,14 @@
 <div id="exportModal" class="modal" onclick="if(event.target===this)hideModal('exportModal')">
     <div class="modal-box">
         <div class="modal-head">
-            <h3>&#128229; Export Members</h3>
+            <h3>&#128229; @Localizer["ExportMembers"]</h3>
             <button class="modal-close-btn" onclick="hideModal('exportModal')">&times;</button>
         </div>
         <div class="modal-body">
 
             <!-- Format -->
             <div style="margin-bottom:20px;">
-                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">Format</div>
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">@Localizer["Format"]</div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
                     <label class="export-format-pill"><input type="radio" name="exportFormat" value="pdf" checked /> PDF</label>
                     <label class="export-format-pill"><input type="radio" name="exportFormat" value="excel" /> Excel (.xlsx)</label>
@@ -319,46 +321,46 @@
             <!-- Field selection -->
             <div style="margin-bottom:20px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Fields to include</div>
+                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">@Localizer["FieldsToInclude"]</div>
                     <div style="display:flex;gap:8px;">
-                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(true)">All</button>
-                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(false)">None</button>
+                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(true)">@Localizer["All"]</button>
+                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(false)">@Localizer["None"]</button>
                     </div>
                 </div>
                 <div class="export-fields-grid">
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="MemberNumber" checked /> Member #</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="FirstName"    checked /> First Name</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="LastName"     checked /> Last Name</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Gender"       checked /> Gender</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Role"         checked /> Role</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="IsAlive"      checked /> Status</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="BirthDate"           /> Birth Date</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="SeniorityDate"       /> Seniority Date</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Email"               /> Email</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="PhoneNumber"         /> Phone</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Street"              /> Street</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="HouseNumber"         /> House #</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="City"                /> City</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="PostalCode"          /> Postal Code</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Country"             /> Country</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="CreatedAt"           /> Created Date</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="MemberNumber" checked /> @Localizer["MemberNumber"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="FirstName"    checked /> @Localizer["FirstName"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="LastName"     checked /> @Localizer["LastName"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Gender"       checked /> @Localizer["Gender"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Role"         checked /> @Localizer["Role"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="IsAlive"      checked /> @Localizer["Status"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="BirthDate"           /> @Localizer["BirthDate"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="SeniorityDate"       /> @Localizer["SeniorityDate"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Email"               /> @Localizer["Email"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="PhoneNumber"         /> @Localizer["Phone"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Street"              /> @Localizer["Street"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="HouseNumber"         /> @Localizer["HouseNumber"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="City"                /> @Localizer["City"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="PostalCode"          /> @Localizer["PostalCode"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Country"             /> @Localizer["Country"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="CreatedAt"           /> @Localizer["CreatedDate"]</label>
                 </div>
             </div>
 
             <!-- Role filter -->
             <div>
-                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">Filter by role <span style="font-weight:400;text-transform:none;">(leave all unchecked = export everyone)</span></div>
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">@Localizer["FilterByRole"] <span style="font-weight:400;text-transform:none;">(@Localizer["LeaveAllUnchecked"])</span></div>
                 <div class="export-fields-grid">
-                    <label class="export-field-check"><input type="checkbox" name="er" value="Steunend Lid"  /> Steunend Lid</label>
-                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat"    /> Kandidaat</label>
-                    <label class="export-field-check"><input type="checkbox" name="er" value="Stappend Lid" /> Stappend Lid</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Steunend Lid"  /> @Localizer["SteunendLid"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat"    /> @Localizer["Kandidaat"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Stappend Lid" /> @Localizer["StappendLid"]</label>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
             <span id="exportStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
-            <button class="btn btn-icon" onclick="hideModal('exportModal')">Cancel</button>
-            <button class="btn btn-accent" onclick="runExport()">&#128229; Download</button>
+            <button class="btn btn-icon" onclick="hideModal('exportModal')">@Localizer["Cancel"]</button>
+            <button class="btn btn-accent" onclick="runExport()">&#128229; @Localizer["Download"]</button>
         </div>
     </div>
 </div>
@@ -366,9 +368,22 @@
 @section Scripts {
 <script>
 const pageToken = '@Model.AuthToken';
+const L = {
+    saving: '@Html.Raw(Localizer["Saving"].Value.Replace("'", "\\'"))',
+    saved: '@Html.Raw(Localizer["Saved"].Value.Replace("'", "\\'"))',
+    saveFailed: '@Html.Raw(Localizer["SaveFailed"].Value.Replace("'", "\\'"))',
+    requestFailed: '@Html.Raw(Localizer["RequestFailed"].Value.Replace("'", "\\'"))',
+};
 
 function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
 function hideModal(id) { document.getElementById(id).style.display = 'none';  document.body.style.overflow = ''; }
+
+window.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        hideModal('fieldModal');
+        hideModal('exportModal');
+    }
+});
 
 // ?? Section nav ???????????????????????????
 function showSection(id, el) {
@@ -399,7 +414,7 @@ function previewLogo(input) {
 async function saveGeneralSettings(e) {
     e.preventDefault();
     const statusEl = document.getElementById('generalStatus');
-    statusEl.textContent = 'Saving�';
+    statusEl.textContent = L.saving;
     statusEl.style.color = '';
 
     const fd = new FormData();
@@ -416,21 +431,21 @@ async function saveGeneralSettings(e) {
         const data = await r.json().catch(() => ({}));
         if (r.ok) {
             statusEl.style.color = 'green';
-            statusEl.textContent = '? Saved';
+            statusEl.textContent = L.saved;
             setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = ''; }, 3000);
         } else {
             statusEl.style.color = 'red';
-            statusEl.textContent = data.error ?? 'Save failed.';
+            statusEl.textContent = data.error ?? L.saveFailed;
         }
     } catch {
         statusEl.style.color = 'red';
-        statusEl.textContent = 'Request failed.';
+        statusEl.textContent = L.requestFailed;
     }
 }
 
 // ?? Delete logo ???????????????????????????
 async function deleteLogo() {
-    if (!confirm('Remove the logo?')) return;
+    if (!confirm('@Localizer["RemoveLogoConfirm"]')) return;
     try {
         const r = await fetch('/api/settings/logo', {
             method: 'DELETE',
@@ -441,12 +456,12 @@ async function deleteLogo() {
             img.src = ''; img.style.display = 'none';
             document.querySelector('[onclick="deleteLogo()"]')?.remove();
         }
-    } catch { alert('Failed to remove logo.'); }
+    } catch { alert('@Localizer["FailedToRemoveLogo"]'); }
 }
 
 // ?? Custom fields ?????????????????????????
 function openFieldModal(id = 0, name = '', label = '', type = 'Text', required = false, active = true, order = 0, filterable = false) {
-    document.getElementById('fieldModalTitle').textContent = id === 0 ? 'Add Custom Field' : 'Edit Custom Field';
+    document.getElementById('fieldModalTitle').textContent = id === 0 ? '@Localizer["AddCustomField"]' : '@Localizer["EditCustomField"]';
     document.getElementById('fieldId').value    = id;
     document.getElementById('fieldName').value  = name;
     document.getElementById('fieldLabel').value = label;
@@ -471,14 +486,14 @@ async function saveField() {
     const order      = parseInt(document.getElementById('fieldOrder').value) || 0;
     const statusEl   = document.getElementById('fieldStatus');
 
-    if (!name || !label) { statusEl.textContent = 'Name and Label are required.'; return; }
+    if (!name || !label) { statusEl.textContent = '@Localizer["NameLabelRequired"]'; return; }
 
     const isNew  = id === 0;
     const url    = isNew ? '/api/settings/custom-fields' : `/api/settings/custom-fields/${id}`;
     const method = isNew ? 'POST' : 'PUT';
     const body   = { id, fieldName: name, fieldLabel: label, fieldType: type, isRequired: required, isActive: active, isFilterable: filterable, displayOrder: order };
 
-    statusEl.textContent = 'Saving�';
+    statusEl.textContent = L.saving;
     try {
         const r = await fetch(url, {
             method,
@@ -491,13 +506,13 @@ async function saveField() {
         if (r.ok) { hideModal('fieldModal'); location.reload(); }
         else {
             const d = await r.json().catch(() => ({}));
-            statusEl.textContent = d.error ?? 'Save failed.';
+            statusEl.textContent = d.error ?? '@Localizer["SaveFailed"]';
         }
-    } catch { statusEl.textContent = 'Request failed.'; }
+    } catch { statusEl.textContent = '@Localizer["RequestFailed"]'; }
 }
 
 async function deleteField(id) {
-    if (!confirm('Delete this custom field? All member values for it will also be removed.')) return;
+    if (!confirm('@Localizer["DeleteCustomFieldConfirm"]')) return;
     try {
         const r = await fetch(`/api/settings/custom-fields/${id}`, {
             method: 'DELETE',
@@ -509,9 +524,9 @@ async function deleteField(id) {
             document.getElementById('fieldCount').textContent = remaining;
             if (remaining === 0)
                 document.getElementById('customFieldsList').innerHTML =
-                    '<div class="empty-state"><h3>No custom fields</h3><p>Add custom fields to extend member profiles.</p></div>';
-        } else { alert('Failed to delete field.'); }
-    } catch { alert('Request failed.'); }
+                    '<div class="empty-state"><h3>@Localizer["NoCustomFields"]</h3><p>@Localizer["NoCustomFieldsDescription"]</p></div>';
+        } else { alert('@Localizer["FailedToDeleteField"]'); }
+    } catch { alert(L.requestFailed); }
 }
 
 // ?? Export ????????????????????????????????
@@ -524,10 +539,10 @@ async function runExport() {
     const fields  = [...document.querySelectorAll('#exportModal input[name="ef"]:checked')].map(cb => cb.value);
     const roles   = [...document.querySelectorAll('#exportModal input[name="er"]:checked')].map(cb => cb.value);
 
-    if (fields.length === 0) { alert('Select at least one field to export.'); return; }
+    if (fields.length === 0) { alert('@Localizer["SelectAtLeastOneField"]'); return; }
 
     const statusEl = document.getElementById('exportStatus');
-    statusEl.textContent = 'Generating�';
+    statusEl.textContent = '@Localizer["Generating"]�';
 
     const endpointMap = { pdf: 'export/pdf', excel: 'export/excel', csv: 'export/csv-custom' };
     const extMap      = { pdf: 'pdf', excel: 'xlsx', csv: 'csv' };
@@ -553,7 +568,7 @@ async function runExport() {
         hideModal('exportModal');
     } catch (e) {
         statusEl.textContent = '';
-        alert(e.message ?? 'Export failed.');
+        alert(e.message ?? '@Localizer["ExportFailed"]');
     }
 }
 </script>

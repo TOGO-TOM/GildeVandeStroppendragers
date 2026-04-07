@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using AdminMembers.Data;
 using AdminMembers.Models;
 using AdminMembers.Services;
@@ -11,12 +12,14 @@ namespace AdminMembers.Pages.Members
         private readonly ApplicationDbContext _context;
         private readonly AuditLogService _auditLogService;
         private readonly ILogger<IndexModel> _logger;
+        private readonly IStringLocalizer<SharedResources> _localizer;
 
-        public IndexModel(ApplicationDbContext context, AuditLogService auditLogService, ILogger<IndexModel> logger)
+        public IndexModel(ApplicationDbContext context, AuditLogService auditLogService, ILogger<IndexModel> logger, IStringLocalizer<SharedResources> localizer)
         {
             _context = context;
             _auditLogService = auditLogService;
             _logger = logger;
+            _localizer = localizer;
         }
 
         // ?? Page data ??????????????????????????????????????????
@@ -82,14 +85,14 @@ namespace AdminMembers.Pages.Members
 
             if (!CanWrite)
             {
-                ErrorMessage = "You do not have permission to modify members.";
+                ErrorMessage = _localizer["NoPermissionModifyMembers"].Value;
                 await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                 return Page();
             }
 
             if (string.IsNullOrWhiteSpace(Form.FirstName) || string.IsNullOrWhiteSpace(Form.LastName))
             {
-                ErrorMessage = "First name and last name are required.";
+                ErrorMessage = _localizer["FirstLastNameRequired"].Value;
                 await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                 return Page();
             }
@@ -106,7 +109,7 @@ namespace AdminMembers.Pages.Members
                     if (Form.MemberNumber.HasValue && Form.MemberNumber > 0 &&
                         await _context.Members.AnyAsync(m => m.MemberNumber == Form.MemberNumber))
                     {
-                        ErrorMessage = $"Member number {Form.MemberNumber} is already in use.";
+                        ErrorMessage = string.Format(_localizer["MemberNumberInUse"].Value, Form.MemberNumber);
                         await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                         return Page();
                     }
@@ -117,7 +120,7 @@ namespace AdminMembers.Pages.Members
                     await SaveCustomFieldValuesAsync(member.Id);
                     await _auditLogService.LogActionAsync(userId, username, "Member Created", "Member",
                         member.Id, $"Created member {member.FirstName} {member.LastName}", ip);
-                    SuccessMessage = $"{member.FirstName} {member.LastName} was added successfully.";
+                    SuccessMessage = string.Format(_localizer["MemberAddedSuccess"].Value, member.FirstName, member.LastName);
                 }
                 else
                 {
@@ -128,7 +131,7 @@ namespace AdminMembers.Pages.Members
 
                     if (existing == null)
                     {
-                        ErrorMessage = "Member not found.";
+                        ErrorMessage = _localizer["MemberNotFound"].Value;
                         await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                         return Page();
                     }
@@ -136,7 +139,7 @@ namespace AdminMembers.Pages.Members
                     if (Form.MemberNumber.HasValue && Form.MemberNumber > 0 &&
                         await _context.Members.AnyAsync(m => m.MemberNumber == Form.MemberNumber && m.Id != Form.Id))
                     {
-                        ErrorMessage = $"Member number {Form.MemberNumber} is already in use.";
+                        ErrorMessage = string.Format(_localizer["MemberNumberInUse"].Value, Form.MemberNumber);
                         await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                         return Page();
                     }
@@ -147,13 +150,13 @@ namespace AdminMembers.Pages.Members
                     await SaveCustomFieldValuesAsync(existing.Id);
                     await _auditLogService.LogActionAsync(userId, username, "Member Updated", "Member",
                         existing.Id, $"Updated member {existing.FirstName} {existing.LastName}", ip);
-                    SuccessMessage = $"{existing.FirstName} {existing.LastName} was updated successfully.";
+                    SuccessMessage = string.Format(_localizer["MemberUpdatedSuccess"].Value, existing.FirstName, existing.LastName);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saving member");
-                ErrorMessage = "An error occurred while saving. Please try again.";
+                ErrorMessage = _localizer["ErrorSaving"].Value;
             }
 
             await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
@@ -168,7 +171,7 @@ namespace AdminMembers.Pages.Members
 
             if (!CanWrite)
             {
-                ErrorMessage = "You do not have permission to delete members.";
+                ErrorMessage = _localizer["NoPermissionDeleteMembers"].Value;
                 await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);
                 return Page();
             }
@@ -184,13 +187,13 @@ namespace AdminMembers.Pages.Members
                     await _auditLogService.LogActionAsync(CurrentUser!.Id, CurrentUser.Username,
                         "Member Deleted", "Member", id,
                         $"Deleted member {member.FirstName} {member.LastName}", ip);
-                    SuccessMessage = $"{member.FirstName} {member.LastName} was deleted.";
+                    SuccessMessage = string.Format(_localizer["MemberDeletedSuccess"].Value, member.FirstName, member.LastName);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting member {Id}", id);
-                ErrorMessage = "An error occurred while deleting. Please try again.";
+                ErrorMessage = _localizer["ErrorDeleting"].Value;
             }
 
             await LoadPageDataAsync(search, sortBy, filterRole, filterAlive);

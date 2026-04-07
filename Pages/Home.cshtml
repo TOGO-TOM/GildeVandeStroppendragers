@@ -1,8 +1,10 @@
 @page
 @model AdminMembers.Pages.HomeModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = Localizer["Home"];
     ViewData["LayoutPage"] = "home";
     ViewData["LayoutUser"] = Model.CurrentUser;
     var roles = string.Join(", ", Model.CurrentUser?.Roles ?? new List<string>());
@@ -13,7 +15,7 @@
     <!-- Welcome strip -->
     <div style="margin-bottom:28px;">
         <h1 style="font-size:22px;font-weight:800;line-height:1.2;">
-            Welcome back, @Model.CurrentUser?.Username
+            @Localizer["WelcomeBack"], @Model.CurrentUser?.Username
         </h1>
         <p style="color:var(--text-muted);margin-top:5px;font-size:13px;">
             @roles &mdash; @DateTime.Now.ToString("dddd, d MMMM yyyy")
@@ -26,18 +28,18 @@
         <a href="/Members" class="dash-card">
             <div class="dash-icon purple">&#128101;</div>
             <div>
-                <div class="dash-title">Members</div>
-                <div class="dash-desc">Browse, add and manage all members, addresses and seniority dates.</div>
-                <div class="dash-arrow">View members &rarr;</div>
+                <div class="dash-title">@Localizer["Members"]</div>
+                <div class="dash-desc">@Localizer["MembersDashboardDescription"]</div>
+                <div class="dash-arrow">@Localizer["ViewMembers"] &rarr;</div>
             </div>
         </a>
 
         <a href="/Settings" class="dash-card">
             <div class="dash-icon slate">&#9881;</div>
             <div>
-                <div class="dash-title">Settings</div>
-                <div class="dash-desc">Manage company info, logo, custom fields, users and permissions.</div>
-                <div class="dash-arrow">Open settings &rarr;</div>
+                <div class="dash-title">@Localizer["Settings"]</div>
+                <div class="dash-desc">@Localizer["SettingsDashboardDescription"]</div>
+                <div class="dash-arrow">@Localizer["OpenSettings"] &rarr;</div>
             </div>
         </a>
 
@@ -51,9 +53,9 @@
                 <svg class="icon" style="width:22px;height:22px;"><use href="#icon-box" /></svg>
             </div>
             <div>
-                <div class="dash-title">Stock</div>
-                <div class="dash-desc">Beheer voorraden, log bewegingen en bekijk de stockgeschiedenis.</div>
-                <div class="dash-arrow">Bekijk stock &rarr;</div>
+                <div class="dash-title">@Localizer["Stock"]</div>
+                <div class="dash-desc">@Localizer["StockDashboardDescription"]</div>
+                <div class="dash-arrow">@Localizer["ViewStock"] &rarr;</div>
             </div>
         </a>
         }

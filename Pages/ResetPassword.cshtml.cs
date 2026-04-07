@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using AdminMembers.Services;
+using Microsoft.Extensions.Localization;
 
 namespace AdminMembers.Pages
 {
@@ -8,11 +9,13 @@ namespace AdminMembers.Pages
     {
         private readonly AuthService _authService;
         private readonly PasswordPolicyService _passwordPolicy;
+        private readonly IStringLocalizer<AdminMembers.SharedResources> _localizer;
 
-        public ResetPasswordModel(AuthService authService, PasswordPolicyService passwordPolicy)
+        public ResetPasswordModel(AuthService authService, PasswordPolicyService passwordPolicy, IStringLocalizer<AdminMembers.SharedResources> localizer)
         {
             _authService = authService;
             _passwordPolicy = passwordPolicy;
+            _localizer = localizer;
         }
 
         [BindProperty(SupportsGet = true)] public string Token { get; set; } = string.Empty;
@@ -30,7 +33,7 @@ namespace AdminMembers.Pages
         {
             if (string.IsNullOrWhiteSpace(NewPassword) || NewPassword != ConfirmPassword)
             {
-                ErrorMessage = "Passwords do not match.";
+                ErrorMessage = _localizer["PasswordsDoNotMatch"];
                 return Page();
             }
 
@@ -42,7 +45,7 @@ namespace AdminMembers.Pages
                 return Page();
             }
 
-            SuccessMessage = "Your password has been reset. You can now sign in.";
+            SuccessMessage = _localizer["PasswordResetCompleted"];
             return Page();
         }
     }

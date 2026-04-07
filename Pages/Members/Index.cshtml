@@ -1,8 +1,10 @@
 ﻿@page
 @model AdminMembers.Pages.Members.IndexModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Members";
+    ViewData["Title"] = Localizer["Members"];
     ViewData["LayoutPage"] = "members";
     ViewData["LayoutUser"] = Model.CurrentUser;
     var search      = (string?)ViewContext.HttpContext.Request.Query["search"];
@@ -51,8 +53,8 @@
         {
         <div class="card">
             <div class="card-header">
-                <span class="card-title" id="formTitle">Add Member</span>
-                <button type="button" class="btn btn-xs btn-icon" onclick="resetForm()">Reset</button>
+                <span class="card-title" id="formTitle">@Localizer["AddMember"]</span>
+                <button type="button" class="btn btn-xs btn-icon" onclick="resetForm()">@Localizer["Reset"]</button>
             </div>
             <div class="card-body">
                 <form method="post" asp-page-handler="Save"
@@ -63,104 +65,104 @@
                     <input type="hidden" asp-for="Form.Id" />
                     <input type="hidden" asp-for="Form.AddressId" />
 
-                    <div class="form-section-title" style="margin-top:0;border-top:none;padding-top:0;">Personal</div>
+                    <div class="form-section-title" style="margin-top:0;border-top:none;padding-top:0;">@Localizer["Personal"]</div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>First Name *</label>
-                            <input asp-for="Form.FirstName" placeholder="First name" required />
+                            <label>@Localizer["FirstNameRequired"]</label>
+                            <input asp-for="Form.FirstName" placeholder="@Localizer["FirstName"]" required />
                         </div>
                         <div class="form-group">
-                            <label>Last Name *</label>
-                            <input asp-for="Form.LastName" placeholder="Last name" required />
+                            <label>@Localizer["LastNameRequired"]</label>
+                            <input asp-for="Form.LastName" placeholder="@Localizer["LastName"]" required />
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Gender</label>
+                            <label>@Localizer["Gender"]</label>
                             <select asp-for="Form.Gender">
-                                <option value="Man">Man</option>
-                                <option value="Vrouw">Vrouw</option>
-                                <option value="Other">Other</option>
+                                <option value="Man">@Localizer["Man"]</option>
+                                <option value="Vrouw">@Localizer["Woman"]</option>
+                                <option value="Other">@Localizer["Other"]</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Status</label>
+                            <label>@Localizer["Status"]</label>
                             <select asp-for="Form.IsAlive">
-                                <option value="true">Alive</option>
-                                <option value="false">Deceased</option>
+                                <option value="true">@Localizer["Alive"]</option>
+                                <option value="false">@Localizer["Deceased"]</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Role</label>
+                            <label>@Localizer["Role"]</label>
                             <select asp-for="Form.Role">
-                                <option value="Steunend Lid">Steunend Lid</option>
-                                <option value="Kandidaat">Kandidaat</option>
-                                <option value="Stappend Lid">Stappend Lid</option>
+                                <option value="Steunend Lid">@Localizer["SteunendLid"]</option>
+                                <option value="Kandidaat">@Localizer["Kandidaat"]</option>
+                                <option value="Stappend Lid">@Localizer["StappendLid"]</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Member #</label>
-                            <input asp-for="Form.MemberNumber" type="number" placeholder="Optional" min="1" />
+                            <label>@Localizer["MemberHash"]</label>
+                            <input asp-for="Form.MemberNumber" type="number" placeholder="@Localizer["Optional"]" min="1" />
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Birth Date</label>
+                            <label>@Localizer["BirthDate"]</label>
                             <input asp-for="Form.BirthDate" type="date" />
                         </div>
                         <div class="form-group">
-                            <label>Seniority Date</label>
+                            <label>@Localizer["SeniorityDate"]</label>
                             <input asp-for="Form.SeniorityDate" type="date" />
                         </div>
                     </div>
 
-                    <div class="form-section-title">Contact</div>
+                    <div class="form-section-title">@Localizer["Contact"]</div>
 
                     <div class="form-group">
-                        <label>Email</label>
+                        <label>@Localizer["Email"]</label>
                         <input asp-for="Form.Email" type="email" placeholder="email@example.com" />
                     </div>
                     <div class="form-group">
-                        <label>Phone</label>
+                        <label>@Localizer["Phone"]</label>
                         <input asp-for="Form.PhoneNumber" placeholder="+32 ..." />
                     </div>
 
-                    <div class="form-section-title">Address</div>
+                    <div class="form-section-title">@Localizer["Address"]</div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Street</label>
-                            <input asp-for="Form.Street" placeholder="Street" />
+                            <label>@Localizer["Street"]</label>
+                            <input asp-for="Form.Street" placeholder="@Localizer["Street"]" />
                         </div>
                         <div class="form-group">
-                            <label>House Nr.</label>
+                            <label>@Localizer["HouseNr"]</label>
                             <input asp-for="Form.HouseNumber" placeholder="Nr." />
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>City</label>
-                            <input asp-for="Form.City" placeholder="City" />
+                            <label>@Localizer["City"]</label>
+                            <input asp-for="Form.City" placeholder="@Localizer["City"]" />
                         </div>
                         <div class="form-group">
-                            <label>Postal Code</label>
+                            <label>@Localizer["PostalCode"]</label>
                             <input asp-for="Form.PostalCode" placeholder="0000" />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Country</label>
+                        <label>@Localizer["Country"]</label>
                         <input asp-for="Form.Country" id="Form_Country" placeholder="Belgium" />
                     </div>
 
                     @if (Model.CustomFields.Any())
                     {
-                        <div class="form-section-title">Custom Fields</div>
+                        <div class="form-section-title">@Localizer["CustomFields"]</div>
                         @foreach (var cf in Model.CustomFields)
                         {
                             <div class="form-group">
@@ -168,9 +170,9 @@
                                 @if (cf.FieldType == "Boolean")
                                 {
                                     <select id="cf_@cf.Id" name="cf_@cf.Id">
-                                        <option value="">— select —</option>
-                                        <option value="Yes">Yes</option>
-                                        <option value="No">No</option>
+                                        <option value="">@Localizer["SelectAValue"]</option>
+                                        <option value="Yes">@Localizer["Ja"]</option>
+                                        <option value="No">@Localizer["Nee"]</option>
                                     </select>
                                 }
                                 else if (cf.FieldType == "Date")
@@ -190,25 +192,25 @@
                     }
 
                     <button type="submit" class="btn btn-primary" id="submitBtn" style="margin-top:16px;">
-                        Add Member
+                        @Localizer["AddMember"]
                     </button>
-                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">@Localizer["Reset"]</button>
                 </form>
             </div>
         </div>
 
         <!-- Data management -->
         <div class="card" style="margin-top:16px;">
-            <div class="card-header"><span class="card-title">Data</span></div>
+            <div class="card-header"><span class="card-title">@Localizer["Data"]</span></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
                 <button class="btn btn-icon" onclick="showModal('importModal')">
-                    <svg class="icon icon-md"><use href="#icon-upload" /></svg> Import CSV
+                    <svg class="icon icon-md"><use href="#icon-upload" /></svg> @Localizer["ImportCSV"]
                 </button>
                 <button class="btn btn-icon" onclick="showModal('exportModal')">
-                    <svg class="icon icon-md"><use href="#icon-download" /></svg> Export
+                    <svg class="icon icon-md"><use href="#icon-download" /></svg> @Localizer["Export"]
                 </button>
                 <button class="btn btn-icon" onclick="showModal('bulkModal')">
-                    <svg class="icon icon-md"><use href="#icon-edit" /></svg> Bulk Update
+                    <svg class="icon icon-md"><use href="#icon-edit" /></svg> @Localizer["BulkUpdate"]
                 </button>
             </div>
         </div>
@@ -217,24 +219,24 @@
         {
         <!-- Viewer: read-only notice + export only -->
         <div class="card">
-            <div class="card-header"><span class="card-title">Members</span></div>
+            <div class="card-header"><span class="card-title">@Localizer["Members"]</span></div>
             <div class="card-body">
                 <div class="viewer-notice">
                     <svg class="icon icon-xl" style="color:var(--text-muted);"><use href="#icon-lock" /></svg>
                     <div>
-                        <div style="font-weight:600;font-size:13px;">Read-only access</div>
+                        <div style="font-weight:600;font-size:13px;">@Localizer["ReadOnlyAccess"]</div>
                         <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
-                            You can view and export members but cannot add, edit or delete.
+                            @Localizer["MembersReadOnlyDescription"]
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="card" style="margin-top:16px;">
-            <div class="card-header"><span class="card-title">Data</span></div>
+            <div class="card-header"><span class="card-title">@Localizer["Data"]</span></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
                 <button class="btn btn-icon" onclick="showModal('exportModal')">
-                    <svg class="icon icon-md"><use href="#icon-download" /></svg> Export
+                    <svg class="icon icon-md"><use href="#icon-download" /></svg> @Localizer["Export"]
                 </button>
             </div>
         </div>
@@ -249,47 +251,47 @@
             <a class="stat-item @(filterAliveNorm == "alive" ? "active" : "")"
                href="@urlAlive" style="text-decoration:none;">
                 <div class="stat-value green">@Model.ActiveMembers</div>
-                <div class="stat-label">Alive</div>
+                <div class="stat-label">@Localizer["Alive"]</div>
             </a>
             <a class="stat-item @(filterAliveNorm == "deceased" ? "active" : "")"
                href="@urlDeceased" style="text-decoration:none;">
                 <div class="stat-value">@Model.DeceasedMembers</div>
-                <div class="stat-label">Deceased</div>
+                <div class="stat-label">@Localizer["Deceased"]</div>
             </a>
             <a class="stat-item @(filterAliveNorm != "alive" && filterAliveNorm != "deceased" ? "active" : "")"
                href="@urlAll" style="text-decoration:none;">
                 <div class="stat-value">@Model.TotalMembers</div>
-                <div class="stat-label">@(string.IsNullOrEmpty(filterRole) ? "Total" : filterRole)</div>
+                <div class="stat-label">@(string.IsNullOrEmpty(filterRole) ? Localizer["Total"].Value : filterRole)</div>
             </a>
         </div>
 
         <!-- Toolbar -->
         <div class="toolbar">
             <form method="get" class="toolbar-search">
-                <input name="search"     value="@search"     placeholder="Search name, email, member #..." />
+                <input name="search"     value="@search"     placeholder="@Localizer["SearchPlaceholder"]" />
                 <input type="hidden" name="sortBy"      value="@sortBy" />
                 <input type="hidden" name="filterRole"  value="@filterRole" />
                 <input type="hidden" name="filterAlive" value="@filterAlive" />
                 @foreach (var kv in cfFilters) { <input type="hidden" name="@kv.Key" value="@kv.Value" /> }
-                <button class="btn btn-accent btn-sm" type="submit">Search</button>
+                <button class="btn btn-accent btn-sm" type="submit">@Localizer["Search"]</button>
             </form>
             <div class="toolbar-divider"></div>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-asc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">A&ndash;Z</a>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-desc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">Z&ndash;A</a>
-            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=memberNumber-asc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">By&nbsp;#</a>
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-asc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">@Localizer["AZ"]</a>
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=lastName-desc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">@Localizer["ZA"]</a>
+            <a class="btn btn-icon btn-sm" href="?search=@search&sortBy=memberNumber-asc&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs()">@Localizer["ByNumber"]</a>
             @if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(filterRole) || (filterAlive != null && filterAlive != "alive") || cfFilters.Any())
             {
-                <a class="btn btn-icon btn-sm" href="?filterAlive=alive">Clear</a>
+                <a class="btn btn-icon btn-sm" href="?filterAlive=alive">@Localizer["Clear"]</a>
             }
         </div>
 
         <!-- Role filter button group -->
         <div class="role-filter-bar">
-            <span class="role-filter-label">Rol</span>
+            <span class="role-filter-label">@Localizer["Rol"]</span>
             <div class="role-btn-group">
                 <a class="role-btn @(string.IsNullOrEmpty(filterRole) ? "active" : "")"
                    href="?search=@search&sortBy=@sortBy&filterAlive=@filterAlive@CfFilterQs()">
-                    Alle
+                    @Localizer["Alle"]
                     <span class="role-btn-count">@Model.AllMembersCount</span>
                 </a>
                 @foreach (var role in roles)
@@ -315,15 +317,15 @@
                     <div class="role-btn-group">
                         <a class="role-btn @(string.IsNullOrEmpty(currentCfVal) ? "active" : "")"
                            href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs(cf.Id)">
-                            Alle
+                            @Localizer["Alle"]
                         </a>
                         <a class="role-btn @(currentCfVal == "Yes" ? "active" : "")"
                            href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs(cf.Id)&filterCf_@(cf.Id)=Yes">
-                            Ja
+                            @Localizer["Ja"]
                         </a>
                         <a class="role-btn @(currentCfVal == "No" ? "active" : "")"
                            href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs(cf.Id)&filterCf_@(cf.Id)=No">
-                            Nee
+                            @Localizer["Nee"]
                         </a>
                     </div>
                 }
@@ -339,9 +341,9 @@
                             <input type="hidden" name="@kv.Key" value="@kv.Value" />
                         }
                         <input type="text" name="filterCf_@cf.Id" value="@currentCfVal"
-                               placeholder="Filter..."
+                               placeholder="@Localizer["FilterPlaceholder"]"
                                class="role-filter-input" />
-                        <button type="submit" class="role-btn active" style="border:none;cursor:pointer;">Zoek</button>
+                        <button type="submit" class="role-btn active" style="border:none;cursor:pointer;">@Localizer["Zoek"]</button>
                         @if (!string.IsNullOrEmpty(currentCfVal))
                         {
                             <a class="role-btn" href="?search=@search&sortBy=@sortBy&filterRole=@filterRole&filterAlive=@filterAlive@CfFilterQs(cf.Id)">&#x2715;</a>
@@ -387,9 +389,9 @@
                             <div class="member-details">@string.Join(" · ", det)</div>
                         </div>
                         <div class="member-meta">
-                            <div class="member-number">@(m.MemberNumber.HasValue ? $"#{m.MemberNumber}" : "No #")</div>
+                            <div class="member-number">@(m.MemberNumber.HasValue ? $"#{m.MemberNumber}" : Localizer["NoNumber"].Value)</div>
                             <span class="badge @(m.IsAlive ? "badge-green" : "badge-gray")">
-                                @(m.IsAlive ? "Alive" : "Deceased")
+                                @(m.IsAlive ? Localizer["Alive"].Value : Localizer["Deceased"].Value)
                             </span>
                             @{
                                 var roleBadgeClass = m.Role switch {
@@ -408,27 +410,27 @@
         else
         {
             <div class="no-members">
-                <h3>No members found</h3>
-                <p>@(string.IsNullOrEmpty(search) ? "Use the form to add your first member." : "No results — try a different search.")</p>
+                <h3>@Localizer["NoMembersFound"]</h3>
+                <p>@(string.IsNullOrEmpty(search) ? Localizer["UseFormToAddFirst"].Value : Localizer["NoResultsTryDifferent"].Value)</p>
             </div>
         }
     </div>
 </div>
 
 <!-- FAB for mobile -->
-<button class="fab-add" onclick="toggleFormPanel()" title="Add member">&#43;</button>
+<button class="fab-add" onclick="toggleFormPanel()" title="@Localizer["AddMember"]">&#43;</button>
 
 <!-- ══ CONTACT CARD MODAL ══ -->
 <div id="contactModal" class="modal" onclick="if(event.target===this)closeCard()">
     <div class="modal-box">
         <div class="modal-head">
-            <h3 id="cardTitle">Member</h3>
+            <h3 id="cardTitle">@Localizer["Members"]</h3>
             <button class="modal-close-btn" onclick="closeCard()">&times;</button>
         </div>
         <div class="modal-tabs">
-            <button class="modal-tab active" onclick="switchTab('info',this)">Info</button>
+            <button class="modal-tab active" onclick="switchTab('info',this)">@Localizer["Info"]</button>
             <button class="modal-tab" onclick="switchTab('docs',this)">
-                <svg class="icon icon-sm" style="margin-right:4px;"><use href="#icon-paperclip" /></svg>Documents
+                <svg class="icon icon-sm" style="margin-right:4px;"><use href="#icon-paperclip" /></svg>@Localizer["Documents"]
             </button>
         </div>
         <div class="modal-body">
@@ -447,10 +449,10 @@
                      ondragleave="this.classList.remove('drag-over')"
                      ondrop="handleDocDrop(event)">
                     <svg class="icon icon-xl" style="margin-bottom:8px;color:var(--accent);"><use href="#icon-upload" /></svg>
-                    <div style="font-weight:600;">Click or drag a file to upload</div>
-                    <div style="font-size:12px;margin-top:4px;">PDF, Word, Excel, images — max 20 MB</div>
+                    <div style="font-weight:600;">@Localizer["ClickOrDragUpload"]</div>
+                    <div style="font-size:12px;margin-top:4px;">@Localizer["UploadFileTypes"]</div>
                     <input type="file" id="docFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp,.txt"
-                           onchange="uploadDoc(this.files[0])" />
+                           multiple onchange="uploadDocs(this.files)" />
                 </div>
                 <div id="docUploadStatus" style="font-size:12px;margin-top:8px;display:none;"></div>
                 }
@@ -464,10 +466,10 @@
 <div id="docViewerModal" class="modal" onclick="if(event.target===this)closeViewer()">
     <div class="modal-box doc-viewer-box">
         <div class="modal-head">
-            <h3 id="viewerTitle" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 80px);">Document</h3>
+            <h3 id="viewerTitle" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 80px);">@Localizer["Documents"]</h3>
             <div style="display:flex;gap:8px;flex-shrink:0;">
                 <button class="btn btn-xs btn-icon" id="viewerDownloadBtn">
-                    <svg class="icon icon-sm"><use href="#icon-download" /></svg> Download
+                    <svg class="icon icon-sm"><use href="#icon-download" /></svg> @Localizer["Download"]
                 </button>
                 <button class="modal-close-btn" onclick="closeViewer()">&times;</button>
             </div>
@@ -482,19 +484,19 @@
 <div id="deleteModal" class="modal" onclick="if(event.target===this)closeDelete()">
     <div class="modal-box modal-box-sm">
         <div class="modal-head">
-            <h3>Delete Member</h3>
+            <h3>@Localizer["DeleteMember"]</h3>
             <button class="modal-close-btn" onclick="closeDelete()">&times;</button>
         </div>
         <div class="modal-body">
-            <p style="font-size:14px;">Delete <strong id="deleteName"></strong>? This cannot be undone.</p>
+            <p style="font-size:14px;">@Localizer["DeleteMemberConfirm"] <strong id="deleteName"></strong>? @Localizer["CannotBeUndone"]</p>
         </div>
         <div class="modal-footer">
             <form method="post" asp-page-handler="Delete"
                   asp-route-search="@search" asp-route-sortBy="@sortBy"
                   asp-route-filterRole="@filterRole" asp-route-filterAlive="@filterAlive">
                 <input type="hidden" name="id" id="deleteId" />
-                <button type="button" class="btn btn-icon" onclick="closeDelete()">Cancel</button>
-                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="button" class="btn btn-icon" onclick="closeDelete()">@Localizer["Cancel"]</button>
+                <button type="submit" class="btn btn-danger">@Localizer["Delete"]</button>
             </form>
         </div>
     </div>
@@ -504,23 +506,23 @@
 <div id="importModal" class="modal" onclick="if(event.target===this)this.style.display='none'">
     <div class="modal-box modal-box-sm">
         <div class="modal-head">
-            <h3>Import CSV</h3>
+            <h3>@Localizer["ImportCSV"]</h3>
             <button class="modal-close-btn" onclick="this.closest('.modal').style.display='none'">&times;</button>
         </div>
         <div class="modal-body">
             <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
-                Supported: comma or semicolon separator. First row = headers.<br/>
-                Required: <strong>FirstName</strong>, <strong>LastName</strong>
+                @Localizer["ImportCSVDescription"]<br/>
+                @Localizer["ImportCSVRequired"] <strong>FirstName</strong>, <strong>LastName</strong>
             </p>
             <div class="form-group">
-                <label>CSV File</label>
+                <label>@Localizer["CSVFile"]</label>
                 <input type="file" id="csvFile" accept=".csv"
                        style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);" />
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-icon" onclick="this.closest('.modal').style.display='none'">Cancel</button>
-            <button class="btn btn-accent" onclick="importCsv()">Import</button>
+            <button class="btn btn-icon" onclick="this.closest('.modal').style.display='none'">@Localizer["Cancel"]</button>
+            <button class="btn btn-accent" onclick="importCsv()">@Localizer["Import"]</button>
         </div>
     </div>
 </div>
@@ -529,14 +531,14 @@
 <div id="exportModal" class="modal" onclick="if(event.target===this)hideModal('exportModal')">
     <div class="modal-box">
         <div class="modal-head">
-            <h3>&#128229; Export Members</h3>
+            <h3>&#128229; @Localizer["ExportMembers"]</h3>
             <button class="modal-close-btn" onclick="hideModal('exportModal')">&times;</button>
         </div>
         <div class="modal-body">
 
             <!-- Format -->
             <div style="margin-bottom:20px;">
-                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">Format</div>
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">@Localizer["Format"]</div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
                     <label class="export-format-pill">
                         <input type="radio" name="exportFormat" value="pdf" checked /> PDF
@@ -553,47 +555,47 @@
             <!-- Field selection -->
             <div style="margin-bottom:20px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Fields to include</div>
+                    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">@Localizer["FieldsToInclude"]</div>
                     <div style="display:flex;gap:8px;">
-                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(true)">All</button>
-                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(false)">None</button>
+                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(true)">@Localizer["All"]</button>
+                        <button type="button" class="btn btn-xs btn-icon" onclick="toggleAllFields(false)">@Localizer["None"]</button>
                     </div>
                 </div>
                 <div class="export-fields-grid">
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="MemberNumber" checked /> Member #</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="FirstName"    checked /> First Name</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="LastName"     checked /> Last Name</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Gender"       checked /> Gender</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Role"         checked /> Role</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="IsAlive"      checked /> Status</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="BirthDate"           /> Birth Date</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="SeniorityDate"       /> Seniority Date</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Email"               /> Email</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="PhoneNumber"         /> Phone</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Street"              /> Street</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="HouseNumber"         /> House #</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="City"                /> City</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="PostalCode"          /> Postal Code</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="Country"             /> Country</label>
-                    <label class="export-field-check"><input type="checkbox" name="ef" value="CreatedAt"           /> Created Date</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="MemberNumber" checked /> @Localizer["MemberHash"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="FirstName"    checked /> @Localizer["FirstName"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="LastName"     checked /> @Localizer["LastName"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Gender"       checked /> @Localizer["Gender"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Role"         checked /> @Localizer["Role"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="IsAlive"      checked /> @Localizer["Status"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="BirthDate"           /> @Localizer["BirthDate"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="SeniorityDate"       /> @Localizer["SeniorityDate"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Email"               /> @Localizer["Email"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="PhoneNumber"         /> @Localizer["Phone"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Street"              /> @Localizer["Street"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="HouseNumber"         /> @Localizer["HouseNr"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="City"                /> @Localizer["City"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="PostalCode"          /> @Localizer["PostalCode"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="Country"             /> @Localizer["Country"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="ef" value="CreatedAt"           /> @Localizer["CreatedDate"]</label>
                 </div>
             </div>
 
             <!-- Role filter -->
             <div>
-                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">Filter by role <span style="font-weight:400;text-transform:none;">(leave all unchecked = export everyone)</span></div>
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:10px;">@Localizer["FilterByRole"] <span style="font-weight:400;text-transform:none;">(@Localizer["LeaveAllUnchecked"])</span></div>
                 <div class="export-fields-grid">
-                    <label class="export-field-check"><input type="checkbox" name="er" value="Steunend Lid"  /> Steunend Lid</label>
-                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat"    /> Kandidaat</label>
-                    <label class="export-field-check"><input type="checkbox" name="er" value="Stappend Lid" /> Stappend Lid</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Steunend Lid"  /> @Localizer["SteunendLid"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Kandidaat"    /> @Localizer["Kandidaat"]</label>
+                    <label class="export-field-check"><input type="checkbox" name="er" value="Stappend Lid" /> @Localizer["StappendLid"]</label>
                 </div>
             </div>
 
         </div>
         <div class="modal-footer">
             <span id="exportStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
-            <button class="btn btn-icon" onclick="hideModal('exportModal')">Cancel</button>
-            <button class="btn btn-accent" onclick="runExport()">&#128229; Download</button>
+            <button class="btn btn-icon" onclick="hideModal('exportModal')">@Localizer["Cancel"]</button>
+            <button class="btn btn-accent" onclick="runExport()">&#128229; @Localizer["Download"]</button>
         </div>
     </div>
 </div>
@@ -602,59 +604,59 @@
 <div id="bulkModal" class="modal" onclick="if(event.target===this)hideModal('bulkModal')">
     <div class="modal-box">
         <div class="modal-head">
-            <h3>&#9998; Bulk Update Members</h3>
+            <h3>&#9998; @Localizer["BulkUpdateMembers"]</h3>
             <button class="modal-close-btn" onclick="hideModal('bulkModal')">&times;</button>
         </div>
         <div class="modal-body">
             <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
-                Select members below, choose what to update, then click Apply.
-                Only filled fields will be updated.
+                @Localizer["BulkUpdateDescription"]
+                @Localizer["BulkOnlyFilled"]
             </p>
 
             <!-- Field selectors -->
             <div class="form-row" style="margin-bottom:16px;">
                 <div class="form-group">
-                    <label>Role</label>
+                    <label>@Localizer["Role"]</label>
                     <select id="bulkRole">
-                        <option value="">— no change —</option>
-                        <option value="Steunend Lid">Steunend Lid</option>
-                        <option value="Kandidaat">Kandidaat</option>
-                        <option value="Stappend Lid">Stappend Lid</option>
+                        <option value="">@Localizer["NoChange"]</option>
+                        <option value="Steunend Lid">@Localizer["SteunendLid"]</option>
+                        <option value="Kandidaat">@Localizer["Kandidaat"]</option>
+                        <option value="Stappend Lid">@Localizer["StappendLid"]</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Status</label>
+                    <label>@Localizer["Status"]</label>
                     <select id="bulkAlive">
-                        <option value="">— no change —</option>
-                        <option value="true">Alive</option>
-                        <option value="false">Deceased</option>
+                        <option value="">@Localizer["NoChange"]</option>
+                        <option value="true">@Localizer["Alive"]</option>
+                        <option value="false">@Localizer["Deceased"]</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Gender</label>
+                    <label>@Localizer["Gender"]</label>
                     <select id="bulkGender">
-                        <option value="">— no change —</option>
-                        <option value="Man">Man</option>
-                        <option value="Vrouw">Vrouw</option>
-                        <option value="Other">Other</option>
+                        <option value="">@Localizer["NoChange"]</option>
+                        <option value="Man">@Localizer["Man"]</option>
+                        <option value="Vrouw">@Localizer["Woman"]</option>
+                        <option value="Other">@Localizer["Other"]</option>
                     </select>
                 </div>
             </div>
 
             <!-- Member selection -->
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Members <span id="bulkSelectedCount">(0 selected)</span></span>
+                <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">@Localizer["Members"] <span id="bulkSelectedCount">(0 @Localizer["Selected"])</span></span>
                 <div style="display:flex;gap:8px;">
-                    <button type="button" class="btn btn-xs btn-icon" onclick="bulkSelectAll(true)">All</button>
-                    <button type="button" class="btn btn-xs btn-icon" onclick="bulkSelectAll(false)">None</button>
+                    <button type="button" class="btn btn-xs btn-icon" onclick="bulkSelectAll(true)">@Localizer["All"]</button>
+                    <button type="button" class="btn btn-xs btn-icon" onclick="bulkSelectAll(false)">@Localizer["None"]</button>
                 </div>
             </div>
             <div id="bulkMemberList" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px;"></div>
         </div>
         <div class="modal-footer">
             <span id="bulkStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
-            <button class="btn btn-icon" onclick="hideModal('bulkModal')">Cancel</button>
-            <button class="btn btn-accent" onclick="applyBulkUpdate()">&#9998; Apply</button>
+            <button class="btn btn-icon" onclick="hideModal('bulkModal')">@Localizer["Cancel"]</button>
+            <button class="btn btn-accent" onclick="applyBulkUpdate()">&#9998; @Localizer["Apply"]</button>
         </div>
     </div>
 </div>
@@ -663,6 +665,58 @@
 <script>
 const canWrite = @(Model.CanWrite ? "true" : "false");
 const pageToken = '@Model.AuthToken';
+
+// Localized strings for JavaScript
+const L = {
+    addMember: '@Html.Raw(Localizer["AddMember"].Value.Replace("'", "\\'"))',
+    editMember: '@Html.Raw(Localizer["EditMember"].Value.Replace("'", "\\'"))',
+    updateMember: '@Html.Raw(Localizer["UpdateMember"].Value.Replace("'", "\\'"))',
+    alive: '@Html.Raw(Localizer["Alive"].Value.Replace("'", "\\'"))',
+    deceased: '@Html.Raw(Localizer["Deceased"].Value.Replace("'", "\\'"))',
+    gender: '@Html.Raw(Localizer["Gender"].Value.Replace("'", "\\'"))',
+    birthDate: '@Html.Raw(Localizer["BirthDate"].Value.Replace("'", "\\'"))',
+    email: '@Html.Raw(Localizer["Email"].Value.Replace("'", "\\'"))',
+    phone: '@Html.Raw(Localizer["Phone"].Value.Replace("'", "\\'"))',
+    address: '@Html.Raw(Localizer["Address"].Value.Replace("'", "\\'"))',
+    city: '@Html.Raw(Localizer["City"].Value.Replace("'", "\\'"))',
+    country: '@Html.Raw(Localizer["Country"].Value.Replace("'", "\\'"))',
+    memberSince: '@Html.Raw(Localizer["MemberSince"].Value.Replace("'", "\\'"))',
+    year: '@Html.Raw(Localizer["Year"].Value.Replace("'", "\\'"))',
+    years: '@Html.Raw(Localizer["Years"].Value.Replace("'", "\\'"))',
+    close: '@Html.Raw(Localizer["Close"].Value.Replace("'", "\\'"))',
+    edit: '@Html.Raw(Localizer["Edit"].Value.Replace("'", "\\'"))',
+    delete: '@Html.Raw(Localizer["Delete"].Value.Replace("'", "\\'"))',
+    noNumber: '@Html.Raw(Localizer["NoNumber"].Value.Replace("'", "\\'"))',
+    noDocumentsYet: '@Html.Raw(Localizer["NoDocumentsYet"].Value.Replace("'", "\\'"))',
+    view: '@Html.Raw(Localizer["View"].Value.Replace("'", "\\'"))',
+    download: '@Html.Raw(Localizer["Download"].Value.Replace("'", "\\'"))',
+    downloadFile: '@Html.Raw(Localizer["DownloadFile"].Value.Replace("'", "\\'"))',
+    previewNotAvailable: '@Html.Raw(Localizer["PreviewNotAvailable"].Value.Replace("'", "\\'"))',
+    deleteDocConfirm: '@Html.Raw(Localizer["DeleteDocConfirm"].Value.Replace("'", "\\'"))',
+    selected: '@Html.Raw(Localizer["Selected"].Value.Replace("'", "\\'"))',
+    loading: '@Html.Raw(Localizer["Loading"].Value.Replace("'", "\\'"))',
+    selectAtLeastOneFieldExport: '@Html.Raw(Localizer["SelectAtLeastOneFieldExport"].Value.Replace("'", "\\'"))',
+    exportDownloadedSuccess: '@Html.Raw(Localizer["ExportDownloadedSuccess"].Value.Replace("'", "\\'"))',
+    exportFailed: '@Html.Raw(Localizer["ExportFailed"].Value.Replace("'", "\\'"))',
+    selectCSVFile: '@Html.Raw(Localizer["SelectCSVFile"].Value.Replace("'", "\\'"))',
+    importedMembers: '@Html.Raw(Localizer["ImportedMembers"].Value.Replace("'", "\\'"))',
+    importFailed: '@Html.Raw(Localizer["ImportFailed"].Value.Replace("'", "\\'"))',
+    importRequestFailed: '@Html.Raw(Localizer["ImportRequestFailed"].Value.Replace("'", "\\'"))',
+    selectAtLeastOneMember: '@Html.Raw(Localizer["SelectAtLeastOneMember"].Value.Replace("'", "\\'"))',
+    chooseFieldToUpdate: '@Html.Raw(Localizer["ChooseFieldToUpdate"].Value.Replace("'", "\\'"))',
+    updatedMembers: '@Html.Raw(Localizer["UpdatedMembers"].Value.Replace("'", "\\'"))',
+    bulkUpdateFailed: '@Html.Raw(Localizer["BulkUpdateFailed"].Value.Replace("'", "\\'"))',
+    requestFailed: '@Html.Raw(Localizer["RequestFailed"].Value.Replace("'", "\\'"))',
+    uploadFailed: '@Html.Raw(Localizer["UploadFailed"].Value.Replace("'", "\\'"))',
+    uploadRequestFailed: '@Html.Raw(Localizer["UploadRequestFailed"].Value.Replace("'", "\\'"))',
+    loadingPreview: '@Html.Raw(Localizer["LoadingPreview"].Value.Replace("'", "\\'"))',
+    failedToLoadDocument: '@Html.Raw(Localizer["FailedToLoadDocument"].Value.Replace("'", "\\'"))',
+    couldNotLoadPreview: '@Html.Raw(Localizer["CouldNotLoadPreview"].Value.Replace("'", "\\'"))',
+    downloadFailed: '@Html.Raw(Localizer["DownloadFailed"].Value.Replace("'", "\\'"))',
+    downloadRequestFailed: '@Html.Raw(Localizer["DownloadRequestFailed"].Value.Replace("'", "\\'"))',
+    deleteFailedGeneric: '@Html.Raw(Localizer["DeleteFailedGeneric"].Value.Replace("'", "\\'"))',
+    saveFailed: '@Html.Raw(Localizer["SaveFailed"].Value.Replace("'", "\\'"))',
+};
 
 // ── Helpers ───────────────────────────────
 function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
@@ -696,7 +750,7 @@ function openCard(el) {
     document.querySelectorAll('.modal-tab-panel').forEach((p,i) => p.classList.toggle('active', i===0));
     const alive   = d.alive === 'true';
     const initials= ((d.first?.[0] ?? '?') + (d.last?.[0] ?? '?')).toUpperCase();
-    const num     = d.number && d.number !== '' ? '#' + d.number : 'No #';
+    const num     = d.number && d.number !== '' ? '#' + d.number : L.noNumber;
     const addr    = [d.street, d.housenumber].filter(Boolean).join(' ');
     const years   = d.seniority
         ? Math.floor((Date.now() - new Date(d.seniority)) / (365.25 * 864e5))
@@ -712,21 +766,21 @@ function openCard(el) {
             <div class="contact-name">${d.last} ${d.first}</div>
             <div class="contact-sub" style="margin-top:8px;">
                 <span class="badge ${roleBadgeClass}">${d.role || '—'}</span>
-                <span class="badge ${alive ? 'badge-green' : 'badge-gray'}">${alive ? 'Alive' : 'Deceased'}</span>
+                <span class="badge ${alive ? 'badge-green' : 'badge-gray'}">${alive ? L.alive : L.deceased}</span>
                 <span class="badge badge-gray">${num}</span>
             </div>
         </div>
         <div class="info-grid">
-            <div class="info-block"><div class="info-label">Gender</div><div class="info-value">${d.gender || '—'}</div></div>
-            <div class="info-block"><div class="info-label">Birth Date</div><div class="info-value">${d.birth || '—'}</div></div>
-            <div class="info-block"><div class="info-label">Email</div><div class="info-value">${d.email || '—'}</div></div>
-            <div class="info-block"><div class="info-label">Phone</div><div class="info-value">${d.phone || '—'}</div></div>
-            <div class="info-block"><div class="info-label">Address</div><div class="info-value">${addr || '—'}</div></div>
-            <div class="info-block"><div class="info-label">City</div><div class="info-value">${[d.postal, d.city].filter(Boolean).join(' ') || '—'}</div></div>
-            <div class="info-block"><div class="info-label">Country</div><div class="info-value">${d.country || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.gender}</div><div class="info-value">${d.gender || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.birthDate}</div><div class="info-value">${d.birth || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.email}</div><div class="info-value">${d.email || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.phone}</div><div class="info-value">${d.phone || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.address}</div><div class="info-value">${addr || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.city}</div><div class="info-value">${[d.postal, d.city].filter(Boolean).join(' ') || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.country}</div><div class="info-value">${d.country || '—'}</div></div>
             ${buildCustomFieldBlocks(d)}
         </div>
-        ${years !== null ? `<div class="seniority-box"><div class="years">${years} year${years !== 1 ? 's' : ''}</div><div class="label">Member since ${d.seniority}</div></div>` : ''}`;
+        ${years !== null ? `<div class="seniority-box"><div class="years">${years} ${years !== 1 ? L.years : L.year}</div><div class="label">${L.memberSince} ${d.seniority}</div></div>` : ''}`;
 
 
     document.getElementById('cardFooter').innerHTML = `
@@ -744,8 +798,8 @@ function closeCard() { hideModal('contactModal'); }
 // ── Populate edit form ────────────────────
 function loadEdit(el) {
     const d = el.dataset;
-    document.getElementById('formTitle').textContent = 'Edit Member';
-    document.getElementById('submitBtn').textContent  = 'Update Member';
+    document.getElementById('formTitle').textContent = L.editMember;
+    document.getElementById('submitBtn').textContent  = L.updateMember;
     sv('Form_Id', d.id); sv('Form_FirstName', d.first); sv('Form_LastName', d.last);
     sv('Form_Gender', d.gender); sv('Form_IsAlive', d.alive); sv('Form_Role', d.role);
     sv('Form_MemberNumber', d.number); sv('Form_Email', d.email); sv('Form_PhoneNumber', d.phone);
@@ -772,8 +826,8 @@ function sv(id, val) {
 
 function resetForm() {
     document.getElementById('memberForm').reset();
-    document.getElementById('formTitle').textContent = 'Add Member';
-    document.getElementById('submitBtn').textContent  = 'Add Member';
+    document.getElementById('formTitle').textContent = L.addMember;
+    document.getElementById('submitBtn').textContent  = L.addMember;
     const id = document.getElementById('Form_Id');
     if (id) id.value = '0';
     const c = document.getElementById('Form_Country');
@@ -898,7 +952,7 @@ function openBulkModal() {
 
 function updateBulkCount() {
     const n = document.querySelectorAll('.bulk-cb:checked').length;
-    document.getElementById('bulkSelectedCount').textContent = `(${n} selected)`;
+    document.getElementById('bulkSelectedCount').textContent = `(${n} ${L.selected})`;
 }
 
 function bulkSelectAll(checked) {
@@ -963,14 +1017,14 @@ function switchTab(tab, btn) {
 
 async function loadDocs(memberId) {
     const list = document.getElementById('docList');
-    list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">Loading...</div>';
+    list.innerHTML = `<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">${L.loading}</div>`;
     try {
         const r = await fetch(`/api/members/${memberId}/documents`, {
             headers: pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}
         });
         const docs = await r.json();
         if (!docs.length) {
-            list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">No documents attached yet.</div>';
+            list.innerHTML = `<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">${L.noDocumentsYet}</div>`;
             return;
         }
         list.innerHTML = docs.map(d => {
@@ -983,13 +1037,13 @@ async function loadDocs(memberId) {
                 <span class="doc-item-meta">${formatBytes(d.FileSizeBytes)}</span>
                 <div class="doc-item-actions">
                     ${canPreview ? `<button class="btn btn-xs btn-icon" onclick="viewDoc(${memberId},${d.Id},'${d.FileName}','${d.ContentType}')">
-                        <svg class="icon icon-sm"><use href="#icon-eye" /></svg> View
+                        <svg class="icon icon-sm"><use href="#icon-eye" /></svg> ${L.view}
                     </button>` : ''}
                     <button class="btn btn-xs btn-icon" onclick="downloadDoc(${memberId},${d.Id},'${d.FileName}')">
-                        <svg class="icon icon-sm"><use href="#icon-download" /></svg> Download
+                        <svg class="icon icon-sm"><use href="#icon-download" /></svg> ${L.download}
                     </button>
                     ${canWrite ? `<button class="btn btn-xs btn-danger" onclick="deleteDoc(${memberId},${d.Id})">
-                        <svg class="icon icon-sm"><use href="#icon-trash" /></svg> Delete
+                        <svg class="icon icon-sm"><use href="#icon-trash" /></svg> ${L.delete}
                     </button>` : ''}
                 </div>
             </div>`;
@@ -999,32 +1053,36 @@ async function loadDocs(memberId) {
     }
 }
 
-async function uploadDoc(file) {
-    if (!file || !_currentMemberId) return;
+async function uploadDocs(fileList) {
+    if (!fileList || !fileList.length || !_currentMemberId) return;
+    const files = Array.from(fileList);
     const status = document.getElementById('docUploadStatus');
     status.style.display = 'block';
-    status.style.color   = 'var(--text-muted)';
-    status.textContent   = `Uploading ${file.name}…`;
-    const fd = new FormData();
-    fd.append('file', file);
-    try {
-        const r = await fetch(`/api/members/${_currentMemberId}/documents`, {
-            method: 'POST',
-            headers: pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {},
-            body: fd
-        });
-        const data = await r.json().catch(() => ({}));
-        if (r.ok) {
-            status.style.color = 'var(--success)';
-            status.textContent = `${file.name} uploaded.`;
-            await loadDocs(_currentMemberId);
-        } else {
-            status.style.color = 'var(--danger)';
-            status.textContent = data.error ?? 'Upload failed.';
-        }
-    } catch {
+    let succeeded = 0, failed = 0;
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        status.style.color = 'var(--text-muted)';
+        status.textContent = `Uploading ${i + 1}/${files.length}: ${file.name}…`;
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+            const r = await fetch(`/api/members/${_currentMemberId}/documents`, {
+                method: 'POST',
+                headers: pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {},
+                body: fd
+            });
+            const data = await r.json().catch(() => ({}));
+            if (r.ok) { succeeded++; }
+            else { failed++; }
+        } catch { failed++; }
+    }
+    await loadDocs(_currentMemberId);
+    if (failed === 0) {
+        status.style.color = 'var(--success)';
+        status.textContent = files.length === 1 ? `${files[0].name} uploaded.` : `${succeeded} files uploaded.`;
+    } else {
         status.style.color = 'var(--danger)';
-        status.textContent = 'Upload request failed.';
+        status.textContent = `${succeeded} uploaded, ${failed} failed.`;
     }
     document.getElementById('docFileInput').value = '';
     setTimeout(() => { status.style.display = 'none'; }, 4000);
@@ -1059,10 +1117,10 @@ async function viewDoc(memberId, docId, fileName, contentType) {
         } else {
             body.innerHTML = `<div class="doc-viewer-unsupported">
                 <svg class="icon icon-2xl" style="color:var(--text-muted);margin-bottom:12px;"><use href="#icon-download" /></svg>
-                <div style="font-weight:600;margin-bottom:6px;">Preview not available</div>
+                <div style="font-weight:600;margin-bottom:6px;">${L.previewNotAvailable}</div>
                 <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">${fileName}</div>
                 <button class="btn btn-accent" onclick="downloadDoc(${memberId},${docId},'${fileName}')">
-                    <svg class="icon icon-sm"><use href="#icon-download" /></svg> Download file
+                    <svg class="icon icon-sm"><use href="#icon-download" /></svg> ${L.downloadFile}
                 </button>
             </div>`;
             URL.revokeObjectURL(objUrl);
@@ -1102,7 +1160,7 @@ async function downloadDoc(memberId, docId, fileName) {
 }
 
 async function deleteDoc(memberId, docId) {
-    if (!confirm('Delete this document? This cannot be undone.')) return;
+    if (!confirm(L.deleteDocConfirm)) return;
     try {
         const r = await fetch(`/api/members/${memberId}/documents/${docId}`, {
             method: 'DELETE',
@@ -1112,7 +1170,7 @@ async function deleteDoc(memberId, docId) {
             document.getElementById(`doc-${docId}`)?.remove();
             const list = document.getElementById('docList');
             if (!list.querySelector('.doc-item'))
-                list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">No documents attached yet.</div>';
+                list.innerHTML = `<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">${L.noDocumentsYet}</div>`;
         } else {
             showToast('error', 'Delete failed.');
         }
@@ -1122,8 +1180,8 @@ async function deleteDoc(memberId, docId) {
 function handleDocDrop(e) {
     e.preventDefault();
     document.getElementById('docDropZone').classList.remove('drag-over');
-    const file = e.dataTransfer?.files?.[0];
-    if (file) uploadDoc(file);
+    const files = e.dataTransfer?.files;
+    if (files && files.length) uploadDocs(files);
 }
 
 function formatBytes(b) {

@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Localization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure localization
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddLocalization();
 
 var supportedCultures = new[]
 {
@@ -26,8 +26,9 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedUICultures = supportedCultures;
     options.RequestCultureProviders = new List<IRequestCultureProvider>
     {
-        new AcceptLanguageHeaderRequestCultureProvider(),
-        new CookieRequestCultureProvider()
+        new QueryStringRequestCultureProvider(),
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
     };
 });
 
@@ -77,7 +78,7 @@ if (!string.IsNullOrEmpty(blobStorageEndpoint))
 }
 else
 {
-    builder.Services.AddScoped<BlobStorageService?>(_ => null);
+    builder.Services.AddScoped<BlobStorageService>(_ => null!);
 }
 
 builder.Services.AddScoped<ExportService>();
@@ -138,6 +139,29 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
+app.MapPost("/set-language", async (HttpContext httpContext) =>
+{
+    var form = await httpContext.Request.ReadFormAsync();
+    var culture = form["culture"].ToString();
+    var returnUrl = form["returnUrl"].ToString();
+
+    var supportedCultureNames = supportedCultures.Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    var selectedCulture = supportedCultureNames.Contains(culture) ? culture : "nl";
+
+    httpContext.Response.Cookies.Append(
+        CookieRequestCultureProvider.DefaultCookieName,
+        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(selectedCulture)),
+        new CookieOptions
+        {
+            Expires = DateTimeOffset.UtcNow.AddYears(1),
+            IsEssential = true,
+            HttpOnly = false,
+            Secure = httpContext.Request.IsHttps,
+            SameSite = SameSiteMode.Lax
+        });
+
+    return Results.LocalRedirect(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl);
+});
 app.MapGet("/", () => Results.Redirect("/Login"));
 
 // Auto-apply EF migrations on startup — retry up to 5 times with backoff

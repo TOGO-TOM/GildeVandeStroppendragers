@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using AdminMembers.Services;
+using Microsoft.Extensions.Localization;
 
 namespace AdminMembers.Pages
 {
@@ -8,11 +9,13 @@ namespace AdminMembers.Pages
     {
         private readonly AuthService _authService;
         private readonly EmailService _emailService;
+        private readonly IStringLocalizer<AdminMembers.SharedResources> _localizer;
 
-        public ForgotPasswordModel(AuthService authService, EmailService emailService)
+        public ForgotPasswordModel(AuthService authService, EmailService emailService, IStringLocalizer<AdminMembers.SharedResources> localizer)
         {
             _authService = authService;
             _emailService = emailService;
+            _localizer = localizer;
         }
 
         [BindProperty] public string Email { get; set; } = string.Empty;
@@ -25,7 +28,7 @@ namespace AdminMembers.Pages
         {
             if (string.IsNullOrWhiteSpace(Email))
             {
-                ErrorMessage = "Please enter your email address.";
+                ErrorMessage = _localizer["EnterEmailAddressError"];
                 return Page();
             }
 
@@ -38,7 +41,7 @@ namespace AdminMembers.Pages
             }
 
             // Always show success to prevent email enumeration
-            SuccessMessage = "If an account with that email exists, a reset link has been sent.";
+            SuccessMessage = _localizer["ForgotPasswordSuccess"];
             return Page();
         }
     }

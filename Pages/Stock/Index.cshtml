@@ -1,70 +1,70 @@
 @page
 @model AdminMembers.Pages.Stock.IndexModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Stock";
+    ViewData["Title"] = Localizer["Stock"];
     ViewData["LayoutPage"] = "stock";
     ViewData["LayoutUser"] = Model.CurrentUser;
 }
 
 <div class="page-body">
 
-    <!-- ?? SIDEBAR ?? -->
     <div class="sidebar form-panel" id="formPanel">
         @if (Model.CanWrite)
         {
         <div class="card">
             <div class="card-header">
-                <span class="card-title" id="formTitle">Add Item</span>
-                <button type="button" class="btn btn-xs btn-icon" onclick="resetForm()">Reset</button>
+                <span class="card-title" id="formTitle">@Localizer["AddItem"]</span>
+                <button type="button" class="btn btn-xs btn-icon" onclick="resetForm()">@Localizer["Reset"]</button>
             </div>
             <div class="card-body">
                 <div class="form-group">
-                    <label>Name *</label>
-                    <input id="f_name" placeholder="Item name" required />
+                    <label>@Localizer["Name"] *</label>
+                    <input id="f_name" placeholder="@Localizer["ItemName"]" required />
                 </div>
                 <div class="form-group">
-                    <label>Category</label>
-                    <input id="f_category" placeholder="e.g. Dranken, Materiaal" />
+                    <label>@Localizer["Category"]</label>
+                    <input id="f_category" placeholder="@Localizer["CategoryExample"]" />
                 </div>
                 <div class="form-group">
-                    <label>Description</label>
-                    <input id="f_description" placeholder="Optional description" />
+                    <label>@Localizer["Description"]</label>
+                    <input id="f_description" placeholder="@Localizer["OptionalDescription"]" />
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Unit</label>
+                        <label>@Localizer["Unit"]</label>
                         <select id="f_unit">
-                            <option value="stuks">stuks</option>
-                            <option value="kg">kg</option>
-                            <option value="liter">liter</option>
-                            <option value="dozen">dozen</option>
-                            <option value="pakken">pakken</option>
+                            <option value="stuks">@Localizer["Stuks"]</option>
+                            <option value="kg">@Localizer["Kg"]</option>
+                            <option value="liter">@Localizer["Liter"]</option>
+                            <option value="dozen">@Localizer["Dozen"]</option>
+                            <option value="pakken">@Localizer["Pakken"]</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Current Stock</label>
+                        <label>@Localizer["CurrentStock"]</label>
                         <input id="f_stock" type="number" min="0" step="0.001" placeholder="0" value="0" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Minimum Stock <span style="color:var(--text-muted);font-weight:400;">(alert threshold)</span></label>
-                    <input id="f_minstock" type="number" min="0" step="0.001" placeholder="Optional" />
+                    <label>@Localizer["MinimumStock"] <span style="color:var(--text-muted);font-weight:400;">(@Localizer["AlertThreshold"])</span></label>
+                    <input id="f_minstock" type="number" min="0" step="0.001" placeholder="@Localizer["Optional"]" />
                 </div>
                 <input type="hidden" id="f_id" value="0" />
                 <div style="display:flex;gap:8px;margin-top:16px;">
-                    <button class="btn btn-primary" style="flex:1;" onclick="saveItem()">Add Item</button>
-                    <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                    <button class="btn btn-primary" style="flex:1;" onclick="saveItem()">@Localizer["AddItem"]</button>
+                    <button class="btn btn-secondary" onclick="resetForm()">@Localizer["Reset"]</button>
                 </div>
             </div>
         </div>
 
-        <!-- Export -->
         <div class="card" style="margin-top:16px;">
-            <div class="card-header"><span class="card-title">Export</span></div>
+            <div class="card-header"><span class="card-title">@Localizer["Export"]</span></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
                 <button class="btn btn-icon" onclick="showModal('exportModal')">
-                    <svg class="icon icon-md"><use href="#icon-download" /></svg> Export
+                    <svg class="icon icon-md"><use href="#icon-download" /></svg> @Localizer["Export"]
                 </button>
             </div>
         </div>
@@ -72,59 +72,55 @@
         else
         {
         <div class="card">
-            <div class="card-header"><span class="card-title">Stock</span></div>
+            <div class="card-header"><span class="card-title">@Localizer["Stock"]</span></div>
             <div class="card-body">
                 <div class="viewer-notice">
                     <svg class="icon icon-xl" style="color:var(--text-muted);"><use href="#icon-lock" /></svg>
                     <div>
-                        <div style="font-weight:600;font-size:13px;">Read-only access</div>
-                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">You can view and export stock but cannot add, edit or delete.</div>
+                        <div style="font-weight:600;font-size:13px;">@Localizer["ReadOnlyAccess"]</div>
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">@Localizer["StockReadOnlyDescription"]</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="card" style="margin-top:16px;">
-            <div class="card-header"><span class="card-title">Export</span></div>
+            <div class="card-header"><span class="card-title">@Localizer["Export"]</span></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
                 <button class="btn btn-icon" onclick="showModal('exportModal')">
-                    <svg class="icon icon-md"><use href="#icon-download" /></svg> Export
+                    <svg class="icon icon-md"><use href="#icon-download" /></svg> @Localizer["Export"]
                 </button>
             </div>
         </div>
         }
     </div>
 
-    <!-- ?? MAIN CONTENT ?? -->
     <div class="main-col">
-
-        <!-- Stats -->
         <div class="stat-strip">
             <div class="stat-item">
                 <div class="stat-value">@Model.TotalItems</div>
-                <div class="stat-label">Total Items</div>
+                <div class="stat-label">@Localizer["TotalItems"]</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value" style="color:var(--warning, #f59e0b);">@Model.LowStockItems</div>
-                <div class="stat-label">Low Stock</div>
+                <div class="stat-label">@Localizer["LowStock"]</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value" style="color:var(--danger);">@Model.OutOfStockItems</div>
-                <div class="stat-label">Out of Stock</div>
+                <div class="stat-label">@Localizer["OutOfStock"]</div>
             </div>
         </div>
 
-        <!-- Charts -->
         @if (Model.Items.Any())
         {
         <div class="stock-charts">
             <div class="card stock-chart-card">
-                <div class="card-header"><span class="card-title">Stock per categorie</span></div>
+                <div class="card-header"><span class="card-title">@Localizer["StockPerCategory"]</span></div>
                 <div class="card-body" style="padding:12px;">
                     <canvas id="chartCategory" height="180"></canvas>
                 </div>
             </div>
             <div class="card stock-chart-card">
-                <div class="card-header"><span class="card-title">Status verdeling</span></div>
+                <div class="card-header"><span class="card-title">@Localizer["StatusDistribution"]</span></div>
                 <div class="card-body" style="padding:12px;display:flex;justify-content:center;">
                     <canvas id="chartStatus" style="max-width:220px;max-height:220px;"></canvas>
                 </div>
@@ -132,11 +128,9 @@
         </div>
         }
 
-        <!-- Item list -->
         @if (Model.Items.Any())
         {
-            <!-- Group by category -->
-            @foreach (var group in Model.Items.GroupBy(i => i.Category ?? "Overig").OrderBy(g => g.Key))
+            foreach (var group in Model.Items.GroupBy(i => i.Category ?? Localizer["Overig"].Value).OrderBy(g => g.Key))
             {
                 <div class="stock-category-header">@group.Key</div>
                 <div class="member-list">
@@ -148,11 +142,22 @@
                             _                                   => "badge-green"
                         };
                         var statusLabel = item.Status switch {
-                            AdminMembers.Models.StockStatus.Out => "Uitverkocht",
-                            AdminMembers.Models.StockStatus.Low => "Laag",
-                            _                                   => "OK"
+                            AdminMembers.Models.StockStatus.Out => Localizer["SoldOut"].Value,
+                            AdminMembers.Models.StockStatus.Low => Localizer["StockLow"].Value,
+                            _                                   => Localizer["StockOK"].Value
                         };
-                        <div class="member-list-item" style="cursor:default;">
+                        <div class="member-list-item"
+                             onclick="openStockCard(this)"
+                             data-id="@item.Id"
+                             data-name="@item.Name"
+                             data-description="@(item.Description ?? "")"
+                             data-category="@(item.Category ?? "")"
+                             data-unit="@item.Unit"
+                             data-stock="@item.CurrentStock.ToString("G29")"
+                             data-minstock="@(item.MinimumStock.HasValue ? item.MinimumStock.Value.ToString("G29") : "")"
+                             data-statusclass="@statusClass"
+                             data-statuslabel="@statusLabel"
+                             data-created="@item.CreatedAt.ToString("yyyy-MM-dd")">
                             <div class="member-avatar" style="background:var(--primary-light,#ede9fe);color:var(--primary);font-size:18px;">
                                 <svg class="icon icon-md"><use href="#icon-box" /></svg>
                             </div>
@@ -162,7 +167,7 @@
                                     @(item.Description ?? "")
                                     @if (item.MinimumStock.HasValue)
                                     {
-                                        <span style="color:var(--text-muted);">&middot; Min: @item.MinimumStock @item.Unit</span>
+                                        <span style="color:var(--text-muted);">&middot; @Localizer["MinPrefix"] @item.MinimumStock @item.Unit</span>
                                     }
                                 </div>
                             </div>
@@ -171,20 +176,6 @@
                                     @item.CurrentStock.ToString("G29") <span style="font-size:12px;font-weight:400;color:var(--text-muted);">@item.Unit</span>
                                 </div>
                                 <span class="badge @statusClass">@statusLabel</span>
-                                <div style="display:flex;gap:4px;margin-top:4px;">
-                                    <button class="btn btn-xs btn-accent" onclick="openMovement(@item.Id, '@item.Name.Replace("'","\\'")', '@item.Unit')">
-                                        <svg class="icon icon-sm"><use href="#icon-plus" /></svg>
-                                    </button>
-                                    <button class="btn btn-xs btn-icon" onclick="openEdit(@item.Id,'@item.Name.Replace("'","\\'")', '@(item.Description ?? "")','@(item.Category ?? "")','@item.Unit',@item.CurrentStock,@(item.MinimumStock.HasValue ? item.MinimumStock.Value.ToString() : "null"))">
-                                        <svg class="icon icon-sm"><use href="#icon-edit" /></svg>
-                                    </button>
-                                    <button class="btn btn-xs btn-danger" onclick="deleteItem(@item.Id, '@item.Name.Replace("'","\\'")')">
-                                        <svg class="icon icon-sm"><use href="#icon-trash" /></svg>
-                                    </button>
-                                    <button class="btn btn-xs btn-icon" onclick="openHistory(@item.Id, '@item.Name.Replace("'","\\'")')">
-                                        <svg class="icon icon-sm"><use href="#icon-clock" /></svg>
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     }
@@ -194,26 +185,24 @@
         else
         {
             <div class="no-members">
-                <h3>Geen items</h3>
-                <p>Gebruik het formulier om een eerste stock-item toe te voegen.</p>
+                <h3>@Localizer["NoItems"]</h3>
+                <p>@Localizer["NoItemsDescription"]</p>
             </div>
         }
     </div>
 </div>
 
-<!-- FAB -->
-<button class="fab-add" onclick="toggleFormPanel()" title="Add item">&#43;</button>
+<button class="fab-add" onclick="toggleFormPanel()" title="@Localizer["AddItem"]">&#43;</button>
 
-<!-- ?? EXPORT MODAL ?? -->
 <div id="exportModal" class="modal" onclick="if(event.target===this)hideModal('exportModal')">
     <div class="modal-box modal-box-sm">
         <div class="modal-head">
-            <h3>&#128229; Export Stock</h3>
+            <h3>&#128229; @Localizer["ExportStock"]</h3>
             <button class="modal-close-btn" onclick="hideModal('exportModal')">&times;</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label>Formaat</label>
+                <label>@Localizer["Format"]</label>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
                     <label class="export-format-pill"><input type="radio" name="stockFmt" value="excel" checked onchange="onFmtChange()" /> Excel (.xlsx)</label>
                     <label class="export-format-pill"><input type="radio" name="stockFmt" value="csv" onchange="onFmtChange()" /> CSV</label>
@@ -223,90 +212,92 @@
             <div id="exportMovementsRow" style="display:none;margin-top:10px;">
                 <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
                     <input type="checkbox" id="exportIncludeMovements" />
-                    Inclusief bewegingsgeschiedenis per item
+                    @Localizer["IncludeMovementHistoryPerItem"]
                 </label>
             </div>
             <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">
-                Exporteert alle stock-items inclusief categorie, hoeveelheid en status.
-                Excel bevat een extra tabblad met de samenvatting per categorie.
+                @Localizer["ExportStockDescription"]
             </p>
         </div>
         <div class="modal-footer">
             <span id="exportStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
-            <button class="btn btn-icon" onclick="hideModal('exportModal')">Annuleer</button>
-            <button class="btn btn-accent" onclick="runExport()">&#128229; Download</button>
+            <button class="btn btn-icon" onclick="hideModal('exportModal')">@Localizer["Cancel"]</button>
+            <button class="btn btn-accent" onclick="runExport()">&#128229; @Localizer["Download"]</button>
         </div>
     </div>
 </div>
 
-<!-- ?? MOVEMENT MODAL ?? -->
-<div id="movementModal" class="modal" onclick="if(event.target===this)hideModal('movementModal')">
-    <div class="modal-box modal-box-sm">
-        <div class="modal-head">
-            <h3 id="movementTitle">Stock Beweging</h3>
-            <button class="modal-close-btn" onclick="hideModal('movementModal')">&times;</button>
-        </div>
-        <div class="modal-body">
-            <input type="hidden" id="mv_itemId" />
-            <div class="form-group">
-                <label>Type</label>
-                <div style="display:flex;gap:8px;">
-                    <label class="export-format-pill"><input type="radio" name="mvType" value="In" checked /> &#43; Toevoegen</label>
-                    <label class="export-format-pill"><input type="radio" name="mvType" value="Out" /> &#8722; Verwijderen</label>
-                    <label class="export-format-pill"><input type="radio" name="mvType" value="Correction" /> &#61; Correctie</label>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Hoeveelheid <span id="mv_unit" style="color:var(--text-muted);"></span></label>
-                <input id="mv_quantity" type="number" min="0.001" step="0.001" placeholder="0" />
-            </div>
-            <div class="form-group">
-                <label>Notitie</label>
-                <input id="mv_note" placeholder="Optionele notitie" />
-            </div>
-            <div class="form-group">
-                <label>Datum <span style="color:var(--text-muted);font-weight:400;">(leeg = vandaag)</span></label>
-                <input id="mv_date" type="date" />
-            </div>
-        </div>
-        <div class="modal-footer">
-            <span id="mv_status" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
-            <button class="btn btn-icon" onclick="hideModal('movementModal')">Annuleer</button>
-            <button class="btn btn-accent" onclick="saveMovement()">Opslaan</button>
-        </div>
-    </div>
-</div>
-
-<!-- ?? HISTORY MODAL ?? -->
-<div id="historyModal" class="modal" onclick="if(event.target===this)hideModal('historyModal')">
+<!-- ══ STOCK CARD MODAL ══ -->
+<div id="stockCardModal" class="modal" onclick="if(event.target===this)closeStockCard()">
     <div class="modal-box">
         <div class="modal-head">
-            <h3 id="historyTitle">Geschiedenis</h3>
-            <button class="modal-close-btn" onclick="hideModal('historyModal')">&times;</button>
+            <h3 id="stockCardTitle">@Localizer["StockDetails"]</h3>
+            <button class="modal-close-btn" onclick="closeStockCard()">&times;</button>
+        </div>
+        <div class="modal-tabs">
+            <button class="modal-tab active" onclick="switchStockTab('info',this)">@Localizer["ItemInfo"]</button>
+            <button class="modal-tab" onclick="switchStockTab('history',this)">
+                <svg class="icon icon-sm" style="margin-right:4px;"><use href="#icon-clock" /></svg>@Localizer["MovementHistory"]
+            </button>
         </div>
         <div class="modal-body">
-            <div id="historyList" style="max-height:400px;overflow-y:auto;"></div>
+            <!-- Info Tab -->
+            <div id="stockTabInfo" class="modal-tab-panel active">
+                <div id="stockCardBody"></div>
+                @if (Model.CanWrite)
+                {
+                <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:18px;">
+                    <div style="font-weight:700;font-size:14px;margin-bottom:12px;">@Localizer["AddMovement"]</div>
+                    <input type="hidden" id="mv_itemId" />
+                    <div class="form-group">
+                        <label>@Localizer["Type"]</label>
+                        <div style="display:flex;gap:8px;">
+                            <label class="export-format-pill"><input type="radio" name="mvType" value="In" checked /> &#43; @Localizer["AddIn"]</label>
+                            <label class="export-format-pill"><input type="radio" name="mvType" value="Out" /> &#8722; @Localizer["RemoveOut"]</label>
+                            <label class="export-format-pill"><input type="radio" name="mvType" value="Correction" /> &#61; @Localizer["CorrectionType"]</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>@Localizer["Quantity"] <span id="mv_unit" style="color:var(--text-muted);"></span></label>
+                        <input id="mv_quantity" type="number" min="0.001" step="0.001" placeholder="0" />
+                    </div>
+                    <div class="form-group">
+                        <label>@Localizer["Note"]</label>
+                        <input id="mv_note" placeholder="@Localizer["OptionalNote"]" />
+                    </div>
+                    <div class="form-group">
+                        <label>@Localizer["Date"] <span style="color:var(--text-muted);font-weight:400;">(@Localizer["EmptyMeansToday"])</span></label>
+                        <input id="mv_date" type="date" />
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                        <span id="mv_status" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+                        <button class="btn btn-accent" onclick="saveMovement()">@Localizer["Save"]</button>
+                    </div>
+                </div>
+                }
+            </div>
+            <!-- History Tab -->
+            <div id="stockTabHistory" class="modal-tab-panel">
+                <div id="stockHistoryList" style="max-height:400px;overflow-y:auto;"></div>
+            </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-icon" onclick="hideModal('historyModal')">Sluiten</button>
-        </div>
+        <div class="modal-footer" id="stockCardFooter"></div>
     </div>
 </div>
 
-<!-- ?? DELETE MODAL ?? -->
 <div id="deleteModal" class="modal" onclick="if(event.target===this)hideModal('deleteModal')">
     <div class="modal-box modal-box-sm">
         <div class="modal-head">
-            <h3>Item verwijderen</h3>
+            <h3>@Localizer["DeleteItem"]</h3>
             <button class="modal-close-btn" onclick="hideModal('deleteModal')">&times;</button>
         </div>
         <div class="modal-body">
-            <p style="font-size:14px;">Verwijder <strong id="deleteName"></strong>? Dit kan niet ongedaan worden gemaakt.</p>
+            <p style="font-size:14px;">@Localizer["DeleteItemConfirmPrefix"] <strong id="deleteName"></strong>? @Localizer["DeleteCannotBeUndone"]</p>
         </div>
         <div class="modal-footer">
             <input type="hidden" id="deleteId" />
-            <button class="btn btn-icon" onclick="hideModal('deleteModal')">Annuleer</button>
-            <button class="btn btn-danger" onclick="confirmDelete()">Verwijderen</button>
+            <button class="btn btn-icon" onclick="hideModal('deleteModal')">@Localizer["Cancel"]</button>
+            <button class="btn btn-danger" onclick="confirmDelete()">@Localizer["Delete"]</button>
         </div>
     </div>
 </div>
@@ -319,6 +310,41 @@
 const AUTH_TOKEN = '@Model.AuthToken';
 const canWrite   = @(Model.CanWrite ? "true" : "false");
 
+const L = {
+    addItem: '@Html.Raw(Localizer["AddItem"].Value.Replace("'", "\\'"))',
+    editItem: '@Html.Raw(Localizer["EditItem"].Value.Replace("'", "\\'"))',
+    updateItem: '@Html.Raw(Localizer["UpdateItem"].Value.Replace("'", "\\'"))',
+    nameIsRequired: '@Html.Raw(Localizer["NameIsRequired"].Value.Replace("'", "\\'"))',
+    saving: '@Html.Raw(Localizer["Saving"].Value.Replace("'", "\\'"))',
+    saved: '@Html.Raw(Localizer["Saved"].Value.Replace("'", "\\'"))',
+    saveFailed: '@Html.Raw(Localizer["SaveFailed"].Value.Replace("'", "\\'"))',
+    requestFailed: '@Html.Raw(Localizer["RequestFailed"].Value.Replace("'", "\\'"))',
+    deleteFailed: '@Html.Raw(Localizer["DeleteFailed"].Value.Replace("'", "\\'"))',
+    failed: '@Html.Raw(Localizer["Failed"].Value.Replace("'", "\\'"))',
+    movementPrefix: '@Html.Raw(Localizer["MovementPrefix"].Value.Replace("'", "\\'"))',
+    enterValidQuantity: '@Html.Raw(Localizer["EnterValidQuantity"].Value.Replace("'", "\\'"))',
+    historyPrefix: '@Html.Raw(Localizer["HistoryPrefix"].Value.Replace("'", "\\'"))',
+    loading: '@Html.Raw(Localizer["Loading"].Value.Replace("'", "\\'"))',
+    noMovementsFound: '@Html.Raw(Localizer["NoMovementsFound"].Value.Replace("'", "\\'"))',
+    inType: '@Html.Raw(Localizer["InType"].Value.Replace("'", "\\'"))',
+    outType: '@Html.Raw(Localizer["OutType"].Value.Replace("'", "\\'"))',
+    correctionType: '@Html.Raw(Localizer["CorrectionType"].Value.Replace("'", "\\'"))',
+    generatingExport: '@Html.Raw(Localizer["GeneratingExport"].Value.Replace("'", "\\'"))',
+    exportFailedPrefix: '@Html.Raw(Localizer["ExportFailedPrefix"].Value.Replace("'", "\\'"))',
+    totalStock: '@Html.Raw(Localizer["TotalStock"].Value.Replace("'", "\\'"))',
+    loadFailed: '@Html.Raw(Localizer["LoadFailed"].Value.Replace("'", "\\'"))',
+    description: '@Html.Raw(Localizer["Description"].Value.Replace("'", "\\'"))',
+    category: '@Html.Raw(Localizer["Category"].Value.Replace("'", "\\'"))',
+    unit: '@Html.Raw(Localizer["Unit"].Value.Replace("'", "\\'"))',
+    currentStockLabel: '@Html.Raw(Localizer["CurrentStockLabel"].Value.Replace("'", "\\'"))',
+    minimumStockLabel: '@Html.Raw(Localizer["MinimumStockLabel"].Value.Replace("'", "\\'"))',
+    createdOn: '@Html.Raw(Localizer["CreatedOn"].Value.Replace("'", "\\'"))',
+    notSet: '@Html.Raw(Localizer["NotSet"].Value.Replace("'", "\\'"))',
+    close: '@Html.Raw(Localizer["Close"].Value.Replace("'", "\\'"))',
+    edit: '@Html.Raw(Localizer["Edit"].Value.Replace("'", "\\'"))',
+    delete_: '@Html.Raw(Localizer["Delete"].Value.Replace("'", "\\'"))',
+};
+
 function showModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; }
 function hideModal(id) { document.getElementById(id).style.display = 'none';  document.body.style.overflow = ''; }
 function toggleFormPanel() { document.getElementById('formPanel').classList.toggle('show'); }
@@ -328,6 +354,8 @@ function authHeaders() {
 }
 
 // ?? Form ??????????????????????????????????
+let _currentStockId = null;
+
 function resetForm() {
     document.getElementById('f_id').value          = '0';
     document.getElementById('f_name').value        = '';
@@ -336,8 +364,8 @@ function resetForm() {
     document.getElementById('f_unit').value        = 'stuks';
     document.getElementById('f_stock').value       = '0';
     document.getElementById('f_minstock').value    = '';
-    document.getElementById('formTitle').textContent = 'Add Item';
-    document.querySelector('[onclick="saveItem()"]').textContent = 'Add Item';
+    document.getElementById('formTitle').textContent = L.addItem;
+    document.querySelector('[onclick="saveItem()"]').textContent = L.addItem;
     document.getElementById('formPanel').classList.remove('show');
 }
 
@@ -348,9 +376,9 @@ function openEdit(id, name, desc, cat, unit, stock, minstock) {
     document.getElementById('f_category').value    = cat;
     document.getElementById('f_unit').value        = unit;
     document.getElementById('f_stock').value       = stock;
-    document.getElementById('f_minstock').value    = minstock === 'null' ? '' : minstock;
-    document.getElementById('formTitle').textContent = 'Edit Item';
-    document.querySelector('[onclick="saveItem()"]').textContent = 'Update Item';
+    document.getElementById('f_minstock').value    = (minstock === 'null' || minstock === '') ? '' : minstock;
+    document.getElementById('formTitle').textContent = L.editItem;
+    document.querySelector('[onclick="saveItem()"]').textContent = L.updateItem;
     document.getElementById('formPanel').classList.add('show');
     document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
 }
@@ -358,7 +386,7 @@ function openEdit(id, name, desc, cat, unit, stock, minstock) {
 async function saveItem() {
     const id   = parseInt(document.getElementById('f_id').value);
     const name = document.getElementById('f_name').value.trim();
-    if (!name) { alert('Name is required'); return; }
+    if (!name) { alert(L.nameIsRequired); return; }
 
     const body = {
         name,
@@ -375,8 +403,8 @@ async function saveItem() {
     try {
         const r = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
         if (r.ok) { location.reload(); }
-        else { const d = await r.json().catch(() => ({})); alert(d.error ?? 'Save failed'); }
-    } catch { alert('Request failed'); }
+        else { const d = await r.json().catch(() => ({})); alert(d.error ?? L.saveFailed); }
+    } catch { alert(L.requestFailed); }
 }
 
 // ?? Delete ????????????????????????????????
@@ -391,33 +419,106 @@ async function confirmDelete() {
     try {
         const r = await fetch(`/api/stock/${id}`, { method: 'DELETE', headers: authHeaders() });
         if (r.ok) { hideModal('deleteModal'); location.reload(); }
-        else { const d = await r.json().catch(() => ({})); alert(d.error ?? 'Delete failed'); }
-    } catch { alert('Request failed'); }
+        else { const d = await r.json().catch(() => ({})); alert(d.error ?? L.deleteFailed); }
+    } catch { alert(L.requestFailed); }
 }
 
-// ?? Movement ??????????????????????????????
-function openMovement(id, name, unit) {
-    document.getElementById('mv_itemId').value = id;
-    document.getElementById('movementTitle').textContent = `Beweging: ${name}`;
-    document.getElementById('mv_unit').textContent = unit;
-    document.getElementById('mv_quantity').value = '';
-    document.getElementById('mv_note').value = '';
-    document.getElementById('mv_date').value = '';
-    document.getElementById('mv_status').textContent = '';
-    document.querySelector('input[name="mvType"][value="In"]').checked = true;
-    showModal('movementModal');
+// ?? Stock Card ????????????????????????????
+function openStockCard(el) {
+    const d = el.dataset;
+    _currentStockId = d.id;
+
+    // Reset to Info tab
+    document.querySelectorAll('#stockCardModal .modal-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+    document.querySelectorAll('#stockCardModal .modal-tab-panel').forEach((p,i) => p.classList.toggle('active', i===0));
+
+    document.getElementById('stockCardTitle').textContent = d.name;
+
+    // Build info body
+    const minStockDisplay = d.minstock ? `${d.minstock} ${d.unit}` : L.notSet;
+    document.getElementById('stockCardBody').innerHTML = `
+        <div style="text-align:center;padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:18px;">
+            <div class="contact-avatar-lg" style="background:var(--primary-light,#ede9fe);color:var(--primary);">
+                <svg class="icon" style="width:32px;height:32px;"><use href="#icon-box" /></svg>
+            </div>
+            <div class="contact-name">${d.name}</div>
+            <div class="contact-sub" style="margin-top:8px;">
+                ${d.category ? `<span class="badge badge-gray">${d.category}</span>` : ''}
+                <span class="badge ${d.statusclass}">${d.statuslabel}</span>
+                <span class="badge badge-gray">${d.unit}</span>
+            </div>
+        </div>
+        <div class="info-grid">
+            <div class="info-block"><div class="info-label">${L.currentStockLabel}</div><div class="info-value" style="font-size:20px;font-weight:800;">${d.stock} ${d.unit}</div></div>
+            <div class="info-block"><div class="info-label">${L.minimumStockLabel}</div><div class="info-value">${minStockDisplay}</div></div>
+            <div class="info-block"><div class="info-label">${L.description}</div><div class="info-value">${d.description || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.category}</div><div class="info-value">${d.category || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.createdOn}</div><div class="info-value">${d.created || '—'}</div></div>
+        </div>`;
+
+    // Setup movement form
+    const mvItemId = document.getElementById('mv_itemId');
+    if (mvItemId) {
+        mvItemId.value = d.id;
+        document.getElementById('mv_unit').textContent = d.unit;
+        document.getElementById('mv_quantity').value = '';
+        document.getElementById('mv_note').value = '';
+        document.getElementById('mv_date').value = '';
+        document.getElementById('mv_status').textContent = '';
+        const inRadio = document.querySelector('input[name="mvType"][value="In"]');
+        if (inRadio) inRadio.checked = true;
+    }
+
+    // Footer
+    document.getElementById('stockCardFooter').innerHTML = `
+        <button class="btn btn-icon" onclick="closeStockCard()">${L.close}</button>
+        ${canWrite ? `
+        <button class="btn btn-accent" onclick="editFromCard()">${L.edit}</button>
+        <button class="btn btn-danger" onclick="deleteFromCard()">${L.delete_}</button>
+        ` : ''}`;
+
+    // Load history into tab
+    loadStockHistory(d.id);
+
+    showModal('stockCardModal');
 }
 
+function closeStockCard() { hideModal('stockCardModal'); }
+
+function switchStockTab(tab, btn) {
+    document.querySelectorAll('#stockCardModal .modal-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('stockTabInfo').classList.toggle('active', tab === 'info');
+    document.getElementById('stockTabHistory').classList.toggle('active', tab === 'history');
+}
+
+function editFromCard() {
+    const el = document.querySelector(`[data-id="${_currentStockId}"]`);
+    if (!el) return;
+    const d = el.dataset;
+    closeStockCard();
+    openEdit(d.id, d.name, d.description, d.category, d.unit, d.stock, d.minstock || 'null');
+}
+
+function deleteFromCard() {
+    const el = document.querySelector(`[data-id="${_currentStockId}"]`);
+    if (!el) return;
+    const d = el.dataset;
+    closeStockCard();
+    deleteItem(d.id, d.name);
+}
+
+// ?? Movement (inline in card) ?????????????
 async function saveMovement() {
     const id  = document.getElementById('mv_itemId').value;
     const qty = parseFloat(document.getElementById('mv_quantity').value);
-    if (!qty || qty <= 0) { alert('Voer een geldige hoeveelheid in'); return; }
+    if (!qty || qty <= 0) { alert(L.enterValidQuantity); return; }
 
     const type    = document.querySelector('input[name="mvType"]:checked').value;
     const note    = document.getElementById('mv_note').value.trim() || null;
     const dateVal = document.getElementById('mv_date').value || null;
     const statusEl = document.getElementById('mv_status');
-    statusEl.textContent = 'Opslaan�';
+    statusEl.textContent = L.saving;
 
     try {
         const r = await fetch(`/api/stock/${id}/movement`, {
@@ -425,30 +526,29 @@ async function saveMovement() {
             headers: authHeaders(),
             body: JSON.stringify({ type: type === 'In' ? 0 : type === 'Out' ? 1 : 2, quantity: qty, note, movementDate: dateVal })
         });
-        if (r.ok) { hideModal('movementModal'); location.reload(); }
-        else { statusEl.textContent = ''; const d = await r.json().catch(() => ({})); alert(d.error ?? 'Failed'); }
-    } catch { statusEl.textContent = ''; alert('Request failed'); }
+        if (r.ok) { location.reload(); }
+        else { statusEl.textContent = ''; const d = await r.json().catch(() => ({})); alert(d.error ?? L.failed); }
+    } catch { statusEl.textContent = ''; alert(L.requestFailed); }
 }
 
-// ?? History ???????????????????????????????
-async function openHistory(id, name) {
-    document.getElementById('historyTitle').textContent = `Geschiedenis: ${name}`;
-    document.getElementById('historyList').innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Laden�</p>';
-    showModal('historyModal');
+// ?? History (inline in card tab) ??????????
+async function loadStockHistory(id) {
+    const listEl = document.getElementById('stockHistoryList');
+    listEl.innerHTML = `<p style="color:var(--text-muted);font-size:13px;">${L.loading}</p>`;
 
     try {
         const r = await fetch(`/api/stock/${id}/movements`, { headers: authHeaders() });
         const data = await r.json();
 
         if (!data.length) {
-            document.getElementById('historyList').innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Geen bewegingen gevonden.</p>';
+            listEl.innerHTML = `<p style="color:var(--text-muted);font-size:13px;">${L.noMovementsFound}</p>`;
             return;
         }
 
-        const typeLabel = { 0: '+ In', 1: '\u2212 Out', 2: '= Correctie' };
+        const typeLabel = { 0: L.inType, 1: L.outType, 2: L.correctionType };
         const typeClass = { 0: 'badge-green', 1: 'badge-red', 2: 'badge-purple' };
 
-        document.getElementById('historyList').innerHTML = data.map(m => `
+        listEl.innerHTML = data.map(m => `
             <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
                 <span class="badge ${typeClass[m.Type]}">${typeLabel[m.Type]}</span>
                 <div style="flex:1;">
@@ -461,7 +561,7 @@ async function openHistory(id, name) {
                 </div>
             </div>`).join('');
     } catch {
-        document.getElementById('historyList').innerHTML = '<p style="color:var(--danger);font-size:13px;">Laden mislukt.</p>';
+        listEl.innerHTML = `<p style="color:var(--danger);font-size:13px;">${L.loadFailed}</p>`;
     }
 }
 // ?? Export ???????????????????????????????
@@ -475,7 +575,7 @@ async function runExport() {
     const includeMovements = fmt === 'pdf' && document.getElementById('exportIncludeMovements').checked;
     const extMap  = { excel: 'xlsx', csv: 'csv', pdf: 'pdf' };
     const statusEl = document.getElementById('exportStatus');
-    statusEl.textContent = 'Genereren\u2026';
+    statusEl.textContent = L.generatingExport;
     try {
         const url = `/api/stock/export/${fmt}${includeMovements ? '?includeMovements=true' : ''}`;
         const r = await fetch(url, { headers: authHeaders() });
@@ -491,7 +591,7 @@ async function runExport() {
         hideModal('exportModal');
     } catch(e) {
         statusEl.textContent = '';
-        alert('Export mislukt: ' + e.message);
+        alert(L.exportFailedPrefix + ' ' + e.message);
     }
 }
 
@@ -508,7 +608,7 @@ async function loadCharts() {
             data: {
                 labels:   data.categoryData.map(d => d.label),
                 datasets: [{
-                    label:           'Totale stock',
+                    label:           L.totalStock,
                     data:            data.categoryData.map(d => d.value),
                     backgroundColor: 'rgba(79,70,229,0.7)',
                     borderColor:     'rgba(79,70,229,1)',

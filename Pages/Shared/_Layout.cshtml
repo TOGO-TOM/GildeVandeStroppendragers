@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 @using Microsoft.Extensions.Localization
-@inject IStringLocalizer<AdminMembers.Resources.SharedResources> Localizer
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var currentPath = ViewContext.HttpContext.Request.Path + ViewContext.HttpContext.Request.QueryString;
 }
 <!DOCTYPE html>
 <html lang="@culture">
@@ -16,7 +17,7 @@
 <body>
 @* Inject SVG sprite — hidden, referenced by <use href="#icon-name"> *@
 <div style="display:none" id="svg-sprite-container">
-    @Html.Raw(System.IO.File.ReadAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "icons.svg")))
+    @Html.Raw(AdminMembers.SharedResources.SvgSprite)
 </div>
 
 @{
@@ -56,7 +57,7 @@
         }
         @if (canSeeUsersNav)
         {
-            <a href="/Admin/Users" class="@(layoutPage == "admin-users" ? "active" : "")">Users</a>
+            <a href="/Admin/Users" class="@(layoutPage == "admin-users" ? "active" : "")">@Localizer["Users"]</a>
         }
         @if (layoutUser?.Roles?.Contains("Super Admin") == true)
         {
@@ -66,6 +67,14 @@
     </nav>
 
     <div class="header-right">
+        <form method="post" action="/set-language" style="margin:0;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@currentPath" />
+            <div style="display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--border);border-radius:999px;background:var(--panel);box-shadow:0 8px 24px rgba(15,23,42,.08);">
+                <button type="submit" name="culture" value="nl" style="border:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "nl" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "nl" ? "#fff" : "var(--text-muted)");">NL</button>
+                <button type="submit" name="culture" value="en" style="border:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "en" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "en" ? "#fff" : "var(--text-muted)");">EN</button>
+            </div>
+        </form>
         @if (layoutUser != null)
         {
             <div class="user-pill">
@@ -94,6 +103,14 @@
             </div>
         }
     </div>
+    <form method="post" action="/set-language" style="padding:12px 20px;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@currentPath" />
+        <div style="display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--border);border-radius:999px;background:var(--panel);">
+            <button type="submit" name="culture" value="nl" style="flex:1;border:none;border-radius:999px;padding:10px 12px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;background:@(culture == "nl" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "nl" ? "#fff" : "var(--text-muted)");">NL</button>
+            <button type="submit" name="culture" value="en" style="flex:1;border:none;border-radius:999px;padding:10px 12px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;background:@(culture == "en" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "en" ? "#fff" : "var(--text-muted)");">EN</button>
+        </div>
+    </form>
     <a href="/Home" class="mobile-nav-item @(layoutPage == "home" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Home"]</a>
     @if (canSeeMembersNav)
     {
@@ -105,7 +122,7 @@
     }
     @if (canSeeUsersNav)
     {
-        <a href="/Admin/Users" class="mobile-nav-item @(layoutPage == "admin-users" ? "active" : "")" onclick="closeMobileMenu()">Users</a>
+        <a href="/Admin/Users" class="mobile-nav-item @(layoutPage == "admin-users" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Users"]</a>
     }
     @if (layoutUser?.Roles?.Contains("Super Admin") == true)
     {

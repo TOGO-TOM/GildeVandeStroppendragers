@@ -1,11 +1,12 @@
 @page
 @model AdminMembers.Pages.LoginModel
 @using Microsoft.Extensions.Localization
-@inject IStringLocalizer<AdminMembers.Resources.SharedResources> Localizer
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = null;
     ViewData["Title"] = Localizer["SignIn"];
     var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var currentPath = ViewContext.HttpContext.Request.Path + ViewContext.HttpContext.Request.QueryString;
 }
 <!DOCTYPE html>
 <html lang="@culture">
@@ -17,6 +18,16 @@
 </head>
 <body class="login-wrap">
     <svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol><symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol></svg>
+    <div style="position:absolute;top:20px;right:20px;z-index:10;">
+        <form method="post" action="/set-language" style="margin:0;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@currentPath" />
+            <div style="display:flex;align-items:center;gap:4px;padding:4px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(15,23,42,.75);backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.18);">
+                <button type="submit" name="culture" value="nl" style="border:none;border-radius:999px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "nl" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "nl" ? "#fff" : "#cbd5e1");">NL</button>
+                <button type="submit" name="culture" value="en" style="border:none;border-radius:999px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "en" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "en" ? "#fff" : "#cbd5e1");">EN</button>
+            </div>
+        </form>
+    </div>
     <div class="login-card">
         <div class="login-head">
             <svg class="icon icon-2xl" style="color:#6366f1;margin-bottom:12px;"><use href="#icon-shield" /></svg>
@@ -32,18 +43,18 @@
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="RedirectUrl" />
                 <div class="login-input-group">
-                    <label for="Username">@Localizer["Username"]</label>
+                    <label for="Username">@Localizer["UsernameUpper"]</label>
                     <input asp-for="Username" type="text" id="Username"
                            placeholder="@Localizer["EnterYourUsername"]"
                            autocomplete="username" autofocus required />
                 </div>
                 <div class="login-input-group">
-                    <label for="Password">@Localizer["Password"]</label>
+                    <label for="Password">@Localizer["PasswordUpper"]</label>
                     <div class="password-wrapper">
                         <input asp-for="Password" type="password" id="Password"
                                placeholder="@Localizer["EnterYourPassword"]"
                                autocomplete="current-password" required />
-                        <button type="button" class="pwd-toggle" onclick="togglePwd()" aria-label="Toggle password visibility">
+                        <button type="button" class="pwd-toggle" onclick="togglePwd()" aria-label="@Localizer["TogglePasswordVisibility"]">
                             <svg class="icon icon-lg"><use href="#icon-eye" /></svg>
                         </button>
                     </div>
@@ -55,7 +66,7 @@
                 </div>
 
                 <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-muted);">
-                    @Localizer["RequestAccount"]? <a href="/Register" style="color:var(--accent);font-weight:600;">@Localizer["Register"]</a>
+                    @Localizer["NoAccount"] <a href="/Register" style="color:var(--accent);font-weight:600;">@Localizer["RequestAccess"]</a>
                 </div>
             </form>
         </div>

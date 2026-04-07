@@ -1,26 +1,39 @@
 @page
 @model AdminMembers.Pages.TotpVerifyModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = null;
-    ViewData["Title"] = "Two-Factor Authentication";
+    ViewData["Title"] = Localizer["TwoFactorAuthentication"];
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var currentPath = ViewContext.HttpContext.Request.Path + ViewContext.HttpContext.Request.QueryString;
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@culture">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Two-Factor Authentication — Gilde Van De Stroppendragers</title>
+    <title>@Localizer["TwoFactorAuthentication"] - @Localizer["AppTitle"]</title>
     <link rel="stylesheet" href="/styles.css" />
 </head>
 <body class="login-wrap">
+    <div style="position:absolute;top:20px;right:20px;z-index:10;">
+        <form method="post" action="/set-language" style="margin:0;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@currentPath" />
+            <div style="display:flex;align-items:center;gap:4px;padding:4px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(15,23,42,.75);backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.18);">
+                <button type="submit" name="culture" value="nl" style="border:none;border-radius:999px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "nl" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "nl" ? "#fff" : "#cbd5e1");">NL</button>
+                <button type="submit" name="culture" value="en" style="border:none;border-radius:999px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "en" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "en" ? "#fff" : "#cbd5e1");">EN</button>
+            </div>
+        </form>
+    </div>
     <div class="login-card">
         <div class="login-head">
             <div class="logo-dot"></div>
-            <h1>Two-Factor Auth</h1>
-            <p>Enter the code from your authenticator app</p>
+            <h1>@Localizer["TwoFactorAuthShort"]</h1>
+            <p>@Localizer["EnterAuthenticatorCode"]</p>
         </div>
         <div class="login-body">
-
             @if (!string.IsNullOrEmpty(Model.ErrorMessage))
             {
                 <div class="login-error">@Model.ErrorMessage</div>
@@ -30,7 +43,7 @@
                 @Html.AntiForgeryToken()
 
                 <div class="login-input-group">
-                    <label for="Code">6-digit code</label>
+                    <label for="Code">@Localizer["SixDigitCode"]</label>
                     <input asp-for="Code" type="text" id="Code"
                            placeholder="000000"
                            autocomplete="one-time-code"
@@ -43,14 +56,14 @@
 
                 <label class="totp-trust-label">
                     <input asp-for="TrustDevice" type="checkbox" />
-                    Trust this device for 30 days
+                    @Localizer["TrustThisDevice"]
                 </label>
 
-                <button type="submit" class="btn-login" style="margin-top:16px;">Verify</button>
+                <button type="submit" class="btn-login" style="margin-top:16px;">@Localizer["Verify"]</button>
             </form>
 
             <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--text-muted);">
-                <a href="/Login" style="color:var(--accent);font-weight:600;">&#8592; Back to sign in</a>
+                <a href="/Login" style="color:var(--accent);font-weight:600;">&#8592; @Localizer["BackToSignInLower"]</a>
             </div>
         </div>
     </div>

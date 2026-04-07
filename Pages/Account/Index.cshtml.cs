@@ -1,13 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using AdminMembers.Services;
+using Microsoft.Extensions.Localization;
 
 namespace AdminMembers.Pages.Account
 {
     public class IndexModel : AuthenticatedPageModel
     {
         private readonly AuthService _authService;
+        private readonly IStringLocalizer<AdminMembers.SharedResources> _localizer;
 
-        public IndexModel(AuthService authService) => _authService = authService;
+        public IndexModel(AuthService authService, IStringLocalizer<AdminMembers.SharedResources> localizer)
+        {
+            _authService = authService;
+            _localizer = localizer;
+        }
 
         [BindProperty] public string CurrentPassword    { get; set; } = string.Empty;
         [BindProperty] public string NewPassword        { get; set; } = string.Empty;
@@ -36,25 +42,25 @@ namespace AdminMembers.Pages.Account
                 string.IsNullOrWhiteSpace(NewPassword) ||
                 string.IsNullOrWhiteSpace(ConfirmNewPassword))
             {
-                ErrorMessage = "All fields are required.";
+                ErrorMessage = _localizer["AllFieldsRequired"];
                 return Page();
             }
 
             if (NewPassword != ConfirmNewPassword)
             {
-                ErrorMessage = "New passwords do not match.";
+                ErrorMessage = _localizer["NewPasswordsDoNotMatch"];
                 return Page();
             }
 
             if (NewPassword.Length < 6)
             {
-                ErrorMessage = "Password must be at least 6 characters.";
+                ErrorMessage = _localizer["PasswordMinimumLength"];
                 return Page();
             }
 
             if (raw == null || !_authService.VerifyPasswordPublic(CurrentPassword, raw.PasswordHash))
             {
-                ErrorMessage = "Current password is incorrect.";
+                ErrorMessage = _localizer["CurrentPasswordIncorrect"];
                 return Page();
             }
 
@@ -62,8 +68,8 @@ namespace AdminMembers.Pages.Account
             var ok = await _authService.ChangePasswordAsync(
                 CurrentUser!.Id, NewPassword, CurrentUser!.Id, CurrentUser!.Username, ip);
 
-            SuccessMessage = ok ? "Password updated successfully." : null;
-            if (!ok) ErrorMessage = "Failed to update password. Please try again.";
+            SuccessMessage = ok ? _localizer["PasswordUpdatedSuccessfully"] : null;
+            if (!ok) ErrorMessage = _localizer["PasswordUpdateFailed"];
             return Page();
         }
     }

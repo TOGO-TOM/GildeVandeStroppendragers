@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using AdminMembers.Models;
 using AdminMembers.Services;
+using Microsoft.Extensions.Localization;
 
 namespace AdminMembers.Pages
 {
@@ -10,12 +11,14 @@ namespace AdminMembers.Pages
         private readonly AuthService _authService;
         private readonly ILogger<RegisterModel> _logger;
         private readonly PasswordPolicyService _passwordPolicy;
+        private readonly IStringLocalizer<AdminMembers.SharedResources> _localizer;
 
-        public RegisterModel(AuthService authService, ILogger<RegisterModel> logger, PasswordPolicyService passwordPolicy)
+        public RegisterModel(AuthService authService, ILogger<RegisterModel> logger, PasswordPolicyService passwordPolicy, IStringLocalizer<AdminMembers.SharedResources> localizer)
         {
             _authService = authService;
             _logger = logger;
             _passwordPolicy = passwordPolicy;
+            _localizer = localizer;
         }
 
         [BindProperty] public string Username { get; set; } = string.Empty;
@@ -34,19 +37,19 @@ namespace AdminMembers.Pages
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Email) ||
                 string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(ConfirmPassword))
             {
-                ErrorMessage = "All fields are required.";
+                ErrorMessage = _localizer["AllFieldsRequired"];
                 return Page();
             }
 
             if (Password != ConfirmPassword)
             {
-                ErrorMessage = "Passwords do not match.";
+                ErrorMessage = _localizer["PasswordsDoNotMatch"];
                 return Page();
             }
 
             if (Password.Length < 6)
             {
-                ErrorMessage = "Password must be at least 6 characters.";
+                ErrorMessage = _localizer["PasswordMinimumLength"];
                 return Page();
             }
 
