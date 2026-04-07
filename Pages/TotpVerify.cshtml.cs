@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using AdminMembers.Services;
+using Microsoft.Extensions.Localization;
 
 namespace AdminMembers.Pages
 {
@@ -9,12 +10,14 @@ namespace AdminMembers.Pages
         private readonly AuthService _authService;
         private readonly TotpService _totpService;
         private readonly ILogger<TotpVerifyModel> _logger;
+        private readonly IStringLocalizer<AdminMembers.SharedResources> _localizer;
 
-        public TotpVerifyModel(AuthService authService, TotpService totpService, ILogger<TotpVerifyModel> logger)
+        public TotpVerifyModel(AuthService authService, TotpService totpService, ILogger<TotpVerifyModel> logger, IStringLocalizer<AdminMembers.SharedResources> localizer)
         {
             _authService = authService;
             _totpService = totpService;
             _logger = logger;
+            _localizer = localizer;
         }
 
         [BindProperty] public string Code        { get; set; } = string.Empty;
@@ -42,14 +45,14 @@ namespace AdminMembers.Pages
             var rawUser = await _authService.GetRawUserByIdAsync(pendingId.Value);
             if (rawUser == null || string.IsNullOrEmpty(rawUser.TotpSecret))
             {
-                ErrorMessage = "Session expired. Please sign in again.";
+                ErrorMessage = _localizer["SessionExpiredSignInAgain"];
                 return Page();
             }
 
             if (!_totpService.VerifyCode(rawUser.TotpSecret, Code))
             {
                 _logger.LogWarning("Failed TOTP attempt for user {UserId}", pendingId.Value);
-                ErrorMessage = "Invalid code. Please try again.";
+                ErrorMessage = _localizer["InvalidCodeTryAgain"];
                 return Page();
             }
 

@@ -7,7 +7,7 @@ namespace AdminMembers.Services
     public class MemberDocumentService
     {
         private readonly ApplicationDbContext _context;
-        private readonly BlobStorageService _blob;
+        private readonly BlobStorageService? _blob;
         private readonly AuditLogService _audit;
         private readonly IConfiguration _configuration;
         private readonly ILogger<MemberDocumentService> _logger;
@@ -27,7 +27,7 @@ namespace AdminMembers.Services
 
         public MemberDocumentService(
             ApplicationDbContext context,
-            BlobStorageService blob,
+            BlobStorageService? blob,
             AuditLogService audit,
             IConfiguration configuration,
             ILogger<MemberDocumentService> logger)
@@ -65,6 +65,12 @@ namespace AdminMembers.Services
             var contentType = file.ContentType;
             if (!AllowedContentTypes.Contains(contentType))
                 return (false, $"File type '{contentType}' is not allowed.", null);
+
+            if (_blob == null)
+            {
+                _logger.LogError("Blob storage is not configured. Cannot upload documents.");
+                return (false, "Document storage is not configured. Please contact an administrator.", null);
+            }
 
             // Unique blob name: documents/member-{id}/{guid}-{originalname}
             var safeFileName = Path.GetFileName(file.FileName);
@@ -109,6 +115,9 @@ namespace AdminMembers.Services
             if (doc == null)
                 return (false, null, string.Empty, string.Empty);
 
+            if (_blob == null)
+                return (false, null, string.Empty, string.Empty);
+
             try
             {
                 var ms = new MemoryStream();
@@ -132,6 +141,9 @@ namespace AdminMembers.Services
             var doc = await _context.MemberDocuments.FindAsync(documentId);
             if (doc == null)
                 return (false, "Document not found.");
+
+            if (_blob == null)
+                return (false, "Document storage is not configured. Please contact an administrator.");
 
             try
             {

@@ -5,8 +5,32 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Azure.Storage.Blobs;
 using Azure.Identity;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure localization
+builder.Services.AddLocalization();
+
+var supportedCultures = new[]
+{
+    new CultureInfo("en"),
+    new CultureInfo("nl")
+};
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("nl");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders = new List<IRequestCultureProvider>
+    {
+        new QueryStringRequestCultureProvider(),
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
+    };
+});
 
 // JSON options shared by Razor Pages and API controllers
 var jsonOptions = new Action<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
@@ -16,7 +40,10 @@ var jsonOptions = new Action<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
 });
 
-builder.Services.AddRazorPages().AddJsonOptions(jsonOptions);
+builder.Services.AddRazorPages()
+    .AddJsonOptions(jsonOptions)
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
 builder.Services.AddControllers().AddJsonOptions(jsonOptions);
 builder.Services.AddMemoryCache();
 builder.Services.AddResponseCaching();
@@ -51,7 +78,7 @@ if (!string.IsNullOrEmpty(blobStorageEndpoint))
 }
 else
 {
-    builder.Services.AddScoped<BlobStorageService?>(_ => null);
+    builder.Services.AddScoped<BlobStorageService>(_ => null!);
 }
 
 builder.Services.AddScoped<ExportService>();
@@ -78,6 +105,9 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var app = builder.Build();
+
+// Enable request localization
+app.UseRequestLocalization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -109,6 +139,29 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
+app.MapPost("/set-language", async (HttpContext httpContext) =>
+{
+    var form = await httpContext.Request.ReadFormAsync();
+    var culture = form["culture"].ToString();
+    var returnUrl = form["returnUrl"].ToString();
+
+    var supportedCultureNames = supportedCultures.Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    var selectedCulture = supportedCultureNames.Contains(culture) ? culture : "nl";
+
+    httpContext.Response.Cookies.Append(
+        CookieRequestCultureProvider.DefaultCookieName,
+        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(selectedCulture)),
+        new CookieOptions
+        {
+            Expires = DateTimeOffset.UtcNow.AddYears(1),
+            IsEssential = true,
+            HttpOnly = false,
+            Secure = httpContext.Request.IsHttps,
+            SameSite = SameSiteMode.Lax
+        });
+
+    return Results.LocalRedirect(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl);
+});
 app.MapGet("/", () => Results.Redirect("/Login"));
 
 // Auto-apply EF migrations on startup — retry up to 5 times with backoff

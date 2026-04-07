@@ -1,33 +1,46 @@
 @page
 @model AdminMembers.Pages.RegisterModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = null;
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = Localizer["Register"];
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var currentPath = ViewContext.HttpContext.Request.Path + ViewContext.HttpContext.Request.QueryString;
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@culture">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Gilde Van De Stroppendragers</title>
+    <title>@Localizer["Register"] - @Localizer["AppTitle"]</title>
     <link rel="stylesheet" href="/styles.css" />
 </head>
 <body class="login-wrap">
     <svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol><symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol></svg>
+    <div style="position:absolute;top:20px;right:20px;z-index:10;">
+        <form method="post" action="/set-language" style="margin:0;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@currentPath" />
+            <div style="display:flex;align-items:center;gap:4px;padding:4px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(15,23,42,.75);backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.18);">
+                <button type="submit" name="culture" value="nl" style="border:none;border-radius:999px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "nl" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "nl" ? "#fff" : "#cbd5e1");">NL</button>
+                <button type="submit" name="culture" value="en" style="border:none;border-radius:999px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "en" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "en" ? "#fff" : "#cbd5e1");">EN</button>
+            </div>
+        </form>
+    </div>
     <div class="login-card">
         <div class="login-head">
             <svg class="icon icon-2xl" style="color:#6366f1;margin-bottom:12px;"><use href="#icon-shield" /></svg>
-            <h1>Create Account</h1>
-            <p>Gilde Van De Stroppendragers</p>
+            <h1>@Localizer["CreateAccount"]</h1>
+            <p>@Localizer["AppTitle"]</p>
         </div>
         <div class="login-body">
-
             @if (!string.IsNullOrEmpty(Model.SuccessMessage))
             {
                 <div class="register-success">
                     <div class="register-success-icon">&#10003;</div>
                     <p>@Model.SuccessMessage</p>
-                    <a href="/Login" class="btn-login" style="display:block;text-align:center;margin-top:16px;text-decoration:none;">Back to Sign In</a>
+                    <a href="/Login" class="btn-login" style="display:block;text-align:center;margin-top:16px;text-decoration:none;">@Localizer["BackToSignIn"]</a>
                 </div>
             }
             else
@@ -41,26 +54,26 @@
                     @Html.AntiForgeryToken()
 
                     <div class="login-input-group">
-                        <label for="Username">Username</label>
+                        <label for="Username">@Localizer["UsernameUpper"]</label>
                         <input asp-for="Username" type="text" id="Username"
-                               placeholder="Choose a username"
+                               placeholder="@Localizer["ChooseAUsername"]"
                                autocomplete="username" autofocus required />
                     </div>
 
                     <div class="login-input-group">
-                        <label for="Email">Email</label>
+                        <label for="Email">@Localizer["EmailUpper"]</label>
                         <input asp-for="Email" type="email" id="Email"
-                               placeholder="Your email address"
+                               placeholder="@Localizer["YourEmailAddress"]"
                                autocomplete="email" required />
                     </div>
 
                     <div class="login-input-group">
-                        <label for="Password">Password</label>
+                        <label for="Password">@Localizer["PasswordUpper"]</label>
                         <div class="password-wrapper">
                             <input asp-for="Password" type="password" id="Password"
-                                   placeholder="At least 6 characters"
+                                   placeholder="@Localizer["PasswordRequirementShort"]"
                                    autocomplete="new-password" required />
-                            <button type="button" class="pwd-toggle" onclick="togglePwd('Password')" aria-label="Toggle password visibility">
+                            <button type="button" class="pwd-toggle" onclick="togglePwd('Password')" aria-label="@Localizer["TogglePasswordVisibility"]">
                                 <svg class="icon icon-lg"><use href="#icon-eye" /></svg>
                             </button>
                         </div>
@@ -68,22 +81,22 @@
                     </div>
 
                     <div class="login-input-group">
-                        <label for="ConfirmPassword">Confirm Password</label>
+                        <label for="ConfirmPassword">@Localizer["ConfirmPasswordUpper"]</label>
                         <div class="password-wrapper">
                             <input asp-for="ConfirmPassword" type="password" id="ConfirmPassword"
-                                   placeholder="Repeat your password"
+                                   placeholder="@Localizer["RepeatYourPassword"]"
                                    autocomplete="new-password" required />
-                            <button type="button" class="pwd-toggle" onclick="togglePwd('ConfirmPassword')" aria-label="Toggle password visibility">
+                            <button type="button" class="pwd-toggle" onclick="togglePwd('ConfirmPassword')" aria-label="@Localizer["TogglePasswordVisibility"]">
                                 <svg class="icon icon-lg"><use href="#icon-eye" /></svg>
                             </button>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-login" style="margin-top:8px;">Request Access</button>
+                    <button type="submit" class="btn-login" style="margin-top:8px;">@Localizer["RequestAccess"]</button>
                 </form>
 
                 <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--text-muted);">
-                    Already have an account? <a href="/Login" style="color:var(--accent);font-weight:600;">Sign In</a>
+                    @Localizer["AlreadyHaveAnAccount"] <a href="/Login" style="color:var(--accent);font-weight:600;">@Localizer["SignIn"]</a>
                 </div>
             }
         </div>

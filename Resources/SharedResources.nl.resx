@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" msdata:Ordinal="5" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Common -->
+  <data name="AppTitle" xml:space="preserve">
+    <value>Gilde Van de Stroppendragers</value>
+  </data>
+  <data name="MemberAdministration" xml:space="preserve">
+    <value>Ledenadministratie Portaal</value>
+  </data>
+
+  <!-- Navigation -->
+  <data name="Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Members" xml:space="preserve">
+    <value>Leden</value>
+  </data>
+  <data name="Stock" xml:space="preserve">
+    <value>Voorraad</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Instellingen</value>
+  </data>
+  <data name="AuditLogs" xml:space="preserve">
+    <value>Audit Logs</value>
+  </data>
+  <data name="MyAccount" xml:space="preserve">
+    <value>Mijn Account</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Uitloggen</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Taal</value>
+  </data>
+
+  <!-- Login Page -->
+  <data name="SignIn" xml:space="preserve">
+    <value>Aanmelden</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>Gebruikersnaam</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Wachtwoord</value>
+  </data>
+  <data name="EnterYourUsername" xml:space="preserve">
+    <value>Voer uw gebruikersnaam in</value>
+  </data>
+  <data name="EnterYourPassword" xml:space="preserve">
+    <value>Voer uw wachtwoord in</value>
+  </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>Wachtwoord vergeten?</value>
+  </data>
+  <data name="RequestAccount" xml:space="preserve">
+    <value>Account aanvragen</value>
+  </data>
+
+  <!-- Register Page -->
+  <data name="Register" xml:space="preserve">
+    <value>Registreren</value>
+  </data>
+  <data name="CreateAccount" xml:space="preserve">
+    <value>Account aanmaken</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Bevestig wachtwoord</value>
+  </data>
+  <data name="BackToLogin" xml:space="preserve">
+    <value>Terug naar login</value>
+  </data>
+
+  <!-- Members Page -->
+  <data name="AddMember" xml:space="preserve">
+    <value>Lid toevoegen</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Zoeken</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Exporteren</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Importeren</value>
+  </data>
+  <data name="Backup" xml:space="preserve">
+    <value>Back-up</value>
+  </data>
+  <data name="MemberNumber" xml:space="preserve">
+    <value>Lidnummer</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Naam</value>
+  </data>
+  <data name="FirstName" xml:space="preserve">
+    <value>Voornaam</value>
+  </data>
+  <data name="LastName" xml:space="preserve">
+    <value>Achternaam</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>Rol</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Acties</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Bewerken</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Verwijderen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Opslaan</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuleren</value>
+  </data>
+
+  <!-- Common Words -->
+  <data name="Yes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Nee</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Sluiten</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Verzenden</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Laden...</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Fout</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Succes</value>
+  </data>
+
+  <!-- Stats -->
+  <data name="TotalMembers" xml:space="preserve">
+    <value>Totaal Leden</value>
+  </data>
+  <data name="ActiveMembers" xml:space="preserve">
+    <value>Actieve Leden</value>
+  </data>
+  <data name="NewThisMonth" xml:space="preserve">
+    <value>Nieuw deze maand</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Gebruikers</value>
+  </data>
+  <data name="UsernameUpper" xml:space="preserve">
+    <value>GEBRUIKERSNAAM</value>
+  </data>
+  <data name="PasswordUpper" xml:space="preserve">
+    <value>WACHTWOORD</value>
+  </data>
+  <data name="EmailUpper" xml:space="preserve">
+    <value>E-MAIL</value>
+  </data>
+  <data name="ConfirmPasswordUpper" xml:space="preserve">
+    <value>BEVESTIG WACHTWOORD</value>
+  </data>
+  <data name="NewPasswordUpper" xml:space="preserve">
+    <value>NIEUW WACHTWOORD</value>
+  </data>
+  <data name="TogglePasswordVisibility" xml:space="preserve">
+    <value>Wachtwoordzichtbaarheid wisselen</value>
+  </data>
+  <data name="NoAccount" xml:space="preserve">
+    <value>Geen account?</value>
+  </data>
+  <data name="RequestAccess" xml:space="preserve">
+    <value>Toegang aanvragen</value>
+  </data>
+  <data name="BackToSignIn" xml:space="preserve">
+    <value>Terug naar aanmelden</value>
+  </data>
+  <data name="ChooseAUsername" xml:space="preserve">
+    <value>Kies een gebruikersnaam</value>
+  </data>
+  <data name="YourEmailAddress" xml:space="preserve">
+    <value>Uw e-mailadres</value>
+  </data>
+  <data name="PasswordRequirementShort" xml:space="preserve">
+    <value>Minstens 6 tekens</value>
+  </data>
+  <data name="RepeatYourPassword" xml:space="preserve">
+    <value>Herhaal uw wachtwoord</value>
+  </data>
+  <data name="AlreadyHaveAnAccount" xml:space="preserve">
+    <value>Heeft u al een account?</value>
+  </data>
+  <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>Wachtwoord vergeten</value>
+  </data>
+  <data name="ForgotPasswordIntro" xml:space="preserve">
+    <value>Voer uw e-mailadres in en we sturen u een resetlink.</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>E-mailadres</value>
+  </data>
+  <data name="SendResetLink" xml:space="preserve">
+    <value>Verzend resetlink</value>
+  </data>
+  <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>Wachtwoord resetten</value>
+  </data>
+  <data name="ResetPasswordIntro" xml:space="preserve">
+    <value>Kies een nieuw sterk wachtwoord.</value>
+  </data>
+  <data name="GoToSignIn" xml:space="preserve">
+    <value>Ga naar aanmelden</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>Nieuw wachtwoord</value>
+  </data>
+  <data name="WelcomeBack" xml:space="preserve">
+    <value>Welkom terug</value>
+  </data>
+  <data name="MembersDashboardDescription" xml:space="preserve">
+    <value>Bekijk, voeg toe en beheer alle leden, adressen en senioriteitsdata.</value>
+  </data>
+  <data name="ViewMembers" xml:space="preserve">
+    <value>Bekijk leden</value>
+  </data>
+  <data name="SettingsDashboardDescription" xml:space="preserve">
+    <value>Beheer bedrijfsinfo, logo, aangepaste velden, gebruikers en rechten.</value>
+  </data>
+  <data name="OpenSettings" xml:space="preserve">
+    <value>Open instellingen</value>
+  </data>
+  <data name="StockDashboardDescription" xml:space="preserve">
+    <value>Beheer voorraad, registreer bewegingen en bekijk de voorraadgeschiedenis.</value>
+  </data>
+  <data name="ViewStock" xml:space="preserve">
+    <value>Bekijk voorraad</value>
+  </data>
+  <data name="LoginMissingCredentials" xml:space="preserve">
+    <value>Vul zowel gebruikersnaam als wachtwoord in.</value>
+  </data>
+  <data name="InvalidUsernameOrPassword" xml:space="preserve">
+    <value>Ongeldige gebruikersnaam of wachtwoord.</value>
+  </data>
+  <data name="LoginGenericError" xml:space="preserve">
+    <value>Er is een fout opgetreden tijdens het aanmelden. Probeer opnieuw.</value>
+  </data>
+  <data name="AllFieldsRequired" xml:space="preserve">
+    <value>Alle velden zijn verplicht.</value>
+  </data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve">
+    <value>Wachtwoorden komen niet overeen.</value>
+  </data>
+  <data name="PasswordMinimumLength" xml:space="preserve">
+    <value>Het wachtwoord moet minstens 6 tekens bevatten.</value>
+  </data>
+  <data name="EnterEmailAddressError" xml:space="preserve">
+    <value>Voer uw e-mailadres in.</value>
+  </data>
+  <data name="ForgotPasswordSuccess" xml:space="preserve">
+    <value>Als een account met dat e-mailadres bestaat, is een resetlink verzonden.</value>
+  </data>
+  <data name="PasswordResetCompleted" xml:space="preserve">
+    <value>Uw wachtwoord is gereset. U kunt nu aanmelden.</value>
+  </data>
+  <data name="General" xml:space="preserve"><value>Algemeen</value></data>
+  <data name="GeneralSettings" xml:space="preserve"><value>Algemene instellingen</value></data>
+  <data name="SettingsPageDescription" xml:space="preserve"><value>Beheer applicatieconfiguratie, aangepaste velden en gebruikers.</value></data>
+  <data name="CompanyName" xml:space="preserve"><value>Bedrijfsnaam</value></data>
+  <data name="CompanyNameDescription" xml:space="preserve"><value>Wordt getoond in exports en PDF-koppen.</value></data>
+  <data name="EnterCompanyName" xml:space="preserve"><value>Voer bedrijfsnaam in</value></data>
+  <data name="Logo" xml:space="preserve"><value>Logo</value></data>
+  <data name="LogoDescription" xml:space="preserve"><value>PNG, JPEG of GIF - max. 2 MB. Gebruikt in PDF-exports.</value></data>
+  <data name="ChooseFile" xml:space="preserve"><value>Kies bestand</value></data>
+  <data name="Remove" xml:space="preserve"><value>Verwijderen</value></data>
+  <data name="SaveSettings" xml:space="preserve"><value>Instellingen opslaan</value></data>
+  <data name="ExportMembers" xml:space="preserve"><value>Leden exporteren</value></data>
+  <data name="DownloadMemberData" xml:space="preserve"><value>Ledengegevens downloaden</value></data>
+  <data name="DownloadMemberDataDescription" xml:space="preserve"><value>Kies velden en formaat en download daarna.</value></data>
+  <data name="CustomFields" xml:space="preserve"><value>Aangepaste velden</value></data>
+  <data name="AddField" xml:space="preserve"><value>Veld toevoegen</value></data>
+  <data name="Required" xml:space="preserve"><value>Verplicht</value></data>
+  <data name="Filterable" xml:space="preserve"><value>Filterbaar</value></data>
+  <data name="Inactive" xml:space="preserve"><value>Inactief</value></data>
+  <data name="Order" xml:space="preserve"><value>Volgorde</value></data>
+  <data name="NoCustomFields" xml:space="preserve"><value>Geen aangepaste velden</value></data>
+  <data name="NoCustomFieldsDescription" xml:space="preserve"><value>Voeg aangepaste velden toe om ledenprofielen uit te breiden.</value></data>
+  <data name="PendingApprovals" xml:space="preserve"><value>Wachtende goedkeuringen</value></data>
+  <data name="Requested" xml:space="preserve"><value>Aangevraagd</value></data>
+  <data name="AssignRole" xml:space="preserve"><value>Wijs rol toe...</value></data>
+  <data name="Approve" xml:space="preserve"><value>Goedkeuren</value></data>
+  <data name="Reject" xml:space="preserve"><value>Afwijzen</value></data>
+  <data name="RejectRegistrationConfirm" xml:space="preserve"><value>Deze registratieaanvraag afwijzen en verwijderen?</value></data>
+  <data name="ActiveUsers" xml:space="preserve"><value>Actieve gebruikers</value></data>
+  <data name="LastLogin" xml:space="preserve"><value>Laatste login</value></data>
+  <data name="NoActiveUsers" xml:space="preserve"><value>Geen actieve gebruikers</value></data>
+  <data name="NoActiveUsersDescription" xml:space="preserve"><value>Keur wachtende aanvragen goed om gebruikers toe te voegen.</value></data>
+  <data name="AddItem" xml:space="preserve"><value>Item toevoegen</value></data>
+  <data name="ItemName" xml:space="preserve"><value>Itemnaam</value></data>
+  <data name="Category" xml:space="preserve"><value>Categorie</value></data>
+  <data name="CategoryExample" xml:space="preserve"><value>bv. Dranken, Materiaal</value></data>
+  <data name="Description" xml:space="preserve"><value>Beschrijving</value></data>
+  <data name="OptionalDescription" xml:space="preserve"><value>Optionele beschrijving</value></data>
+  <data name="Unit" xml:space="preserve"><value>Eenheid</value></data>
+  <data name="CurrentStock" xml:space="preserve"><value>Huidige voorraad</value></data>
+  <data name="MinimumStock" xml:space="preserve"><value>Minimumvoorraad</value></data>
+  <data name="AlertThreshold" xml:space="preserve"><value>waarschuwingsdrempel</value></data>
+  <data name="Optional" xml:space="preserve"><value>Optioneel</value></data>
+  <data name="ReadOnlyAccess" xml:space="preserve"><value>Alleen-lezen toegang</value></data>
+  <data name="StockReadOnlyDescription" xml:space="preserve"><value>U kunt voorraad bekijken en exporteren, maar niet toevoegen, bewerken of verwijderen.</value></data>
+  <data name="TotalItems" xml:space="preserve"><value>Totaal items</value></data>
+  <data name="LowStock" xml:space="preserve"><value>Lage voorraad</value></data>
+  <data name="OutOfStock" xml:space="preserve"><value>Uit voorraad</value></data>
+  <data name="StockPerCategory" xml:space="preserve"><value>Voorraad per categorie</value></data>
+  <data name="StatusDistribution" xml:space="preserve"><value>Statusverdeling</value></data>
+  <data name="NoItems" xml:space="preserve"><value>Geen items</value></data>
+  <data name="NoItemsDescription" xml:space="preserve"><value>Gebruik het formulier om een eerste voorraaditem toe te voegen.</value></data>
+  <data name="ExportStock" xml:space="preserve"><value>Voorraad exporteren</value></data>
+  <data name="Format" xml:space="preserve"><value>Formaat</value></data>
+  <data name="IncludeMovementHistoryPerItem" xml:space="preserve"><value>Inclusief bewegingsgeschiedenis per item</value></data>
+  <data name="ExportStockDescription" xml:space="preserve"><value>Exporteert alle voorraaditems inclusief categorie, hoeveelheid en status. Excel bevat een extra werkblad met de samenvatting per categorie.</value></data>
+  <data name="Download" xml:space="preserve"><value>Downloaden</value></data>
+  <data name="StockMovement" xml:space="preserve"><value>Voorraadbeweging</value></data>
+  <data name="Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Hoeveelheid</value></data>
+  <data name="Note" xml:space="preserve"><value>Notitie</value></data>
+  <data name="OptionalNote" xml:space="preserve"><value>Optionele notitie</value></data>
+  <data name="Date" xml:space="preserve"><value>Datum</value></data>
+  <data name="EmptyMeansToday" xml:space="preserve"><value>leeg = vandaag</value></data>
+  <data name="History" xml:space="preserve"><value>Geschiedenis</value></data>
+  <data name="DeleteItem" xml:space="preserve"><value>Item verwijderen</value></data>
+  <data name="DeleteItemConfirmPrefix" xml:space="preserve"><value>Verwijder</value></data>
+  <data name="DeleteCannotBeUndone" xml:space="preserve"><value>Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="UserManagement" xml:space="preserve"><value>Gebruikersbeheer</value></data>
+  <data name="UserManagementDescription" xml:space="preserve"><value>Maak, beheer en controleer toegang voor alle admin-gebruikers.</value></data>
+  <data name="Pending" xml:space="preserve"><value>Wachtend</value></data>
+  <data name="CreateUser" xml:space="preserve"><value>Gebruiker aanmaken</value></data>
+  <data name="You" xml:space="preserve"><value>U</value></data>
+  <data name="Created" xml:space="preserve"><value>Aangemaakt</value></data>
+  <data name="EditRoles" xml:space="preserve"><value>Rollen bewerken</value></data>
+  <data name="ResetPasswordShort" xml:space="preserve"><value>PW reset</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Deactiveren</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activeren</value></data>
+  <data name="Force2FA" xml:space="preserve"><value>Forceer 2FA</value></data>
+  <data name="Clear2FA" xml:space="preserve"><value>Wis 2FA</value></data>
+  <data name="SaveRoles" xml:space="preserve"><value>Rollen opslaan</value></data>
+  <data name="SetPassword" xml:space="preserve"><value>Wachtwoord instellen</value></data>
+  <data name="CreateUserOrApprovePending" xml:space="preserve"><value>Maak een gebruiker aan of keur een wachtende aanvraag goed.</value></data>
+  <data name="AuditLogsDescription" xml:space="preserve"><value>Alle gebruikersactiviteit - logins, ledenwijzigingen, instellingenupdates en meer.</value></data>
+  <data name="FilterByUser" xml:space="preserve"><value>Filter op gebruiker...</value></data>
+  <data name="FilterByAction" xml:space="preserve"><value>bv. Login, Lid aangemaakt...</value></data>
+  <data name="EntityType" xml:space="preserve"><value>Entiteitstype</value></data>
+  <data name="All" xml:space="preserve"><value>Alle</value></data>
+  <data name="User" xml:space="preserve"><value>Gebruiker</value></data>
+  <data name="Member" xml:space="preserve"><value>Lid</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="Clear" xml:space="preserve"><value>Wissen</value></data>
+  <data name="Results" xml:space="preserve"><value>Resultaten</value></data>
+  <data name="PageLabel" xml:space="preserve"><value>Pagina</value></data>
+  <data name="Of" xml:space="preserve"><value>van</value></data>
+  <data name="Timestamp" xml:space="preserve"><value>Tijdstip</value></data>
+  <data name="Entity" xml:space="preserve"><value>Entiteit</value></data>
+  <data name="Details" xml:space="preserve"><value>Details</value></data>
+  <data name="NoLogEntriesFound" xml:space="preserve"><value>Geen logregels gevonden.</value></data>
+  <data name="ManageProfileAndSecurity" xml:space="preserve"><value>Beheer uw profiel en beveiligingsinstellingen.</value></data>
+  <data name="Profile" xml:space="preserve"><value>Profiel</value></data>
+  <data name="TwoFactorAuthentication" xml:space="preserve"><value>Twee-factor-authenticatie</value></data>
+  <data name="Active" xml:space="preserve"><value>Actief</value></data>
+  <data name="NotSetUp" xml:space="preserve"><value>Niet ingesteld</value></data>
+  <data name="TwoFactorEnabledDescription" xml:space="preserve"><value>Uw account is beveiligd met een authenticator-app. Vertrouwde apparaten slaan de code 30 dagen over.</value></data>
+  <data name="Manage2FA" xml:space="preserve"><value>Beheer 2FA</value></data>
+  <data name="TwoFactorSetupDescription" xml:space="preserve"><value>Voeg een extra beveiligingslaag toe. Gebruik Google Authenticator, Microsoft Authenticator of een andere TOTP-app.</value></data>
+  <data name="SetUpAuthenticator" xml:space="preserve"><value>Authenticator instellen</value></data>
+  <data name="ChangePassword" xml:space="preserve"><value>Wachtwoord wijzigen</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Huidig wachtwoord</value></data>
+  <data name="YourCurrentPassword" xml:space="preserve"><value>Uw huidige wachtwoord</value></data>
+  <data name="ConfirmNewPassword" xml:space="preserve"><value>Bevestig nieuw wachtwoord</value></data>
+  <data name="RepeatNewPassword" xml:space="preserve"><value>Herhaal nieuw wachtwoord</value></data>
+  <data name="UpdatePassword" xml:space="preserve"><value>Wachtwoord bijwerken</value></data>
+  <data name="TwoFactorAuthenticationSetup" xml:space="preserve"><value>Instellen twee-factor-authenticatie</value></data>
+  <data name="AuthenticatorSetup" xml:space="preserve"><value>Authenticator instellen</value></data>
+  <data name="AuthenticatorSetupDescription" xml:space="preserve"><value>Scan de QR-code met Google Authenticator, Microsoft Authenticator of een compatibele TOTP-app.</value></data>
+  <data name="ScanQrCode" xml:space="preserve"><value>Scan QR-code</value></data>
+  <data name="CantScanEnterKeyManually" xml:space="preserve"><value>Kunt u niet scannen? Voer deze sleutel handmatig in:</value></data>
+  <data name="ConfirmWithCode" xml:space="preserve"><value>Bevestig met een code</value></data>
+  <data name="EnterSixDigitCodeDescription" xml:space="preserve"><value>Voer de 6-cijferige code uit uw app in om twee-factor-authenticatie te activeren.</value></data>
+  <data name="SixDigitCode" xml:space="preserve"><value>6-cijferige code</value></data>
+  <data name="Enable2FA" xml:space="preserve"><value>2FA inschakelen</value></data>
+  <data name="TwoFactorAuthenticationIsActive" xml:space="preserve"><value>Twee-factor-authenticatie is actief</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Ingeschakeld</value></data>
+  <data name="TwoFactorActiveDescription" xml:space="preserve"><value>Uw account is beveiligd. U wordt op elk nieuw apparaat of na 30 dagen om een code gevraagd.</value></data>
+  <data name="Disable2FA" xml:space="preserve"><value>2FA uitschakelen</value></data>
+  <data name="TwoFactorAuthShort" xml:space="preserve"><value>Twee-factor-auth</value></data>
+  <data name="EnterAuthenticatorCode" xml:space="preserve"><value>Voer de code van uw authenticator-app in</value></data>
+  <data name="TrustThisDevice" xml:space="preserve"><value>Vertrouw dit apparaat 30 dagen</value></data>
+  <data name="Verify" xml:space="preserve"><value>Verifieren</value></data>
+  <data name="BackToSignInLower" xml:space="preserve"><value>Terug naar aanmelden</value></data>
+  <data name="SomethingWentWrong" xml:space="preserve"><value>Er is iets misgegaan</value></data>
+  <data name="UnexpectedErrorOccurred" xml:space="preserve"><value>Er is een onverwachte fout opgetreden. Probeer opnieuw of neem contact op met uw beheerder.</value></data>
+  <data name="BackToHome" xml:space="preserve"><value>Terug naar home</value></data>
+  <data name="RequestId" xml:space="preserve"><value>Aanvraag-ID</value></data>
+  <data name="NewPasswordsDoNotMatch" xml:space="preserve"><value>Nieuwe wachtwoorden komen niet overeen.</value></data>
+  <data name="CurrentPasswordIncorrect" xml:space="preserve"><value>Huidig wachtwoord is onjuist.</value></data>
+  <data name="PasswordUpdatedSuccessfully" xml:space="preserve"><value>Wachtwoord succesvol bijgewerkt.</value></data>
+  <data name="PasswordUpdateFailed" xml:space="preserve"><value>Bijwerken van wachtwoord mislukt. Probeer opnieuw.</value></data>
+  <data name="InvalidCodeTryAgain" xml:space="preserve"><value>Ongeldige code. Probeer opnieuw.</value></data>
+  <data name="TwoFactorEnabledSuccessfully" xml:space="preserve"><value>Twee-factor-authenticatie is succesvol ingeschakeld.</value></data>
+  <data name="SessionExpiredSignInAgain" xml:space="preserve"><value>Sessie verlopen. Meld opnieuw aan.</value></data>
+
+  <!-- Settings modals / Custom fields -->
+  <data name="AddCustomField" xml:space="preserve"><value>Aangepast veld toevoegen</value></data>
+  <data name="EditCustomField" xml:space="preserve"><value>Aangepast veld bewerken</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Veldnaam</value></data>
+  <data name="InternalNoSpaces" xml:space="preserve"><value>intern, geen spaties</value></data>
+  <data name="Label" xml:space="preserve"><value>Label</value></data>
+  <data name="ShownToUsers" xml:space="preserve"><value>zichtbaar voor gebruikers</value></data>
+  <data name="Text" xml:space="preserve"><value>Tekst</value></data>
+  <data name="Number" xml:space="preserve"><value>Nummer</value></data>
+  <data name="YesNo" xml:space="preserve"><value>Ja / Nee</value></data>
+  <data name="DisplayOrder" xml:space="preserve"><value>Weergavevolgorde</value></data>
+  <data name="DeleteCustomFieldConfirm" xml:space="preserve"><value>Dit aangepaste veld verwijderen? Dit kan niet ongedaan worden.</value></data>
+  <data name="NameLabelRequired" xml:space="preserve"><value>Naam en label zijn verplicht.</value></data>
+  <data name="FailedToDeleteField" xml:space="preserve"><value>Veld verwijderen mislukt.</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Opslaan mislukt.</value></data>
+  <data name="RequestFailed" xml:space="preserve"><value>Aanvraag mislukt.</value></data>
+  <data name="FailedToRemoveLogo" xml:space="preserve"><value>Logo verwijderen mislukt.</value></data>
+  <data name="RemoveLogoConfirm" xml:space="preserve"><value>Huidig logo verwijderen?</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>Export mislukt.</value></data>
+  <data name="Generating" xml:space="preserve"><value>Genereren...</value></data>
+
+  <!-- Export fields -->
+  <data name="FieldsToInclude" xml:space="preserve"><value>Velden om op te nemen</value></data>
+  <data name="None" xml:space="preserve"><value>Geen</value></data>
+  <data name="BirthDate" xml:space="preserve"><value>Geboortedatum</value></data>
+  <data name="SeniorityDate" xml:space="preserve"><value>Ancienniteitsdatum</value></data>
+  <data name="Phone" xml:space="preserve"><value>Telefoon</value></data>
+  <data name="Street" xml:space="preserve"><value>Straat</value></data>
+  <data name="HouseNumber" xml:space="preserve"><value>Huisnummer</value></data>
+  <data name="City" xml:space="preserve"><value>Stad</value></data>
+  <data name="PostalCode" xml:space="preserve"><value>Postcode</value></data>
+  <data name="Country" xml:space="preserve"><value>Land</value></data>
+  <data name="CreatedDate" xml:space="preserve"><value>Aanmaakdatum</value></data>
+  <data name="Gender" xml:space="preserve"><value>Geslacht</value></data>
+  <data name="FilterByRole" xml:space="preserve"><value>Filteren op rol</value></data>
+  <data name="LeaveAllUnchecked" xml:space="preserve"><value>laat alles leeg voor alles</value></data>
+  <data name="SelectAtLeastOneField" xml:space="preserve"><value>Selecteer minstens een veld.</value></data>
+
+  <!-- Member roles -->
+  <data name="SteunendLid" xml:space="preserve"><value>Steunend Lid</value></data>
+  <data name="Kandidaat" xml:space="preserve"><value>Kandidaat</value></data>
+  <data name="StappendLid" xml:space="preserve"><value>Stappend Lid</value></data>
+
+  <!-- Account / Admin -->
+  <data name="Roles" xml:space="preserve"><value>Rollen</value></data>
+  <data name="Action" xml:space="preserve"><value>Actie</value></data>
+  <data name="CreateNewUser" xml:space="preserve"><value>Nieuwe gebruiker aanmaken</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Disable2FADescription" xml:space="preserve"><value>Dit schakelt twee-factor-authenticatie uit. Weet u het zeker?</value></data>
+  <data name="E.gMembershipType" xml:space="preserve"><value>bv. Lidmaatschapstype</value></data>
+
+  <!-- Members page -->
+  <data name="Personal" xml:space="preserve"><value>Persoonlijk</value></data>
+  <data name="FirstNameRequired" xml:space="preserve"><value>Voornaam *</value></data>
+  <data name="LastNameRequired" xml:space="preserve"><value>Achternaam *</value></data>
+  <data name="Man" xml:space="preserve"><value>Man</value></data>
+  <data name="Woman" xml:space="preserve"><value>Vrouw</value></data>
+  <data name="Other" xml:space="preserve"><value>Anders</value></data>
+  <data name="Alive" xml:space="preserve"><value>Levend</value></data>
+  <data name="Deceased" xml:space="preserve"><value>Overleden</value></data>
+  <data name="MemberHash" xml:space="preserve"><value>Lid #</value></data>
+  <data name="Contact" xml:space="preserve"><value>Contact</value></data>
+  <data name="Address" xml:space="preserve"><value>Adres</value></data>
+  <data name="HouseNr" xml:space="preserve"><value>Huisnr.</value></data>
+  <data name="Data" xml:space="preserve"><value>Gegevens</value></data>
+  <data name="ImportCSV" xml:space="preserve"><value>CSV importeren</value></data>
+  <data name="BulkUpdate" xml:space="preserve"><value>Bulk bijwerken</value></data>
+  <data name="MembersReadOnlyDescription" xml:space="preserve"><value>U kunt leden bekijken en exporteren, maar niet toevoegen, bewerken of verwijderen.</value></data>
+  <data name="Total" xml:space="preserve"><value>Totaal</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Zoek naam, e-mail, lid #...</value></data>
+  <data name="AZ" xml:space="preserve"><value>A-Z</value></data>
+  <data name="ZA" xml:space="preserve"><value>Z-A</value></data>
+  <data name="ByNumber" xml:space="preserve"><value>Op #</value></data>
+  <data name="Rol" xml:space="preserve"><value>Rol</value></data>
+  <data name="Alle" xml:space="preserve"><value>Alle</value></data>
+  <data name="Zoek" xml:space="preserve"><value>Zoeken</value></data>
+  <data name="NoNumber" xml:space="preserve"><value>Geen #</value></data>
+  <data name="NoMembersFound" xml:space="preserve"><value>Geen leden gevonden</value></data>
+  <data name="UseFormToAddFirst" xml:space="preserve"><value>Gebruik het formulier om uw eerste lid toe te voegen.</value></data>
+  <data name="NoResultsTryDifferent" xml:space="preserve"><value>Geen resultaten - probeer een andere zoekterm.</value></data>
+  <data name="Info" xml:space="preserve"><value>Info</value></data>
+  <data name="Documents" xml:space="preserve"><value>Documenten</value></data>
+  <data name="DeleteMember" xml:space="preserve"><value>Lid verwijderen</value></data>
+  <data name="DeleteMemberConfirm" xml:space="preserve"><value>Verwijder</value></data>
+  <data name="CannotBeUndone" xml:space="preserve"><value>Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="ImportCSVDescription" xml:space="preserve"><value>Ondersteund: komma- of puntkommascheidingsteken. Eerste rij = koppen.</value></data>
+  <data name="ImportCSVRequired" xml:space="preserve"><value>Vereist:</value></data>
+  <data name="CSVFile" xml:space="preserve"><value>CSV-bestand</value></data>
+  <data name="BulkUpdateMembers" xml:space="preserve"><value>Leden bulk bijwerken</value></data>
+  <data name="BulkUpdateDescription" xml:space="preserve"><value>Selecteer leden hieronder, kies wat u wilt bijwerken en klik op Toepassen.</value></data>
+  <data name="BulkOnlyFilled" xml:space="preserve"><value>Alleen ingevulde velden worden bijgewerkt.</value></data>
+  <data name="NoChange" xml:space="preserve"><value>-- geen wijziging --</value></data>
+  <data name="Selected" xml:space="preserve"><value>geselecteerd</value></data>
+  <data name="Apply" xml:space="preserve"><value>Toepassen</value></data>
+  <data name="EditMember" xml:space="preserve"><value>Lid bewerken</value></data>
+  <data name="UpdateMember" xml:space="preserve"><value>Lid bijwerken</value></data>
+  <data name="ClickOrDragUpload" xml:space="preserve"><value>Klik of sleep een bestand om te uploaden</value></data>
+  <data name="UploadFileTypes" xml:space="preserve"><value>PDF, Word, Excel, afbeeldingen - max 20 MB</value></data>
+  <data name="NoDocumentsYet" xml:space="preserve"><value>Nog geen documenten bijgevoegd.</value></data>
+  <data name="PreviewNotAvailable" xml:space="preserve"><value>Voorbeeld niet beschikbaar</value></data>
+  <data name="DownloadFile" xml:space="preserve"><value>Bestand downloaden</value></data>
+  <data name="View" xml:space="preserve"><value>Bekijken</value></data>
+  <data name="DeleteDocConfirm" xml:space="preserve"><value>Dit document verwijderen? Dit kan niet ongedaan worden.</value></data>
+  <data name="MemberSince" xml:space="preserve"><value>Lid sinds</value></data>
+  <data name="Year" xml:space="preserve"><value>jaar</value></data>
+  <data name="Years" xml:space="preserve"><value>jaren</value></data>
+  <data name="Ja" xml:space="preserve"><value>Ja</value></data>
+  <data name="Nee" xml:space="preserve"><value>Nee</value></data>
+  <data name="SelectAValue" xml:space="preserve"><value>-- selecteer --</value></data>
+  <data name="FilterPlaceholder" xml:space="preserve"><value>Filter...</value></data>
+  <data name="AddMemberButton" xml:space="preserve"><value>Lid toevoegen</value></data>
+
+  <!-- Stock page -->
+  <data name="Stuks" xml:space="preserve"><value>stuks</value></data>
+  <data name="Kg" xml:space="preserve"><value>kg</value></data>
+  <data name="Liter" xml:space="preserve"><value>liter</value></data>
+  <data name="Dozen" xml:space="preserve"><value>dozen</value></data>
+  <data name="Pakken" xml:space="preserve"><value>pakken</value></data>
+  <data name="Overig" xml:space="preserve"><value>Overig</value></data>
+  <data name="SoldOut" xml:space="preserve"><value>Uitverkocht</value></data>
+  <data name="StockLow" xml:space="preserve"><value>Laag</value></data>
+  <data name="StockOK" xml:space="preserve"><value>OK</value></data>
+  <data name="MinPrefix" xml:space="preserve"><value>Min:</value></data>
+  <data name="AddIn" xml:space="preserve"><value>Toevoegen</value></data>
+  <data name="RemoveOut" xml:space="preserve"><value>Verwijderen</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Item bewerken</value></data>
+  <data name="UpdateItem" xml:space="preserve"><value>Item bijwerken</value></data>
+  <data name="NameIsRequired" xml:space="preserve"><value>Naam is verplicht</value></data>
+  <data name="Saving" xml:space="preserve"><value>Opslaan...</value></data>
+  <data name="Saved" xml:space="preserve"><value>Opgeslagen</value></data>
+  <data name="DeleteFailed" xml:space="preserve"><value>Verwijderen mislukt</value></data>
+  <data name="MovementPrefix" xml:space="preserve"><value>Beweging:</value></data>
+  <data name="EnterValidQuantity" xml:space="preserve"><value>Voer een geldige hoeveelheid in</value></data>
+  <data name="HistoryPrefix" xml:space="preserve"><value>Geschiedenis:</value></data>
+  <data name="NoMovementsFound" xml:space="preserve"><value>Geen bewegingen gevonden.</value></data>
+  <data name="InType" xml:space="preserve"><value>+ In</value></data>
+  <data name="OutType" xml:space="preserve"><value>- Uit</value></data>
+  <data name="CorrectionType" xml:space="preserve"><value>= Correctie</value></data>
+  <data name="GeneratingExport" xml:space="preserve"><value>Genereren...</value></data>
+  <data name="ExportFailedPrefix" xml:space="preserve"><value>Export mislukt:</value></data>
+  <data name="TotalStock" xml:space="preserve"><value>Totale stock</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Laden mislukt.</value></data>
+  <data name="Failed" xml:space="preserve"><value>Mislukt</value></data>
+
+  <!-- Admin/Users page confirmations -->
+  <data name="DeactivateConfirm" xml:space="preserve"><value>Deactiveren</value></data>
+  <data name="Force2FATitle" xml:space="preserve"><value>Deze gebruiker verplichten om 2FA in te stellen bij volgende login</value></data>
+  <data name="Force2FAConfirm" xml:space="preserve"><value>2FA forceren voor {0}? Hun bestaande TOTP wordt gereset en ze moeten opnieuw registreren.</value></data>
+  <data name="Remove2FATitle" xml:space="preserve"><value>2FA-vereiste verwijderen</value></data>
+  <data name="PermanentlyDeleteConfirm" xml:space="preserve"><value>{0} definitief verwijderen? Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="ResetPasswordConfirm" xml:space="preserve"><value>Wachtwoord resetten voor {0}?</value></data>
+  <data name="RejectRegistrationConfirm2" xml:space="preserve"><value>Dit registratieverzoek weigeren en verwijderen?</value></data>
+  <data name="MinCharacters" xml:space="preserve"><value>Min. 6 tekens</value></data>
+
+  <!-- Code-behind messages -->
+  <data name="NoPermissionModifyMembers" xml:space="preserve"><value>U heeft geen toestemming om leden te wijzigen.</value></data>
+  <data name="FirstLastNameRequired" xml:space="preserve"><value>Voornaam en achternaam zijn verplicht.</value></data>
+  <data name="MemberNumberInUse" xml:space="preserve"><value>Lidnummer {0} is al in gebruik.</value></data>
+  <data name="MemberAddedSuccess" xml:space="preserve"><value>{0} {1} is succesvol toegevoegd.</value></data>
+  <data name="MemberUpdatedSuccess" xml:space="preserve"><value>{0} {1} is succesvol bijgewerkt.</value></data>
+  <data name="MemberNotFound" xml:space="preserve"><value>Lid niet gevonden.</value></data>
+  <data name="ErrorSaving" xml:space="preserve"><value>Er is een fout opgetreden bij het opslaan. Probeer het opnieuw.</value></data>
+  <data name="NoPermissionDeleteMembers" xml:space="preserve"><value>U heeft geen toestemming om leden te verwijderen.</value></data>
+  <data name="MemberDeletedSuccess" xml:space="preserve"><value>{0} {1} is verwijderd.</value></data>
+  <data name="ErrorDeleting" xml:space="preserve"><value>Er is een fout opgetreden bij het verwijderen. Probeer het opnieuw.</value></data>
+  <data name="FailedUpdateRoles" xml:space="preserve"><value>Rollen bijwerken mislukt.</value></data>
+  <data name="RolesUpdated" xml:space="preserve"><value>Rollen bijgewerkt.</value></data>
+  <data name="FailedUpdateUserStatus" xml:space="preserve"><value>Gebruikersstatus bijwerken mislukt.</value></data>
+  <data name="UserActivated" xml:space="preserve"><value>Gebruiker geactiveerd.</value></data>
+  <data name="UserDeactivated" xml:space="preserve"><value>Gebruiker gedeactiveerd.</value></data>
+  <data name="FailedUpdate2FA" xml:space="preserve"><value>2FA-instelling bijwerken mislukt.</value></data>
+  <data name="TwoFANowRequired" xml:space="preserve"><value>2FA is nu vereist voor deze gebruiker. Hun bestaande TOTP is gereset en ze moeten opnieuw registreren.</value></data>
+  <data name="TwoFARequirementRemoved" xml:space="preserve"><value>2FA-vereiste verwijderd.</value></data>
+  <data name="PasswordMin6" xml:space="preserve"><value>Wachtwoord moet minimaal 6 tekens bevatten.</value></data>
+  <data name="FailedResetPassword" xml:space="preserve"><value>Wachtwoord resetten mislukt.</value></data>
+  <data name="PasswordResetSuccess" xml:space="preserve"><value>Wachtwoord succesvol gereset.</value></data>
+  <data name="FailedApproveUser" xml:space="preserve"><value>Gebruiker goedkeuren mislukt.</value></data>
+  <data name="UserApproved" xml:space="preserve"><value>Gebruiker goedgekeurd.</value></data>
+  <data name="RegistrationRejected" xml:space="preserve"><value>Registratieverzoek geweigerd en verwijderd.</value></data>
+  <data name="CannotDeleteOwnAccount" xml:space="preserve"><value>U kunt uw eigen account niet verwijderen.</value></data>
+  <data name="FailedDeleteUser" xml:space="preserve"><value>Gebruiker verwijderen mislukt.</value></data>
+  <data name="UserDeleted" xml:space="preserve"><value>Gebruiker verwijderd.</value></data>
+  <data name="UserCreatedSuccess" xml:space="preserve"><value>Gebruiker '{0}' aangemaakt.</value></data>
+
+  <!-- Members JS messages -->
+  <data name="SelectAtLeastOneFieldExport" xml:space="preserve"><value>Selecteer minstens één veld om te exporteren.</value></data>
+  <data name="ExportDownloadedSuccess" xml:space="preserve"><value>Export succesvol gedownload.</value></data>
+  <data name="SelectCSVFile" xml:space="preserve"><value>Selecteer een CSV-bestand.</value></data>
+  <data name="ImportedMembers" xml:space="preserve"><value>{0} leden geïmporteerd.</value></data>
+  <data name="ImportFailed" xml:space="preserve"><value>Import mislukt.</value></data>
+  <data name="ImportRequestFailed" xml:space="preserve"><value>Import verzoek mislukt.</value></data>
+  <data name="SelectAtLeastOneMember" xml:space="preserve"><value>Selecteer minstens één lid.</value></data>
+  <data name="ChooseFieldToUpdate" xml:space="preserve"><value>Kies minstens één veld om bij te werken.</value></data>
+  <data name="UpdatedMembers" xml:space="preserve"><value>{0} lid/leden bijgewerkt.</value></data>
+  <data name="BulkUpdateFailed" xml:space="preserve"><value>Bulkupdate mislukt (HTTP {0}).</value></data>
+  <data name="UploadFailed" xml:space="preserve"><value>Upload mislukt.</value></data>
+  <data name="UploadRequestFailed" xml:space="preserve"><value>Upload verzoek mislukt.</value></data>
+  <data name="LoadingPreview" xml:space="preserve"><value>Voorbeeld laden…</value></data>
+  <data name="FailedToLoadDocument" xml:space="preserve"><value>Document laden mislukt.</value></data>
+  <data name="CouldNotLoadPreview" xml:space="preserve"><value>Voorbeeld kon niet geladen worden.</value></data>
+  <data name="DownloadFailed" xml:space="preserve"><value>Download mislukt.</value></data>
+  <data name="DownloadRequestFailed" xml:space="preserve"><value>Download verzoek mislukt.</value></data>
+  <data name="DeleteFailedGeneric" xml:space="preserve"><value>Verwijderen mislukt.</value></data>
+
+  <!-- Stock Card Modal -->
+  <data name="StockDetails" xml:space="preserve"><value>Voorraaddetails</value></data>
+  <data name="ItemInfo" xml:space="preserve"><value>Info</value></data>
+  <data name="MovementHistory" xml:space="preserve"><value>Geschiedenis</value></data>
+  <data name="CurrentStockLabel" xml:space="preserve"><value>Huidige Voorraad</value></data>
+  <data name="CreatedOn" xml:space="preserve"><value>Aangemaakt op</value></data>
+  <data name="AddMovement" xml:space="preserve"><value>Beweging toevoegen</value></data>
+  <data name="MinimumStockLabel" xml:space="preserve"><value>Minimale Voorraad</value></data>
+  <data name="NotSet" xml:space="preserve"><value>Niet ingesteld</value></data>
+</root>

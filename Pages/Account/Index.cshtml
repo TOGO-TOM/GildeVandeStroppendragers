@@ -1,8 +1,10 @@
 @page
 @model AdminMembers.Pages.Account.IndexModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "My Account";
+    ViewData["Title"] = Localizer["MyAccount"];
     ViewData["LayoutUser"] = Model.CurrentUser;
     ViewData["LayoutPage"] = "";
 }
@@ -10,20 +12,20 @@
 <div class="page-body-full" style="max-width:560px;padding-top:32px;">
 
     <div style="margin-bottom:28px;">
-        <h1 style="font-size:22px;font-weight:800;letter-spacing:-.3px;">My Account</h1>
-        <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Manage your profile and security settings.</p>
+        <h1 style="font-size:22px;font-weight:800;letter-spacing:-.3px;">@Localizer["MyAccount"]</h1>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">@Localizer["ManageProfileAndSecurity"]</p>
     </div>
 
     <!-- Profile card -->
     <div class="card" style="margin-bottom:20px;">
-        <div class="card-header"><span class="card-title">Profile</span></div>
+        <div class="card-header"><span class="card-title">@Localizer["Profile"]</span></div>
         <div class="card-body">
             <div class="settings-row">
-                <div><div class="settings-row-label">Username</div></div>
+                <div><div class="settings-row-label">@Localizer["Username"]</div></div>
                 <span class="settings-row-value">@Model.CurrentUser?.Username</span>
             </div>
             <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
-                <div><div class="settings-row-label">Roles</div></div>
+                <div><div class="settings-row-label">@Localizer["Roles"]</div></div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
                     @foreach (var role in Model.CurrentUser?.Roles ?? new())
                     {
@@ -37,38 +39,37 @@
     <!-- 2FA card -->
     <div class="card" style="margin-bottom:20px;">
         <div class="card-header">
-            <span class="card-title">Two-Factor Authentication</span>
+            <span class="card-title">@Localizer["TwoFactorAuthentication"]</span>
             @if (Model.TotpEnabled)
             {
-                <span class="badge badge-green">&#10003; Active</span>
+                <span class="badge badge-green">&#10003; @Localizer["Active"]</span>
             }
             else
             {
-                <span class="badge badge-gray">Not set up</span>
+                <span class="badge badge-gray">@Localizer["NotSetUp"]</span>
             }
         </div>
         <div class="card-body">
             @if (Model.TotpEnabled)
             {
                 <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
-                    Your account is protected with an authenticator app.
-                    Devices you trust will skip the code for 30 days.
+                    @Localizer["TwoFactorEnabledDescription"]
                 </p>
-                <a href="/Account/TotpSetup" class="btn btn-sm btn-icon">Manage 2FA</a>
+                <a href="/Account/TotpSetup" class="btn btn-sm btn-icon">@Localizer["Manage2FA"]</a>
             }
             else
             {
                 <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
-                    Add an extra layer of security. Use Google Authenticator, Microsoft Authenticator or any TOTP app.
+                    @Localizer["TwoFactorSetupDescription"]
                 </p>
-                <a href="/Account/TotpSetup" class="btn btn-sm btn-accent">&#128274; Set Up Authenticator</a>
+                <a href="/Account/TotpSetup" class="btn btn-sm btn-accent">&#128274; @Localizer["SetUpAuthenticator"]</a>
             }
         </div>
     </div>
 
     <!-- Change password card -->
     <div class="card">
-        <div class="card-header"><span class="card-title">Change Password</span></div>
+        <div class="card-header"><span class="card-title">@Localizer["ChangePassword"]</span></div>
         <div class="card-body">
 
             @if (!string.IsNullOrEmpty(Model.SuccessMessage))
@@ -84,31 +85,31 @@
                 @Html.AntiForgeryToken()
 
                 <div class="form-group">
-                    <label>Current Password</label>
+                    <label>@Localizer["CurrentPassword"]</label>
                     <div class="password-wrapper">
                         <input asp-for="CurrentPassword" type="password" id="pwd-current"
-                               placeholder="Your current password" autocomplete="current-password" />
+                               placeholder="@Localizer["YourCurrentPassword"]" autocomplete="current-password" />
                         <button type="button" class="pwd-toggle" onclick="togglePwd('pwd-current')">&#128065;</button>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>New Password</label>
+                    <label>@Localizer["NewPassword"]</label>
                     <div class="password-wrapper">
                         <input asp-for="NewPassword" type="password" id="pwd-new"
-                               placeholder="At least 6 characters" autocomplete="new-password" />
+                               placeholder="@Localizer["PasswordRequirementShort"]" autocomplete="new-password" />
                         <button type="button" class="pwd-toggle" onclick="togglePwd('pwd-new')">&#128065;</button>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Confirm New Password</label>
+                    <label>@Localizer["ConfirmNewPassword"]</label>
                     <div class="password-wrapper">
                         <input asp-for="ConfirmNewPassword" type="password" id="pwd-confirm"
-                               placeholder="Repeat new password" autocomplete="new-password" />
+                               placeholder="@Localizer["RepeatNewPassword"]" autocomplete="new-password" />
                         <button type="button" class="pwd-toggle" onclick="togglePwd('pwd-confirm')">&#128065;</button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-accent" style="width:auto;margin-top:8px;">Update Password</button>
+                <button type="submit" class="btn btn-accent" style="width:auto;margin-top:8px;">@Localizer["UpdatePassword"]</button>
             </form>
         </div>
     </div>

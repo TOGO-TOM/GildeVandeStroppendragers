@@ -1,16 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
+@{
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var currentPath = ViewContext.HttpContext.Request.Path + ViewContext.HttpContext.Request.QueryString;
+}
+<!DOCTYPE html>
+<html lang="@culture">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " - " : "")Gilde Van De Stroppendragers</title>
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " - " : "")@Localizer["AppTitle"]</title>
     <link rel="stylesheet" href="/styles.css">
     @RenderSection("Styles", required: false)
 </head>
 <body>
 @* Inject SVG sprite — hidden, referenced by <use href="#icon-name"> *@
 <div style="display:none" id="svg-sprite-container">
-    @Html.Raw(System.IO.File.ReadAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "icons.svg")))
+    @Html.Raw(AdminMembers.SharedResources.SvgSprite)
 </div>
 
 @{
@@ -23,11 +30,11 @@
 <header class="app-header">
     <a href="/Home" class="brand">
         <span class="brand-dot"></span>
-        <span class="brand-text">Gilde Van De Stroppendragers</span>
+        <span class="brand-text">@Localizer["AppTitle"]</span>
     </a>
 
     <nav class="nav desktop-nav" aria-label="Main navigation">
-        <a href="/Home" class="@(layoutPage == "home" ? "active" : "")">Home</a>
+        <a href="/Home" class="@(layoutPage == "home" ? "active" : "")">@Localizer["Home"]</a>
         @{
             var canSeeMembersNav = layoutUser?.Roles?.Contains("Super Admin") == true
                 || layoutUser?.Roles?.Contains("Admin") == true
@@ -42,24 +49,32 @@
         }
         @if (canSeeMembersNav)
         {
-            <a href="/Members" class="@(layoutPage == "members" ? "active" : "")">Members</a>
+            <a href="/Members" class="@(layoutPage == "members" ? "active" : "")">@Localizer["Members"]</a>
         }
         @if (canSeeStockNav)
         {
-            <a href="/Stock" class="@(layoutPage == "stock" ? "active" : "")">Stock</a>
+            <a href="/Stock" class="@(layoutPage == "stock" ? "active" : "")">@Localizer["Stock"]</a>
         }
         @if (canSeeUsersNav)
         {
-            <a href="/Admin/Users" class="@(layoutPage == "admin-users" ? "active" : "")">Users</a>
+            <a href="/Admin/Users" class="@(layoutPage == "admin-users" ? "active" : "")">@Localizer["Users"]</a>
         }
         @if (layoutUser?.Roles?.Contains("Super Admin") == true)
         {
-            <a href="/Admin/AuditLogs" class="@(layoutPage == "admin-audit" ? "active" : "")">Audit Logs</a>
+            <a href="/Admin/AuditLogs" class="@(layoutPage == "admin-audit" ? "active" : "")">@Localizer["AuditLogs"]</a>
         }
-        <a href="/Settings" class="@(layoutPage == "settings" ? "active" : "")">Settings</a>
+        <a href="/Settings" class="@(layoutPage == "settings" ? "active" : "")">@Localizer["Settings"]</a>
     </nav>
 
     <div class="header-right">
+        <form method="post" action="/set-language" style="margin:0;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@currentPath" />
+            <div style="display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--border);border-radius:999px;background:var(--panel);box-shadow:0 8px 24px rgba(15,23,42,.08);">
+                <button type="submit" name="culture" value="nl" style="border:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "nl" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "nl" ? "#fff" : "var(--text-muted)");">NL</button>
+                <button type="submit" name="culture" value="en" style="border:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.2s;background:@(culture == "en" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "en" ? "#fff" : "var(--text-muted)");">EN</button>
+            </div>
+        </form>
         @if (layoutUser != null)
         {
             <div class="user-pill">
@@ -67,7 +82,7 @@
                 <a href="/Account" class="user-name-label">@layoutUser.Username</a>
             </div>
             <form method="post" asp-page="/Home" asp-page-handler="Logout" style="margin:0;">
-                <button class="btn btn-ghost btn-sm">Sign&nbsp;Out</button>
+                <button class="btn btn-ghost btn-sm">@Localizer["Logout"]</button>
             </form>
         }
         <button class="hamburger" id="hamburger" aria-label="Open menu" onclick="toggleMobileMenu()">
@@ -88,28 +103,36 @@
             </div>
         }
     </div>
-    <a href="/Home" class="mobile-nav-item @(layoutPage == "home" ? "active" : "")" onclick="closeMobileMenu()">Home</a>
+    <form method="post" action="/set-language" style="padding:12px 20px;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@currentPath" />
+        <div style="display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--border);border-radius:999px;background:var(--panel);">
+            <button type="submit" name="culture" value="nl" style="flex:1;border:none;border-radius:999px;padding:10px 12px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;background:@(culture == "nl" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "nl" ? "#fff" : "var(--text-muted)");">NL</button>
+            <button type="submit" name="culture" value="en" style="flex:1;border:none;border-radius:999px;padding:10px 12px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;background:@(culture == "en" ? "linear-gradient(135deg,#6366f1,#4f46e5)" : "transparent");color:@(culture == "en" ? "#fff" : "var(--text-muted)");">EN</button>
+        </div>
+    </form>
+    <a href="/Home" class="mobile-nav-item @(layoutPage == "home" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Home"]</a>
     @if (canSeeMembersNav)
     {
-        <a href="/Members" class="mobile-nav-item @(layoutPage == "members" ? "active" : "")" onclick="closeMobileMenu()">Members</a>
+        <a href="/Members" class="mobile-nav-item @(layoutPage == "members" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Members"]</a>
     }
     @if (canSeeStockNav)
     {
-        <a href="/Stock" class="mobile-nav-item @(layoutPage == "stock" ? "active" : "")" onclick="closeMobileMenu()">Stock</a>
+        <a href="/Stock" class="mobile-nav-item @(layoutPage == "stock" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Stock"]</a>
     }
     @if (canSeeUsersNav)
     {
-        <a href="/Admin/Users" class="mobile-nav-item @(layoutPage == "admin-users" ? "active" : "")" onclick="closeMobileMenu()">Users</a>
+        <a href="/Admin/Users" class="mobile-nav-item @(layoutPage == "admin-users" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Users"]</a>
     }
     @if (layoutUser?.Roles?.Contains("Super Admin") == true)
     {
-        <a href="/Admin/AuditLogs" class="mobile-nav-item @(layoutPage == "admin-audit" ? "active" : "")" onclick="closeMobileMenu()">Audit Logs</a>
+        <a href="/Admin/AuditLogs" class="mobile-nav-item @(layoutPage == "admin-audit" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["AuditLogs"]</a>
     }
-    <a href="/Settings" class="mobile-nav-item @(layoutPage == "settings" ? "active" : "")" onclick="closeMobileMenu()">Settings</a>
+    <a href="/Settings" class="mobile-nav-item @(layoutPage == "settings" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Settings"]</a>
     @if (layoutUser != null)
     {
         <form method="post" asp-page="/Home" asp-page-handler="Logout" style="padding:16px 20px;">
-            <button class="btn btn-danger" style="width:100%;">Sign Out</button>
+            <button class="btn btn-danger" style="width:100%;">@Localizer["Logout"]</button>
         </form>
     }
 </nav>

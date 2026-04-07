@@ -1,8 +1,10 @@
 @page
 @model AdminMembers.Pages.Admin.AuditLogsModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Audit Logs";
+    ViewData["Title"] = Localizer["AuditLogs"];
     ViewData["LayoutPage"] = "admin-audit";
     ViewData["LayoutUser"] = Model.CurrentUser;
 }
@@ -10,35 +12,35 @@
 <div class="page-body-full">
 
     <div class="page-heading">
-        <h1>&#128220; Audit Logs</h1>
-        <p>All user activity &mdash; logins, member changes, settings updates and more.</p>
+        <h1>&#128220; @Localizer["AuditLogs"]</h1>
+        <p>@Localizer["AuditLogsDescription"]</p>
     </div>
 
     <!-- Filters -->
     <form method="get" class="card" style="margin-bottom:16px;">
         <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
             <div class="form-group" style="margin:0;flex:1;min-width:140px;">
-                <label style="font-size:12px;font-weight:600;">Username</label>
-                <input asp-for="FilterUsername" type="text" placeholder="Filter by user&hellip;" style="width:100%;" />
+                <label style="font-size:12px;font-weight:600;">@Localizer["Username"]</label>
+                <input asp-for="FilterUsername" type="text" placeholder="@Localizer["FilterByUser"]" style="width:100%;" />
             </div>
             <div class="form-group" style="margin:0;flex:1;min-width:140px;">
-                <label style="font-size:12px;font-weight:600;">Action</label>
-                <input asp-for="FilterAction" type="text" placeholder="e.g. Login, Member Created&hellip;" style="width:100%;" />
+                <label style="font-size:12px;font-weight:600;">@Localizer["Action"]</label>
+                <input asp-for="FilterAction" type="text" placeholder="@Localizer["FilterByAction"]" style="width:100%;" />
             </div>
             <div class="form-group" style="margin:0;flex:1;min-width:120px;">
-                <label style="font-size:12px;font-weight:600;">Entity Type</label>
+                <label style="font-size:12px;font-weight:600;">@Localizer["EntityType"]</label>
                 <select asp-for="FilterEntity" style="width:100%;">
-                    <option value="">All</option>
-                    <option value="User">User</option>
-                    <option value="Member">Member</option>
-                    <option value="Settings">Settings</option>
+                    <option value="">@Localizer["All"]</option>
+                    <option value="User">@Localizer["User"]</option>
+                    <option value="Member">@Localizer["Member"]</option>
+                    <option value="Settings">@Localizer["Settings"]</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-accent btn-sm">
-                <svg class="icon icon-sm"><use href="#icon-search" /></svg> Filter
+                <svg class="icon icon-sm"><use href="#icon-search" /></svg> @Localizer["Filter"]
             </button>
             <a href="/Admin/AuditLogs" class="btn btn-icon btn-sm">
-                <svg class="icon icon-sm"><use href="#icon-x" /></svg> Clear
+                <svg class="icon icon-sm"><use href="#icon-x" /></svg> @Localizer["Clear"]
             </a>
         </div>
     </form>
@@ -47,20 +49,20 @@
     <div class="card">
         <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
             <span class="card-title">
-                Results
+                @Localizer["Results"]
                 <span class="badge badge-gray" style="margin-left:6px;">@Model.TotalCount</span>
             </span>
-            <span style="font-size:12px;color:var(--text-muted);">Page @Model.CurrentPage of @Model.TotalPages</span>
+            <span style="font-size:12px;color:var(--text-muted);">@Localizer["PageLabel"] @Model.CurrentPage @Localizer["Of"] @Model.TotalPages</span>
         </div>
         <div style="overflow-x:auto;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
                 <thead>
                     <tr style="border-bottom:2px solid var(--border);text-align:left;">
-                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);white-space:nowrap;">Timestamp</th>
-                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">User</th>
-                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">Action</th>
-                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">Entity</th>
-                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">Details</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);white-space:nowrap;">@Localizer["Timestamp"]</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">@Localizer["User"]</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">@Localizer["Action"]</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">@Localizer["Entity"]</th>
+                        <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">@Localizer["Details"]</th>
                         <th style="padding:10px 16px;font-weight:700;color:var(--text-muted);">IP</th>
                     </tr>
                 </thead>
@@ -97,7 +99,7 @@
                     @if (!Model.Logs.Any())
                     {
                         <tr>
-                            <td colspan="6" style="padding:32px;text-align:center;color:var(--text-muted);">No log entries found.</td>
+                            <td colspan="6" style="padding:32px;text-align:center;color:var(--text-muted);">@Localizer["NoLogEntriesFound"]</td>
                         </tr>
                     }
                 </tbody>

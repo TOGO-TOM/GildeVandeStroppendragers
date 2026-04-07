@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using AdminMembers.Services;
+using Microsoft.Extensions.Localization;
 
 namespace AdminMembers.Pages
 {
@@ -8,11 +9,13 @@ namespace AdminMembers.Pages
     {
         private readonly AuthService _authService;
         private readonly ILogger<LoginModel> _logger;
+        private readonly IStringLocalizer<AdminMembers.SharedResources> _localizer;
 
-        public LoginModel(AuthService authService, ILogger<LoginModel> logger)
+        public LoginModel(AuthService authService, ILogger<LoginModel> logger, IStringLocalizer<AdminMembers.SharedResources> localizer)
         {
             _authService = authService;
             _logger = logger;
+            _localizer = localizer;
         }
 
         [BindProperty]
@@ -44,7 +47,7 @@ namespace AdminMembers.Pages
         {
             if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
             {
-                ErrorMessage = "Please enter both username and password.";
+                ErrorMessage = _localizer["LoginMissingCredentials"];
                 RedirectUrl = NormalizeRedirectPath(redirect);
                 return Page();
             }
@@ -77,14 +80,14 @@ namespace AdminMembers.Pages
                     return LocalRedirect(NormalizeRedirectPath(redirect));
                 }
 
-                ErrorMessage = result.Message ?? "Invalid username or password.";
+                ErrorMessage = result.Message ?? _localizer["InvalidUsernameOrPassword"];
                 RedirectUrl = NormalizeRedirectPath(redirect);
                 return Page();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during login for user {Username}", Username);
-                ErrorMessage = "An error occurred during login. Please try again.";
+                ErrorMessage = _localizer["LoginGenericError"];
                 RedirectUrl = NormalizeRedirectPath(redirect);
                 return Page();
             }

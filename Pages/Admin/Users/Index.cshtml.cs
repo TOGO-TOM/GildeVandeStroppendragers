@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using AdminMembers.Data;
 using AdminMembers.Models;
 using AdminMembers.Services;
@@ -11,12 +12,14 @@ namespace AdminMembers.Pages.Admin.Users
         private readonly ApplicationDbContext _context;
         private readonly AuthService _authService;
         private readonly ILogger<IndexModel> _logger;
+        private readonly IStringLocalizer<SharedResources> _localizer;
 
-        public IndexModel(ApplicationDbContext context, AuthService authService, ILogger<IndexModel> logger)
+        public IndexModel(ApplicationDbContext context, AuthService authService, ILogger<IndexModel> logger, IStringLocalizer<SharedResources> localizer)
         {
             _context = context;
             _authService = authService;
             _logger = logger;
+            _localizer = localizer;
         }
 
         public List<User> Users { get; set; } = new();
@@ -57,7 +60,7 @@ namespace AdminMembers.Pages.Admin.Users
                 },
                 CurrentUser!.Id, CurrentUser.Username, ip);
 
-            if (ok) SuccessMessage = $"User '{NewUsername}' created.";
+            if (ok) SuccessMessage = string.Format(_localizer["UserCreatedSuccess"].Value, NewUsername);
             else    ErrorMessage   = msg;
 
             return RedirectToPage();
@@ -71,8 +74,8 @@ namespace AdminMembers.Pages.Admin.Users
 
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var ok = await _authService.UpdateUserRolesAsync(userId, roleIds, CurrentUser!.Id, CurrentUser.Username, ip);
-            SuccessMessage = ok ? "Roles updated." : null;
-            if (!ok) ErrorMessage = "Failed to update roles.";
+            SuccessMessage = ok ? _localizer["RolesUpdated"].Value : null;
+            if (!ok) ErrorMessage = _localizer["FailedUpdateRoles"].Value;
             return RedirectToPage();
         }
 
@@ -89,8 +92,8 @@ namespace AdminMembers.Pages.Admin.Users
             else
                 ok = await _authService.DeactivateUserAsync(userId, CurrentUser!.Id, CurrentUser.Username, ip);
 
-            if (!ok) ErrorMessage = "Failed to update user status.";
-            else SuccessMessage = activate ? "User activated." : "User deactivated.";
+            if (!ok) ErrorMessage = _localizer["FailedUpdateUserStatus"].Value;
+            else SuccessMessage = activate ? _localizer["UserActivated"].Value : _localizer["UserDeactivated"].Value;
             return RedirectToPage();
         }
 
@@ -103,8 +106,8 @@ namespace AdminMembers.Pages.Admin.Users
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var ok = await _authService.SetTotpRequiredAsync(userId, required, CurrentUser!.Id, CurrentUser.Username, ip);
 
-            if (!ok) ErrorMessage = "Failed to update 2FA setting.";
-            else SuccessMessage = required ? "2FA is now required for this user. Their existing TOTP has been reset so they must re-enrol." : "2FA requirement removed.";
+            if (!ok) ErrorMessage = _localizer["FailedUpdate2FA"].Value;
+            else SuccessMessage = required ? _localizer["TwoFANowRequired"].Value : _localizer["TwoFARequirementRemoved"].Value;
             return RedirectToPage();
         }
 
@@ -116,14 +119,14 @@ namespace AdminMembers.Pages.Admin.Users
 
             if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
             {
-                ErrorMessage = "Password must be at least 6 characters.";
+                ErrorMessage = _localizer["PasswordMin6"].Value;
                 return RedirectToPage();
             }
 
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var ok = await _authService.AdminResetPasswordAsync(userId, newPassword, CurrentUser!.Id, CurrentUser.Username, ip);
-            if (!ok) ErrorMessage = "Failed to reset password.";
-            else SuccessMessage = "Password reset successfully.";
+            if (!ok) ErrorMessage = _localizer["FailedResetPassword"].Value;
+            else SuccessMessage = _localizer["PasswordResetSuccess"].Value;
             return RedirectToPage();
         }
 
@@ -135,8 +138,8 @@ namespace AdminMembers.Pages.Admin.Users
 
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var ok = await _authService.ApproveUserAsync(userId, roleId, CurrentUser!.Id, CurrentUser.Username, ip);
-            if (!ok) ErrorMessage = "Failed to approve user.";
-            else SuccessMessage = "User approved.";
+            if (!ok) ErrorMessage = _localizer["FailedApproveUser"].Value;
+            else SuccessMessage = _localizer["UserApproved"].Value;
             return RedirectToPage();
         }
 
@@ -148,7 +151,7 @@ namespace AdminMembers.Pages.Admin.Users
 
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             await _authService.DeleteUserAsync(userId, CurrentUser!.Id, CurrentUser.Username, ip);
-            SuccessMessage = "Registration request rejected and removed.";
+            SuccessMessage = _localizer["RegistrationRejected"].Value;
             return RedirectToPage();
         }
 
@@ -160,14 +163,14 @@ namespace AdminMembers.Pages.Admin.Users
 
             if (userId == CurrentUser!.Id)
             {
-                ErrorMessage = "You cannot delete your own account.";
+                ErrorMessage = _localizer["CannotDeleteOwnAccount"].Value;
                 return RedirectToPage();
             }
 
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var ok = await _authService.DeleteUserAsync(userId, CurrentUser.Id, CurrentUser.Username, ip);
-            if (!ok) ErrorMessage = "Failed to delete user.";
-            else SuccessMessage = "User deleted.";
+            if (!ok) ErrorMessage = _localizer["FailedDeleteUser"].Value;
+            else SuccessMessage = _localizer["UserDeleted"].Value;
             return RedirectToPage();
         }
 

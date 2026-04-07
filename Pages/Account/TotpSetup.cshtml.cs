@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using AdminMembers.Services;
+using Microsoft.Extensions.Localization;
 
 namespace AdminMembers.Pages.Account
 {
@@ -7,11 +8,13 @@ namespace AdminMembers.Pages.Account
     {
         private readonly AuthService _authService;
         private readonly TotpService _totpService;
+        private readonly IStringLocalizer<AdminMembers.SharedResources> _localizer;
 
-        public TotpSetupModel(AuthService authService, TotpService totpService)
+        public TotpSetupModel(AuthService authService, TotpService totpService, IStringLocalizer<AdminMembers.SharedResources> localizer)
         {
             _authService = authService;
             _totpService = totpService;
+            _localizer = localizer;
         }
 
         [BindProperty] public string Secret     { get; set; } = string.Empty;
@@ -42,14 +45,14 @@ namespace AdminMembers.Pages.Account
 
             if (!_totpService.VerifyCode(Secret, VerifyCode))
             {
-                ErrorMessage = "Invalid code. Please try again.";
+                ErrorMessage = _localizer["InvalidCodeTryAgain"];
                 BuildQr(Secret);
                 return Page();
             }
 
             await _totpService.EnableTotpAsync(CurrentUser!.Id, Secret);
             TotpEnabled    = true;
-            SuccessMessage = "Two-factor authentication has been enabled successfully.";
+            SuccessMessage = _localizer["TwoFactorEnabledSuccessfully"];
             return Page();
         }
 

@@ -1,8 +1,10 @@
 @page
 @model AdminMembers.Pages.Admin.Users.IndexModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "User Management";
+    ViewData["Title"] = Localizer["UserManagement"];
     ViewData["LayoutPage"] = "admin-users";
     ViewData["LayoutUser"] = Model.CurrentUser;
 }
@@ -10,8 +12,8 @@
 <div class="page-body-full">
 
     <div class="page-heading">
-        <h1>User Management</h1>
-        <p>Create, manage and control access for all admin users.</p>
+        <h1>@Localizer["UserManagement"]</h1>
+        <p>@Localizer["UserManagementDescription"]</p>
     </div>
 
     @if (!string.IsNullOrEmpty(Model.SuccessMessage))
@@ -32,18 +34,18 @@
         <!-- NAV -->
         <div class="settings-nav card">
             <a class="settings-nav-item active" href="#" onclick="showSection('users',this)">
-                <svg class="icon icon-md nav-icon"><use href="#icon-user" /></svg> Active Users
+                <svg class="icon icon-md nav-icon"><use href="#icon-user" /></svg> @Localizer["ActiveUsers"]
                 <span class="badge badge-gray" style="margin-left:auto;">@Model.Users.Count</span>
             </a>
             @if (Model.PendingUsers.Any())
             {
                 <a class="settings-nav-item" href="#" onclick="showSection('pending',this)">
-                    <svg class="icon icon-md nav-icon"><use href="#icon-warning" /></svg> Pending
+                    <svg class="icon icon-md nav-icon"><use href="#icon-warning" /></svg> @Localizer["Pending"]
                     <span class="badge badge-red" style="margin-left:auto;">@Model.PendingUsers.Count</span>
                 </a>
             }
             <a class="settings-nav-item" href="#" onclick="showSection('create',this)">
-                <svg class="icon icon-md nav-icon"><use href="#icon-plus" /></svg> Create User
+                <svg class="icon icon-md nav-icon"><use href="#icon-plus" /></svg> @Localizer["CreateUser"]
             </a>
         </div>
 
@@ -55,7 +57,7 @@
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">
-                            Active Users
+                            @Localizer["ActiveUsers"]
                             <span class="badge badge-gray" style="margin-left:6px;">@Model.Users.Count</span>
                         </span>
                     </div>
@@ -73,14 +75,14 @@
                                         <div>
                                             <div style="font-weight:600;font-size:14px;">
                                                 @u.Username
-                                                @if (isSelf) { <span class="badge badge-purple" style="margin-left:4px;">You</span> }
+                                                @if (isSelf) { <span class="badge badge-purple" style="margin-left:4px;">@Localizer["You"]</span> }
                                             </div>
                                             <div style="font-size:12px;color:var(--text-muted);">@u.Email</div>
                                             <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
-                                                Created @u.CreatedAt.ToString("d MMM yyyy")
+                                                @Localizer["Created"] @u.CreatedAt.ToString("d MMM yyyy")
                                                 @if (u.LastLoginAt.HasValue)
                                                 {
-                                                    <span>&nbsp;&bull; Last login @u.LastLoginAt.Value.ToString("d MMM yyyy HH:mm")</span>
+                                                    <span>&nbsp;&bull; @Localizer["LastLogin"] @u.LastLoginAt.Value.ToString("d MMM yyyy HH:mm")</span>
                                                 }
                                             </div>
                                         </div>
@@ -101,19 +103,19 @@
                                             };
                                             <span class="role-badge @roleClass">@ur.Role.Name</span>
                                         }
-                                        @if (!u.IsActive) { <span class="badge badge-gray">Inactive</span> }
+                                        @if (!u.IsActive) { <span class="badge badge-gray">@Localizer["Inactive"]</span> }
                                         @if (u.TotpEnabled)  { <span class="badge badge-green" title="2FA active">&#128274; 2FA</span> }
-                                        @if (u.TotpRequired && !u.TotpEnabled) { <span class="badge badge-red" title="2FA required but not yet enrolled">&#9888; 2FA Pending</span> }
+                                        @if (u.TotpRequired && !u.TotpEnabled) { <span class="badge badge-red" title="2FA required but not yet enrolled">&#9888; 2FA @Localizer["Pending"]</span> }
                                     </div>
 
                                     <!-- Actions -->
                                     <div class="user-mgmt-actions">
 
                                         <!-- Edit roles -->
-                                        <button class="btn btn-sm btn-ghost" onclick="togglePanel('roles-@u.Id')">Edit Roles</button>
+                                        <button class="btn btn-sm btn-ghost" onclick="togglePanel('roles-@u.Id')">@Localizer["EditRoles"]</button>
 
                                         <!-- Reset password -->
-                                        <button class="btn btn-sm btn-ghost" onclick="togglePanel('pw-@u.Id')">Reset PW</button>
+                                        <button class="btn btn-sm btn-ghost" onclick="togglePanel('pw-@u.Id')">@Localizer["ResetPasswordShort"]</button>
 
                                         @if (!isSelf)
                                         {
@@ -125,7 +127,7 @@
                                                     <input type="hidden" name="userId"   value="@u.Id" />
                                                     <input type="hidden" name="activate" value="false" />
                                                     <button type="submit" class="btn btn-sm btn-ghost"
-                                                            onclick="return confirm('Deactivate @u.Username?')">Deactivate</button>
+                                                            onclick="return confirm('@Localizer["DeactivateConfirm"] @u.Username?')">@Localizer["Deactivate"]</button>
                                                 </form>
                                             }
                                             else
@@ -134,7 +136,7 @@
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="userId"   value="@u.Id" />
                                                     <input type="hidden" name="activate" value="true" />
-                                                    <button type="submit" class="btn btn-sm btn-accent">Activate</button>
+                                                    <button type="submit" class="btn btn-sm btn-accent">@Localizer["Activate"]</button>
                                                 </form>
                                             }
 
@@ -147,9 +149,9 @@
                                                     <input type="hidden" name="required" value="true" />
                                                     <button type="submit" class="btn btn-sm btn-ghost"
                                                             style="border-color:#f59e0b;color:#f59e0b;"
-                                                            title="Force this user to enrol in 2FA on next login"
-                                                            onclick="return confirm('Force 2FA for @u.Username? Their existing TOTP will be reset and they must re-enrol.')">
-                                                        &#128274; Force 2FA
+                                                            title="@Localizer["Force2FATitle"]"
+                                                            onclick="return confirm('@string.Format(Localizer["Force2FAConfirm"].Value, u.Username)')">
+                                                        &#128274; @Localizer["Force2FA"]
                                                     </button>
                                                 </form>
                                             }
@@ -160,8 +162,8 @@
                                                     <input type="hidden" name="userId"   value="@u.Id" />
                                                     <input type="hidden" name="required" value="false" />
                                                     <button type="submit" class="btn btn-sm btn-ghost"
-                                                            title="Remove 2FA requirement">
-                                                        &#128275; Clear 2FA
+                                                            title="@Localizer["Remove2FATitle"]">
+                                                        &#128275; @Localizer["Clear2FA"]
                                                     </button>
                                                 </form>
                                             }
@@ -171,8 +173,8 @@
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="userId" value="@u.Id" />
                                                 <button type="submit" class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('Permanently delete @u.Username? This cannot be undone.')">
-                                                    Delete
+                                                        onclick="return confirm('@string.Format(Localizer["PermanentlyDeleteConfirm"].Value, u.Username)')">
+                                                    @Localizer["Delete"]
                                                 </button>
                                             </form>
                                         }
@@ -183,7 +185,7 @@
                                         <form method="post" asp-page-handler="UpdateRoles">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="userId" value="@u.Id" />
-                                            <div style="margin-bottom:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Roles</div>
+                                            <div style="margin-bottom:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">@Localizer["Roles"]</div>
                                             <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
                                                 @foreach (var r in Model.Roles)
                                                 {
@@ -204,8 +206,8 @@
                                                 }
                                             </div>
                                             <div style="display:flex;gap:8px;">
-                                                <button type="submit" class="btn btn-sm btn-accent">Save Roles</button>
-                                                <button type="button" class="btn btn-sm btn-ghost" onclick="togglePanel('roles-@u.Id')">Cancel</button>
+                                                <button type="submit" class="btn btn-sm btn-accent">@Localizer["SaveRoles"]</button>
+                                                <button type="button" class="btn btn-sm btn-ghost" onclick="togglePanel('roles-@u.Id')">@Localizer["Cancel"]</button>
                                             </div>
                                         </form>
                                     </div>
@@ -217,13 +219,13 @@
                                             <input type="hidden" name="userId" value="@u.Id" />
                                             <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
                                                 <div>
-                                                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">New Password</label>
+                                                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">@Localizer["NewPasswordUpper"]</label>
                                                     <input type="password" name="newPassword" class="form-control" style="min-width:220px;"
-                                                           placeholder="Min. 6 characters" required minlength="6" />
+                                                           placeholder="@Localizer["PasswordRequirementShort"]" required minlength="6" />
                                                 </div>
                                                 <button type="submit" class="btn btn-sm btn-accent"
-                                                        onclick="return confirm('Reset password for @u.Username?')">Set Password</button>
-                                                <button type="button" class="btn btn-sm btn-ghost" onclick="togglePanel('pw-@u.Id')">Cancel</button>
+                                                        onclick="return confirm('@string.Format(Localizer["ResetPasswordConfirm"].Value, u.Username)')">@Localizer["SetPassword"]</button>
+                                                <button type="button" class="btn btn-sm btn-ghost" onclick="togglePanel('pw-@u.Id')">@Localizer["Cancel"]</button>
                                             </div>
                                         </form>
                                     </div>
@@ -232,7 +234,7 @@
                         }
                         else
                         {
-                            <div class="empty-state"><h3>No active users</h3><p>Create a user or approve a pending request.</p></div>
+                            <div class="empty-state"><h3>@Localizer["NoActiveUsers"]</h3><p>@Localizer["CreateUserOrApprovePending"]</p></div>
                         }
                     </div>
                 </div>
@@ -245,7 +247,7 @@
                     <div class="card pending-card">
                         <div class="card-header">
                             <span class="card-title">
-                                &#9888; Pending Approvals
+                                &#9888; @Localizer["PendingApprovals"]
                                 <span class="badge badge-red" style="margin-left:6px;">@Model.PendingUsers.Count</span>
                             </span>
                         </div>
@@ -256,27 +258,27 @@
                                     <div class="pending-info">
                                         <div class="pending-name">@p.Username</div>
                                         <div class="pending-email">@p.Email</div>
-                                        <div class="pending-date">Requested @p.CreatedAt.ToString("d MMM yyyy HH:mm")</div>
+                                        <div class="pending-date">@Localizer["Requested"] @p.CreatedAt.ToString("d MMM yyyy HH:mm")</div>
                                     </div>
                                     <div class="pending-actions">
                                         <form method="post" asp-page-handler="Approve" style="display:inline;">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="userId" value="@p.Id" />
                                             <select name="roleId" class="pending-role-select" required>
-                                                <option value="">Assign role&hellip;</option>
+                                                <option value="">@Localizer["AssignRole"]&hellip;</option>
                                                 @foreach (var r in Model.Roles)
                                                 {
                                                     <option value="@r.Id">@r.Name</option>
                                                 }
                                             </select>
-                                            <button type="submit" class="btn btn-sm btn-accent">&#10003; Approve</button>
+                                            <button type="submit" class="btn btn-sm btn-accent">&#10003; @Localizer["Approve"]</button>
                                         </form>
                                         <form method="post" asp-page-handler="Reject" style="display:inline;">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="userId" value="@p.Id" />
                                             <button type="submit" class="btn btn-sm btn-danger"
-                                                    onclick="return confirm('Reject and remove this registration request?')">
-                                                &#10005; Reject
+                                                    onclick="return confirm('@Localizer["RejectRegistrationConfirm2"]')">
+                                                &#10005; @Localizer["Reject"]
                                             </button>
                                         </form>
                                     </div>
@@ -291,27 +293,27 @@
             <div id="sec-create" class="settings-section">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Create New User</span>
+                        <span class="card-title">@Localizer["CreateNewUser"]</span>
                     </div>
                     <div class="card-body">
                         <form method="post" asp-page-handler="Create">
                             @Html.AntiForgeryToken()
                             <div style="display:grid;gap:16px;">
                                 <div>
-                                    <label class="form-label">Username</label>
+                                    <label class="form-label">@Localizer["Username"]</label>
                                     <input type="text" name="NewUsername" class="form-control" required maxlength="50" />
                                 </div>
                                 <div>
-                                    <label class="form-label">Email</label>
+                                    <label class="form-label">@Localizer["Email"]</label>
                                     <input type="email" name="NewEmail" class="form-control" required maxlength="200" />
                                 </div>
                                 <div>
-                                    <label class="form-label">Password</label>
+                                    <label class="form-label">@Localizer["Password"]</label>
                                     <input type="password" name="NewPassword" class="form-control" required minlength="6"
-                                           placeholder="Min. 6 characters" />
+                                           placeholder="@Localizer["MinCharacters"]" />
                                 </div>
                                 <div>
-                                    <label class="form-label">Roles</label>
+                                    <label class="form-label">@Localizer["Roles"]</label>
                                     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
                                         @foreach (var r in Model.Roles)
                                         {
@@ -332,7 +334,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <button type="submit" class="btn btn-accent">Create User</button>
+                                    <button type="submit" class="btn btn-accent">@Localizer["CreateUser"]</button>
                                 </div>
                             </div>
                         </form>
