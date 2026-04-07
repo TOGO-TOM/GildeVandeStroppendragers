@@ -125,11 +125,11 @@
             <div class="form-row" style="align-items:end;">
                 <div class="form-group">
                     <label>@Localizer["StartTime"]</label>
-                    <input id="ev_start_time" type="time" value="09:00" />
+                    <input id="ev_start_time" type="time" value="09:00" lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" />
                 </div>
                 <div class="form-group">
                     <label>@Localizer["EndTime"]</label>
-                    <input id="ev_end_time" type="time" value="10:00" />
+                    <input id="ev_end_time" type="time" value="10:00" lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" />
                 </div>
             </div>
             <div class="form-group" style="margin-top:2px;">
@@ -308,6 +308,12 @@ function fmtLocalDateShort(isoStr) {
     const d = new Date(isoStr + 'T00:00:00');
     return d.toLocaleDateString(browserLocale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
+function fmtLocalTime(timeStr) {
+    if (!timeStr) return '';
+    const [h, m] = timeStr.split(':');
+    const d = new Date(2000, 0, 1, parseInt(h), parseInt(m));
+    return d.toLocaleTimeString(browserLocale, { hour: '2-digit', minute: '2-digit', hour12: false });
+}
 
 // ?? Calendar rendering ?????????????????
 function renderCalendar() {
@@ -339,9 +345,9 @@ function renderCalendar() {
         const isSel   = dateStr === selectedDay;
         const dayEvents = getEventsForDate(dateStr);
         const dots = dayEvents.slice(0, 3).map(e => {
-            const timeLabel = !e.IsAllDay && e.StartTime ? e.StartTime + ' ' : '';
+            const timeLabel = !e.IsAllDay && e.StartTime ? fmtLocalTime(e.StartTime) + ' ' : '';
             const tipDate = fmtLocalDateShort(e.StartDate) + (e.EndDate && e.EndDate !== e.StartDate ? ' ? ' + fmtLocalDateShort(e.EndDate) : '');
-            const tipTime = !e.IsAllDay && e.StartTime ? (e.StartTime + (e.EndTime ? ' – ' + e.EndTime : '')) : L.allDay;
+            const tipTime = !e.IsAllDay && e.StartTime ? (fmtLocalTime(e.StartTime) + (e.EndTime ? ' – ' + fmtLocalTime(e.EndTime) : '')) : L.allDay;
             const tipLoc  = e.Location || '';
             return `<div class="cal-event-dot" style="background:${e.Color}" onclick="event.stopPropagation();viewEvent(${e.Id})"
                 data-tip-title="${e.Title.replace(/"/g,'&quot;')}" data-tip-date="${tipDate}" data-tip-time="${tipTime}" data-tip-loc="${tipLoc}">${timeLabel}${e.Title}</div>`;
@@ -399,7 +405,7 @@ function showDayPanel(dateStr) {
                 <div class="cal-event-card-body">
                     <div class="cal-event-card-title">${e.Title}</div>
                     <div class="cal-event-card-meta">
-                        ${!e.IsAllDay && e.StartTime ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-clock"/></svg>' + e.StartTime + (e.EndTime ? ' – ' + e.EndTime : '') + ' · ' : ''}
+                        ${!e.IsAllDay && e.StartTime ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-clock"/></svg>' + fmtLocalTime(e.StartTime) + (e.EndTime ? ' – ' + fmtLocalTime(e.EndTime) : '') + ' · ' : ''}
                         ${e.Location ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-location"/></svg>' + e.Location + ' · ' : ''}
                         ${fmtLocalDateShort(e.StartDate)}${e.EndDate && e.EndDate !== e.StartDate ? ' ? ' + fmtLocalDateShort(e.EndDate) : ''}
                     </div>
@@ -519,8 +525,8 @@ function viewEvent(id) {
             <div style="font-size:18px;font-weight:800;">${ev.Title}</div>
         </div>
         <div class="info-grid">
-            <div class="info-block"><div class="info-label">${L.startDate}</div><div class="info-value">${fmtLocalDate(ev.StartDate)}${ev.StartTime ? ' · ' + ev.StartTime : ''}</div></div>
-            <div class="info-block"><div class="info-label">${L.endDate}</div><div class="info-value">${ev.EndDate ? fmtLocalDate(ev.EndDate) + (ev.EndTime ? ' · ' + ev.EndTime : '') : '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.startDate}</div><div class="info-value">${fmtLocalDate(ev.StartDate)}${ev.StartTime ? ' · ' + fmtLocalTime(ev.StartTime) : ''}</div></div>
+            <div class="info-block"><div class="info-label">${L.endDate}</div><div class="info-value">${ev.EndDate ? fmtLocalDate(ev.EndDate) + (ev.EndTime ? ' · ' + fmtLocalTime(ev.EndTime) : '') : '—'}</div></div>
             <div class="info-block"><div class="info-label">${L.location}</div><div class="info-value">${ev.Location || '—'}</div></div>
             <div class="info-block"><div class="info-label">${L.createdBy}</div><div class="info-value">${ev.CreatedByUsername}</div></div>
         </div>
