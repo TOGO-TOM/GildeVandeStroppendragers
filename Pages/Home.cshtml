@@ -122,14 +122,7 @@
                     <input id="ev_end" type="date" />
                 </div>
             </div>
-            <div class="form-group">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                    <input type="checkbox" id="ev_allday" checked onchange="toggleAllDay()"
-                        style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
-                    <span style="font-size:13px;font-weight:600;">@Localizer["AllDay"]</span>
-                </label>
-            </div>
-            <div class="form-row" id="timeRow" style="display:none;">
+            <div class="form-row" style="align-items:end;">
                 <div class="form-group">
                     <label>@Localizer["StartTime"]</label>
                     <input id="ev_start_time" type="time" value="09:00" />
@@ -138,6 +131,13 @@
                     <label>@Localizer["EndTime"]</label>
                     <input id="ev_end_time" type="time" value="10:00" />
                 </div>
+            </div>
+            <div class="form-group" style="margin-top:2px;">
+                <button type="button" id="ev_allday_btn" class="allday-toggle active" onclick="toggleAllDay()">
+                    <span class="allday-toggle-dot"></span>
+                    <span id="ev_allday_label">@Localizer["AllDay"]</span>
+                </button>
+                <input type="hidden" id="ev_allday" value="true" />
             </div>
             <div class="form-group">
                 <label>@Localizer["EventLocation"]</label>
@@ -208,6 +208,32 @@
 .color-swatch:hover { transform:scale(1.15); }
 .color-swatch input { display:none; }
 .color-swatch:has(input:checked) { border-color:var(--text); box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text); }
+
+/* All-day toggle button */
+.allday-toggle {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 14px; border-radius:999px; border:1.5px solid var(--border);
+    background:var(--bg); cursor:pointer; font-size:13px; font-weight:600;
+    color:var(--text-muted); transition:all .18s; user-select:none;
+}
+.allday-toggle:hover { border-color:var(--accent); color:var(--text); }
+.allday-toggle.active {
+    background:var(--accent); border-color:var(--accent); color:#fff;
+}
+.allday-toggle-dot {
+    width:10px; height:10px; border-radius:50%;
+    border:2px solid currentColor; transition:all .18s;
+}
+.allday-toggle.active .allday-toggle-dot {
+    background:#fff; border-color:#fff;
+}
+
+/* Greyed-out time inputs when all-day */
+#ev_start_time:disabled,
+#ev_end_time:disabled {
+    opacity:.4; pointer-events:none; background:var(--bg);
+    color:var(--text-light); border-style:dashed;
+}
 </style>
 
 @section Scripts {
@@ -385,10 +411,10 @@ function openEventForm(ev) {
     document.getElementById('ev_end').value = ev ? (ev.EndDate || '') : '';
     document.getElementById('ev_location').value = ev ? (ev.Location || '') : '';
     const isAllDay = ev ? ev.IsAllDay : true;
-    document.getElementById('ev_allday').checked = isAllDay;
+    document.getElementById('ev_allday').value = isAllDay ? 'true' : 'false';
     document.getElementById('ev_start_time').value = ev && ev.StartTime ? ev.StartTime : '09:00';
     document.getElementById('ev_end_time').value = ev && ev.EndTime ? ev.EndTime : '10:00';
-    document.getElementById('timeRow').style.display = isAllDay ? 'none' : 'grid';
+    applyAllDayState(isAllDay);
     const color = ev ? ev.Color : '#6366f1';
     const radio = document.querySelector(`input[name="evColor"][value="${color}"]`);
     if (radio) radio.checked = true;
@@ -398,8 +424,19 @@ function openEventForm(ev) {
 }
 
 function toggleAllDay() {
-    const allDay = document.getElementById('ev_allday').checked;
-    document.getElementById('timeRow').style.display = allDay ? 'none' : 'grid';
+    const current = document.getElementById('ev_allday').value === 'true';
+    const next = !current;
+    document.getElementById('ev_allday').value = next ? 'true' : 'false';
+    applyAllDayState(next);
+}
+
+function applyAllDayState(isAllDay) {
+    const btn = document.getElementById('ev_allday_btn');
+    const st = document.getElementById('ev_start_time');
+    const et = document.getElementById('ev_end_time');
+    btn.classList.toggle('active', isAllDay);
+    st.disabled = isAllDay;
+    et.disabled = isAllDay;
 }
 
 async function saveEvent() {
@@ -407,7 +444,7 @@ async function saveEvent() {
     if (!title) { alert(L.titleRequired); return; }
 
     const id = parseInt(document.getElementById('ev_id').value);
-    const isAllDay = document.getElementById('ev_allday').checked;
+    const isAllDay = document.getElementById('ev_allday').value === 'true';
     const body = {
         title,
         description: document.getElementById('ev_desc').value.trim() || null,
