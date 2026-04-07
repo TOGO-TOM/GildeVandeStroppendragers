@@ -307,12 +307,12 @@ function authHeaders() {
 
 const browserLocale = document.documentElement.lang || navigator.language || 'nl';
 function fmtLocalDate(isoStr) {
-    if (!isoStr) return '—';
+    if (!isoStr) return '\u2014';
     const d = new Date(isoStr + 'T00:00:00');
     return d.toLocaleDateString(browserLocale, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
 }
 function fmtLocalDateShort(isoStr) {
-    if (!isoStr) return '—';
+    if (!isoStr) return '\u2014';
     const d = new Date(isoStr + 'T00:00:00');
     return d.toLocaleDateString(browserLocale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
@@ -354,8 +354,8 @@ function renderCalendar() {
         const dayEvents = getEventsForDate(dateStr);
         const dots = dayEvents.slice(0, 3).map(e => {
             const timeLabel = !e.IsAllDay && e.StartTime ? fmtLocalTime(e.StartTime) + ' ' : '';
-            const tipDate = fmtLocalDateShort(e.StartDate) + (e.EndDate && e.EndDate !== e.StartDate ? ' ? ' + fmtLocalDateShort(e.EndDate) : '');
-            const tipTime = !e.IsAllDay && e.StartTime ? (fmtLocalTime(e.StartTime) + (e.EndTime ? ' – ' + fmtLocalTime(e.EndTime) : '')) : L.allDay;
+            const tipDate = fmtLocalDateShort(e.StartDate) + (e.EndDate && e.EndDate !== e.StartDate ? ' \u2192 ' + fmtLocalDateShort(e.EndDate) : '');
+            const tipTime = !e.IsAllDay && e.StartTime ? (fmtLocalTime(e.StartTime) + (e.EndTime ? ' \u2013 ' + fmtLocalTime(e.EndTime) : '')) : L.allDay;
             const tipLoc  = e.Location || '';
             return `<div class="cal-event-dot" style="background:${e.Color}" onclick="event.stopPropagation();viewEvent(${e.Id})"
                 data-tip-title="${e.Title.replace(/"/g,'&quot;')}" data-tip-date="${tipDate}" data-tip-time="${tipTime}" data-tip-loc="${tipLoc}">${timeLabel}${e.Title}</div>`;
@@ -415,7 +415,7 @@ function showDayPanel(dateStr) {
                     <div class="cal-event-card-meta">
                         ${!e.IsAllDay && e.StartTime ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-clock"/></svg>' + fmtLocalTime(e.StartTime) + (e.EndTime ? ' \u2013 ' + fmtLocalTime(e.EndTime) : '') + ' &middot; ' : ''}
                         ${e.Location ? '<svg class="icon icon-sm" style="vertical-align:-2px;margin-right:2px;"><use href="#icon-location"/></svg>' + e.Location + ' &middot; ' : ''}
-                        ${fmtLocalDateShort(e.StartDate)}${e.EndDate && e.EndDate !== e.StartDate ? ' ? ' + fmtLocalDateShort(e.EndDate) : ''}
+                        ${fmtLocalDateShort(e.StartDate)}${e.EndDate && e.EndDate !== e.StartDate ? ' \u2192 ' + fmtLocalDateShort(e.EndDate) : ''}
                     </div>
                 </div>
             </div>`).join('');
@@ -544,7 +544,7 @@ function viewEvent(id) {
         <div class="info-grid">
             <div class="info-block"><div class="info-label">${L.startDate}</div><div class="info-value">${fmtLocalDate(ev.StartDate)}${ev.StartTime ? ' &middot; ' + fmtLocalTime(ev.StartTime) : ''}</div></div>
             <div class="info-block"><div class="info-label">${L.endDate}</div><div class="info-value">${ev.EndDate ? fmtLocalDate(ev.EndDate) + (ev.EndTime ? ' &middot; ' + fmtLocalTime(ev.EndTime) : '') : '\u2014'}</div></div>
-            <div class="info-block"><div class="info-label">${L.location}</div><div class="info-value">${ev.Location || '—'}</div></div>
+            <div class="info-block"><div class="info-label">${L.location}</div><div class="info-value">${ev.Location || '\u2014'}</div></div>
             <div class="info-block"><div class="info-label">${L.createdBy}</div><div class="info-value">${ev.CreatedByUsername}</div></div>
         </div>
         ${ev.Description ? `<div style="margin-top:16px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;color:var(--text);">${ev.Description.replace(/\n/g, '<br>')}</div>` : ''}`;
