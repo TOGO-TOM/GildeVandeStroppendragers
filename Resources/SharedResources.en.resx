@@ -714,4 +714,33 @@
   <data name="CreatedBy" xml:space="preserve"><value>Created by</value></data>
   <data name="StartTime" xml:space="preserve"><value>Start Time</value></data>
   <data name="EndTime" xml:space="preserve"><value>End Time</value></data>
+  <data name="EmailSettings" xml:space="preserve"><value>Email Settings</value></data>
+  <data name="EmailSettingsDescription" xml:space="preserve"><value>Configure the email provider used for sending password resets and notifications.</value></data>
+  <data name="EmailConfiguration" xml:space="preserve"><value>Configuration</value></data>
+  <data name="EmailProvider" xml:space="preserve"><value>Provider</value></data>
+  <data name="EmailProviderDescription" xml:space="preserve"><value>Choose how the application authenticates with your email server.</value></data>
+  <data name="SmtpHost" xml:space="preserve"><value>SMTP Host</value></data>
+  <data name="SmtpHostDescription" xml:space="preserve"><value>The hostname of the SMTP server (e.g. smtp.sendgrid.net).</value></data>
+  <data name="SmtpPort" xml:space="preserve"><value>SMTP Port</value></data>
+  <data name="SmtpPortDescription" xml:space="preserve"><value>Usually 587 (StartTLS) or 465 (SSL).</value></data>
+  <data name="UseSsl" xml:space="preserve"><value>Use SSL / TLS</value></data>
+  <data name="UseSslDescription" xml:space="preserve"><value>Enable StartTLS encryption for the SMTP connection.</value></data>
+  <data name="SmtpUsername" xml:space="preserve"><value>Username</value></data>
+  <data name="SmtpUsernameDescription" xml:space="preserve"><value>SMTP login username.</value></data>
+  <data name="SmtpPassword" xml:space="preserve"><value>Password</value></data>
+  <data name="SmtpPasswordDescription" xml:space="preserve"><value>SMTP login password. Leave empty to keep the current value.</value></data>
+  <data name="ApiKey" xml:space="preserve"><value>API Key</value></data>
+  <data name="ApiKeyDescription" xml:space="preserve"><value>The API key from your email provider (e.g. SendGrid). Leave empty to keep the current value.</value></data>
+  <data name="FromAddress" xml:space="preserve"><value>From Address</value></data>
+  <data name="FromAddressDescription" xml:space="preserve"><value>The sender email address shown to recipients.</value></data>
+  <data name="FromName" xml:space="preserve"><value>From Name</value></data>
+  <data name="FromNameDescription" xml:space="preserve"><value>The sender display name shown to recipients.</value></data>
+  <data name="TestEmail" xml:space="preserve"><value>Test</value></data>
+  <data name="SendTestEmail" xml:space="preserve"><value>Send Test Email</value></data>
+  <data name="RecipientEmail" xml:space="preserve"><value>Recipient Email</value></data>
+  <data name="RecipientEmailDescription" xml:space="preserve"><value>Enter an email address to send a test message to.</value></data>
+  <data name="SendTest" xml:space="preserve"><value>Send Test</value></data>
+  <data name="Sending" xml:space="preserve"><value>Sending…</value></data>
+  <data name="TestEmailSent" xml:space="preserve"><value>Test email sent successfully!</value></data>
+  <data name="TestEmailFailed" xml:space="preserve"><value>Failed to send test email.</value></data>
 </root>

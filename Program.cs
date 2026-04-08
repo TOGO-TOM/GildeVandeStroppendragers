@@ -86,6 +86,7 @@ builder.Services.AddScoped<StockExportService>();
 builder.Services.AddScoped<AuditLogService>();
 builder.Services.AddScoped<PasswordPolicyService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TotpService>();
 builder.Services.AddScoped<MemberDocumentService>();

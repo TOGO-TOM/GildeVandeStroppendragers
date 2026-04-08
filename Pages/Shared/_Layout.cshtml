@@ -62,6 +62,7 @@
         @if (layoutUser?.Roles?.Contains("Super Admin") == true)
         {
             <a href="/Admin/AuditLogs" class="@(layoutPage == "admin-audit" ? "active" : "")">@Localizer["AuditLogs"]</a>
+            <a href="/Admin/EmailSettings" class="@(layoutPage == "email-settings" ? "active" : "")">@Localizer["EmailSettings"]</a>
         }
         <a href="/Settings" class="@(layoutPage == "settings" ? "active" : "")">@Localizer["Settings"]</a>
     </nav>
@@ -127,6 +128,7 @@
     @if (layoutUser?.Roles?.Contains("Super Admin") == true)
     {
         <a href="/Admin/AuditLogs" class="mobile-nav-item @(layoutPage == "admin-audit" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["AuditLogs"]</a>
+        <a href="/Admin/EmailSettings" class="mobile-nav-item @(layoutPage == "email-settings" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["EmailSettings"]</a>
     }
     <a href="/Settings" class="mobile-nav-item @(layoutPage == "settings" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Settings"]</a>
     @if (layoutUser != null)

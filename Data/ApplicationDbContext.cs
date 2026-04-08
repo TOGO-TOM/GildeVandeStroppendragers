@@ -26,6 +26,7 @@ namespace AdminMembers.Data
         public DbSet<StockItem> StockItems { get; set; }
         public DbSet<StockMovement> StockMovements { get; set; }
         public DbSet<AgendaEvent> AgendaEvents { get; set; }
+        public DbSet<EmailSettings> EmailSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -226,6 +227,19 @@ namespace AdminMembers.Data
                 entity.Property(e => e.Color).HasMaxLength(20);
                 entity.Property(e => e.CreatedByUsername).IsRequired().HasMaxLength(100);
                 entity.HasIndex(e => e.StartDate);
+            });
+
+            modelBuilder.Entity<EmailSettings>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("EmailSettings");
+                entity.Property(e => e.Provider).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.SmtpHost).HasMaxLength(200);
+                entity.Property(e => e.Username).HasMaxLength(200);
+                entity.Property(e => e.Password).HasMaxLength(500);
+                entity.Property(e => e.ApiKey).HasMaxLength(500);
+                entity.Property(e => e.FromAddress).HasMaxLength(200);
+                entity.Property(e => e.FromName).HasMaxLength(200);
             });
 
             // Seed default roles

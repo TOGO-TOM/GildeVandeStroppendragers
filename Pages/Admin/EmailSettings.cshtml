@@ -1,0 +1,311 @@
+@page
+@model AdminMembers.Pages.Admin.EmailSettingsModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Localizer["EmailSettings"];
+    ViewData["LayoutPage"] = "email-settings";
+    ViewData["LayoutUser"] = Model.CurrentUser;
+}
+
+<div class="page-body-full settings-page">
+
+    <div class="page-heading">
+        <h1>@Localizer["EmailSettings"]</h1>
+        <p>@Localizer["EmailSettingsDescription"]</p>
+    </div>
+
+    <div class="settings-grid">
+
+        <!-- NAV -->
+        <div class="settings-nav card">
+            <a class="settings-nav-item active" href="#" onclick="showSection('config',this)">
+                <span class="nav-icon">&#9993;&#65039;</span> @Localizer["EmailConfiguration"]
+            </a>
+            <a class="settings-nav-item" href="#" onclick="showSection('test',this)">
+                <span class="nav-icon">&#128232;</span> @Localizer["TestEmail"]
+            </a>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="settings-content">
+
+            <!-- Email Configuration -->
+            <div id="sec-config" class="settings-section active">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">@Localizer["EmailConfiguration"]</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="emailForm" onsubmit="saveEmailSettings(event)">
+
+                            <!-- Provider -->
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["EmailProvider"]</div>
+                                    <div class="settings-row-desc">@Localizer["EmailProviderDescription"]</div>
+                                </div>
+                                <select id="emailProvider" onchange="toggleProviderFields()" style="width:240px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;">
+                                    <option value="Smtp">SMTP (Username / Password)</option>
+                                    <option value="ApiKey">SMTP + API Key (SendGrid)</option>
+                                    <option value="MailerSend">MailerSend (HTTP API)</option>
+                                </select>
+                            </div>
+
+                            <!-- SMTP Host -->
+                            <div id="smtpHostRow" class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["SmtpHost"]</div>
+                                    <div class="settings-row-desc">@Localizer["SmtpHostDescription"]</div>
+                                </div>
+                                <input id="smtpHost" type="text" placeholder="smtp.sendgrid.net" style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                            </div>
+
+                            <!-- SMTP Port -->
+                            <div id="smtpPortRow" class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["SmtpPort"]</div>
+                                    <div class="settings-row-desc">@Localizer["SmtpPortDescription"]</div>
+                                </div>
+                                <input id="smtpPort" type="number" value="587" min="1" max="65535" style="width:120px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                            </div>
+
+                            <!-- Use SSL -->
+                            <div id="useSslRow" class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["UseSsl"]</div>
+                                    <div class="settings-row-desc">@Localizer["UseSslDescription"]</div>
+                                </div>
+                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                    <input id="useSsl" type="checkbox" checked />
+                                    <span style="font-size:13px;">StartTLS</span>
+                                </label>
+                            </div>
+
+                            <!-- Username (SMTP mode) -->
+                            <div id="smtpCredentials">
+                                <div class="settings-row">
+                                    <div>
+                                        <div class="settings-row-label">@Localizer["SmtpUsername"]</div>
+                                        <div class="settings-row-desc">@Localizer["SmtpUsernameDescription"]</div>
+                                    </div>
+                                    <input id="smtpUsername" type="text" placeholder="" style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                                </div>
+                                <div class="settings-row">
+                                    <div>
+                                        <div class="settings-row-label">@Localizer["SmtpPassword"]</div>
+                                        <div class="settings-row-desc">@Localizer["SmtpPasswordDescription"]</div>
+                                    </div>
+                                    <input id="smtpPassword" type="password" placeholder="" style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                                </div>
+                            </div>
+
+                            <!-- API Key (ApiKey mode) -->
+                            <div id="apiKeySection" style="display:none;">
+                                <div class="settings-row">
+                                    <div>
+                                        <div class="settings-row-label">@Localizer["ApiKey"]</div>
+                                        <div class="settings-row-desc">@Localizer["ApiKeyDescription"]</div>
+                                    </div>
+                                    <input id="apiKey" type="password" placeholder="SG.xxxx..." style="width:340px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                                </div>
+                            </div>
+
+                            <!-- From Address -->
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["FromAddress"]</div>
+                                    <div class="settings-row-desc">@Localizer["FromAddressDescription"]</div>
+                                </div>
+                                <input id="fromAddress" type="email" placeholder="noreply@@example.com" style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                            </div>
+
+                            <!-- From Name -->
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["FromName"]</div>
+                                    <div class="settings-row-desc">@Localizer["FromNameDescription"]</div>
+                                </div>
+                                <input id="fromName" type="text" placeholder="Gilde Van De Stroppendragers" style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                            </div>
+
+                            <div class="settings-row" style="border-bottom:none;padding-bottom:0;justify-content:flex-end;gap:12px;align-items:center;">
+                                <span id="emailStatus" style="font-size:12px;color:var(--text-muted);"></span>
+                                <button type="submit" class="btn btn-accent">&#10003; @Localizer["SaveSettings"]</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Email -->
+            <div id="sec-test" class="settings-section">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">@Localizer["SendTestEmail"]</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="testEmailForm" onsubmit="sendTestEmail(event)">
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["RecipientEmail"]</div>
+                                    <div class="settings-row-desc">@Localizer["RecipientEmailDescription"]</div>
+                                </div>
+                                <input id="testToEmail" type="email" placeholder="test@@example.com" required style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                            </div>
+                            <div class="settings-row" style="border-bottom:none;padding-bottom:0;justify-content:flex-end;gap:12px;align-items:center;">
+                                <span id="testStatus" style="font-size:12px;color:var(--text-muted);"></span>
+                                <button type="submit" class="btn btn-accent">&#128232; @Localizer["SendTest"]</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const pageToken = '@Model.AuthToken';
+const L = {
+    saving: '@Html.Raw(Localizer["Saving"].Value.Replace("'", "\\'"))',
+    saved: '@Html.Raw(Localizer["Saved"].Value.Replace("'", "\\'"))',
+    saveFailed: '@Html.Raw(Localizer["SaveFailed"].Value.Replace("'", "\\'"))',
+    requestFailed: '@Html.Raw(Localizer["RequestFailed"].Value.Replace("'", "\\'"))',
+    sending: '@Html.Raw(Localizer["Sending"].Value.Replace("'", "\\'"))',
+    testSent: '@Html.Raw(Localizer["TestEmailSent"].Value.Replace("'", "\\'"))',
+    testFailed: '@Html.Raw(Localizer["TestEmailFailed"].Value.Replace("'", "\\'"))',
+};
+
+function showSection(id, el) {
+    event.preventDefault();
+    document.querySelectorAll('.settings-section').forEach(s => {
+        s.style.opacity = '0';
+        s.style.transform = 'translateY(6px)';
+        setTimeout(() => s.classList.remove('active'), 150);
+    });
+    document.querySelectorAll('.settings-nav-item').forEach(a => a.classList.remove('active'));
+    setTimeout(() => {
+        const target = document.getElementById('sec-' + id);
+        target.classList.add('active');
+        requestAnimationFrame(() => { target.style.opacity = '1'; target.style.transform = 'translateY(0)'; });
+    }, 160);
+    el.classList.add('active');
+}
+
+function toggleProviderFields() {
+    const provider = document.getElementById('emailProvider').value;
+    const isMailerSend = provider === 'MailerSend';
+    const isApiKey     = provider === 'ApiKey';
+    const isSmtp       = provider === 'Smtp';
+
+    // SMTP host/port/ssl are needed for Smtp and ApiKey, but not MailerSend
+    document.getElementById('smtpHostRow').style.display    = isMailerSend ? 'none' : '';
+    document.getElementById('smtpPortRow').style.display    = isMailerSend ? 'none' : '';
+    document.getElementById('useSslRow').style.display      = isMailerSend ? 'none' : '';
+
+    // Username/password only for plain SMTP
+    document.getElementById('smtpCredentials').style.display = isSmtp ? '' : 'none';
+
+    // API key for ApiKey (SMTP) and MailerSend
+    document.getElementById('apiKeySection').style.display   = (isApiKey || isMailerSend) ? '' : 'none';
+}
+
+// Load existing settings on page load
+async function loadEmailSettings() {
+    try {
+        const r = await fetch('/api/settings/email', {
+            headers: { ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}) }
+        });
+        if (!r.ok) return;
+        const s = await r.json();
+        document.getElementById('emailProvider').value = s.Provider || 'Smtp';
+        document.getElementById('smtpHost').value      = s.SmtpHost || '';
+        document.getElementById('smtpPort').value      = s.SmtpPort || 587;
+        document.getElementById('useSsl').checked      = s.UseSsl !== false;
+        document.getElementById('smtpUsername').value   = s.Username || '';
+        document.getElementById('apiKey').value         = s.ApiKey || '';
+        document.getElementById('fromAddress').value   = s.FromAddress || '';
+        document.getElementById('fromName').value      = s.FromName || '';
+        toggleProviderFields();
+    } catch { /* ignore load errors */ }
+}
+
+async function saveEmailSettings(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById('emailStatus');
+    statusEl.textContent = L.saving;
+    statusEl.style.color = '';
+
+    const body = {
+        provider:    document.getElementById('emailProvider').value,
+        smtpHost:    document.getElementById('smtpHost').value,
+        smtpPort:    parseInt(document.getElementById('smtpPort').value) || 587,
+        useSsl:      document.getElementById('useSsl').checked,
+        username:    document.getElementById('smtpUsername').value,
+        password:    document.getElementById('smtpPassword').value,
+        apiKey:      document.getElementById('apiKey').value,
+        fromAddress: document.getElementById('fromAddress').value,
+        fromName:    document.getElementById('fromName').value,
+    };
+
+    try {
+        const r = await fetch('/api/settings/email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {})
+            },
+            body: JSON.stringify(body)
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) {
+            statusEl.style.color = 'green';
+            statusEl.textContent = L.saved;
+            setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = ''; }, 3000);
+        } else {
+            statusEl.style.color = 'red';
+            statusEl.textContent = data.error ?? L.saveFailed;
+        }
+    } catch {
+        statusEl.style.color = 'red';
+        statusEl.textContent = L.requestFailed;
+    }
+}
+
+async function sendTestEmail(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById('testStatus');
+    statusEl.textContent = L.sending;
+    statusEl.style.color = '';
+
+    try {
+        const r = await fetch('/api/settings/email/test', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {})
+            },
+            body: JSON.stringify({ toEmail: document.getElementById('testToEmail').value })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) {
+            statusEl.style.color = 'green';
+            statusEl.textContent = L.testSent;
+            setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = ''; }, 4000);
+        } else {
+            statusEl.style.color = 'red';
+            statusEl.textContent = data.error ?? L.testFailed;
+        }
+    } catch {
+        statusEl.style.color = 'red';
+        statusEl.textContent = L.requestFailed;
+    }
+}
+
+loadEmailSettings();
+</script>
+}

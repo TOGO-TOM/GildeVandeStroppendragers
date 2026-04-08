@@ -714,4 +714,33 @@
   <data name="CreatedBy" xml:space="preserve"><value>Aangemaakt door</value></data>
   <data name="StartTime" xml:space="preserve"><value>Starttijd</value></data>
   <data name="EndTime" xml:space="preserve"><value>Eindtijd</value></data>
+  <data name="EmailSettings" xml:space="preserve"><value>E-mailinstellingen</value></data>
+  <data name="EmailSettingsDescription" xml:space="preserve"><value>Configureer de e-mailprovider die wordt gebruikt voor het verzenden van wachtwoordresets en meldingen.</value></data>
+  <data name="EmailConfiguration" xml:space="preserve"><value>Configuratie</value></data>
+  <data name="EmailProvider" xml:space="preserve"><value>Provider</value></data>
+  <data name="EmailProviderDescription" xml:space="preserve"><value>Kies hoe de applicatie zich authenticeert bij uw e-mailserver.</value></data>
+  <data name="SmtpHost" xml:space="preserve"><value>SMTP Host</value></data>
+  <data name="SmtpHostDescription" xml:space="preserve"><value>De hostnaam van de SMTP-server (bijv. smtp.sendgrid.net).</value></data>
+  <data name="SmtpPort" xml:space="preserve"><value>SMTP Poort</value></data>
+  <data name="SmtpPortDescription" xml:space="preserve"><value>Meestal 587 (StartTLS) of 465 (SSL).</value></data>
+  <data name="UseSsl" xml:space="preserve"><value>SSL / TLS gebruiken</value></data>
+  <data name="UseSslDescription" xml:space="preserve"><value>Schakel StartTLS-encryptie in voor de SMTP-verbinding.</value></data>
+  <data name="SmtpUsername" xml:space="preserve"><value>Gebruikersnaam</value></data>
+  <data name="SmtpUsernameDescription" xml:space="preserve"><value>SMTP inlog-gebruikersnaam.</value></data>
+  <data name="SmtpPassword" xml:space="preserve"><value>Wachtwoord</value></data>
+  <data name="SmtpPasswordDescription" xml:space="preserve"><value>SMTP inlog-wachtwoord. Laat leeg om de huidige waarde te behouden.</value></data>
+  <data name="ApiKey" xml:space="preserve"><value>API Sleutel</value></data>
+  <data name="ApiKeyDescription" xml:space="preserve"><value>De API-sleutel van uw e-mailprovider (bijv. SendGrid). Laat leeg om de huidige waarde te behouden.</value></data>
+  <data name="FromAddress" xml:space="preserve"><value>Afzenderadres</value></data>
+  <data name="FromAddressDescription" xml:space="preserve"><value>Het e-mailadres van de afzender dat ontvangers zien.</value></data>
+  <data name="FromName" xml:space="preserve"><value>Afzendernaam</value></data>
+  <data name="FromNameDescription" xml:space="preserve"><value>De weergavenaam van de afzender die ontvangers zien.</value></data>
+  <data name="TestEmail" xml:space="preserve"><value>Test</value></data>
+  <data name="SendTestEmail" xml:space="preserve"><value>Test e-mail verzenden</value></data>
+  <data name="RecipientEmail" xml:space="preserve"><value>Ontvanger e-mail</value></data>
+  <data name="RecipientEmailDescription" xml:space="preserve"><value>Voer een e-mailadres in om een testbericht naar te sturen.</value></data>
+  <data name="SendTest" xml:space="preserve"><value>Test verzenden</value></data>
+  <data name="Sending" xml:space="preserve"><value>Verzenden…</value></data>
+  <data name="TestEmailSent" xml:space="preserve"><value>Test e-mail succesvol verzonden!</value></data>
+  <data name="TestEmailFailed" xml:space="preserve"><value>Kon de test e-mail niet verzenden.</value></data>
 </root>

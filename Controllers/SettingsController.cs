@@ -349,5 +349,132 @@ namespace AdminMembers.Controllers
                 return StatusCode(500, new { error = "Failed to delete custom field" });
             }
         }
+
+        // ── Email Settings (Super Admin only) ──────────────────────────
+
+        private bool IsSuperAdmin()
+        {
+            var roles = HttpContext.Request.Headers
+                .TryGetValue("X-User-Roles", out var rolesValue)
+                ? rolesValue.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries)
+                : Array.Empty<string>();
+            return roles.Contains("Super Admin");
+        }
+
+        [HttpGet("email")]
+        public async Task<IActionResult> GetEmailSettings()
+        {
+            if (!IsSuperAdmin())
+                return StatusCode(403, new { error = "Forbidden" });
+
+            var settings = await _context.EmailSettings.FirstOrDefaultAsync();
+
+            if (settings == null)
+                return Ok(new
+                {
+                    Provider = "Smtp",
+                    SmtpHost = "",
+                    SmtpPort = 587,
+                    UseSsl = true,
+                    Username = "",
+                    ApiKey = "",
+                    FromAddress = "",
+                    FromName = ""
+                });
+
+            return Ok(new
+            {
+                settings.Provider,
+                settings.SmtpHost,
+                settings.SmtpPort,
+                settings.UseSsl,
+                settings.Username,
+                ApiKey = !string.IsNullOrEmpty(settings.ApiKey) ? "••••••••" : "",
+                settings.FromAddress,
+                settings.FromName
+            });
+        }
+
+        [HttpPost("email")]
+        public async Task<IActionResult> UpdateEmailSettings([FromBody] EmailSettingsDto dto)
+        {
+            if (!IsSuperAdmin())
+                return StatusCode(403, new { error = "Forbidden" });
+
+            try
+            {
+                var settings = await _context.EmailSettings.FirstOrDefaultAsync();
+
+                if (settings == null)
+                {
+                    settings = new EmailSettings();
+                    _context.EmailSettings.Add(settings);
+                }
+
+                settings.Provider    = dto.Provider ?? "Smtp";
+                settings.SmtpHost    = dto.SmtpHost;
+                settings.SmtpPort    = dto.SmtpPort > 0 ? dto.SmtpPort : 587;
+                settings.UseSsl      = dto.UseSsl;
+                settings.Username    = dto.Username;
+                settings.FromAddress = dto.FromAddress;
+                settings.FromName    = dto.FromName;
+
+                // Only update API key if a real value was sent (not the masked placeholder)
+                if (!string.IsNullOrEmpty(dto.ApiKey) && dto.ApiKey != "••••••••")
+                    settings.ApiKey = dto.ApiKey;
+
+                // Only update password if a real value was sent
+                if (!string.IsNullOrEmpty(dto.Password) && dto.Password != "••••••••")
+                    settings.Password = dto.Password;
+
+                settings.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Email settings saved" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving email settings");
+                return StatusCode(500, new { error = "Failed to save email settings" });
+            }
+        }
+
+        [HttpPost("email/test")]
+        public async Task<IActionResult> SendTestEmail([FromBody] TestEmailDto dto, [FromServices] EmailService emailService)
+        {
+            if (!IsSuperAdmin())
+                return StatusCode(403, new { error = "Forbidden" });
+
+            if (string.IsNullOrWhiteSpace(dto.ToEmail))
+                return BadRequest(new { error = "Email address is required" });
+
+            var success = await emailService.SendEmailAsync(
+                dto.ToEmail,
+                "Test",
+                "Test Email",
+                "<div style='font-family:sans-serif;padding:24px;'><h2>✅ Email Configuration Working</h2><p>This is a test email from your application.</p></div>");
+
+            return success
+                ? Ok(new { success = true, message = "Test email sent" })
+                : StatusCode(500, new { error = "Failed to send test email. Check your email settings." });
+        }
+    }
+
+    public class EmailSettingsDto
+    {
+        public string? Provider { get; set; }
+        public string? SmtpHost { get; set; }
+        public int SmtpPort { get; set; }
+        public bool UseSsl { get; set; }
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+        public string? ApiKey { get; set; }
+        public string? FromAddress { get; set; }
+        public string? FromName { get; set; }
+    }
+
+    public class TestEmailDto
+    {
+        public string? ToEmail { get; set; }
     }
 }
