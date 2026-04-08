@@ -657,6 +657,7 @@
   <data name="UserApproved" xml:space="preserve"><value>User approved.</value></data>
   <data name="RegistrationRejected" xml:space="preserve"><value>Registration request rejected and removed.</value></data>
   <data name="CannotDeleteOwnAccount" xml:space="preserve"><value>You cannot delete your own account.</value></data>
+  <data name="CannotDeleteSuperAdmin" xml:space="preserve"><value>Only a Super Admin can delete another Super Admin.</value></data>
   <data name="FailedDeleteUser" xml:space="preserve"><value>Failed to delete user.</value></data>
   <data name="UserDeleted" xml:space="preserve"><value>User deleted.</value></data>
   <data name="UserCreatedSuccess" xml:space="preserve"><value>User '{0}' created.</value></data>

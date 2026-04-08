@@ -308,4 +308,115 @@ public class AuthServiceTests
         Assert.IsNotNull(user);
         Assert.IsFalse(user.IsActive);
     }
+
+    [TestMethod]
+    public async Task DeleteUser_AdminCannotDeleteSuperAdmin()
+    {
+        using var context = DbContextFactory.Create();
+        var service = CreateService(context);
+
+        // Seed roles
+        var superAdminRole = new Role { Name = "Super Admin", Permission = Permission.ReadWrite };
+        var adminRole = new Role { Name = "Admin", Permission = Permission.ReadWrite };
+        context.Roles.AddRange(superAdminRole, adminRole);
+        await context.SaveChangesAsync();
+
+        // Seed a Super Admin target user
+        var targetUser = new User { Username = "superadmin", Email = "sa@test.be", PasswordHash = "hash", IsActive = true, CreatedAt = DateTime.UtcNow };
+        // Seed an Admin acting user
+        var actingUser = new User { Username = "admin", Email = "admin@test.be", PasswordHash = "hash", IsActive = true, CreatedAt = DateTime.UtcNow };
+        context.Users.AddRange(targetUser, actingUser);
+        await context.SaveChangesAsync();
+
+        context.UserRoles.Add(new UserRole { UserId = targetUser.Id, RoleId = superAdminRole.Id });
+        context.UserRoles.Add(new UserRole { UserId = actingUser.Id, RoleId = adminRole.Id });
+        await context.SaveChangesAsync();
+
+        var result = await service.DeleteUserAsync(targetUser.Id, actingUser.Id, "admin", "127.0.0.1");
+
+        Assert.IsFalse(result, "An Admin should not be able to delete a Super Admin");
+        var stillExists = await service.GetRawUserByIdAsync(targetUser.Id);
+        Assert.IsNotNull(stillExists, "Super Admin user should still exist");
+    }
+
+    [TestMethod]
+    public async Task DeleteUser_SuperAdminCanDeleteSuperAdmin()
+    {
+        using var context = DbContextFactory.Create();
+        var service = CreateService(context);
+
+        var superAdminRole = new Role { Name = "Super Admin", Permission = Permission.ReadWrite };
+        context.Roles.Add(superAdminRole);
+        await context.SaveChangesAsync();
+
+        var targetUser = new User { Username = "superadmin1", Email = "sa1@test.be", PasswordHash = "hash", IsActive = true, CreatedAt = DateTime.UtcNow };
+        var actingUser = new User { Username = "superadmin2", Email = "sa2@test.be", PasswordHash = "hash", IsActive = true, CreatedAt = DateTime.UtcNow };
+        context.Users.AddRange(targetUser, actingUser);
+        await context.SaveChangesAsync();
+
+        context.UserRoles.Add(new UserRole { UserId = targetUser.Id, RoleId = superAdminRole.Id });
+        context.UserRoles.Add(new UserRole { UserId = actingUser.Id, RoleId = superAdminRole.Id });
+        await context.SaveChangesAsync();
+
+        var result = await service.DeleteUserAsync(targetUser.Id, actingUser.Id, "superadmin2", "127.0.0.1");
+
+        Assert.IsTrue(result, "A Super Admin should be able to delete another Super Admin");
+        var deleted = await service.GetRawUserByIdAsync(targetUser.Id);
+        Assert.IsNull(deleted, "Target Super Admin should be deleted");
+    }
+
+    [TestMethod]
+    public async Task DeactivateUser_AdminCannotDeactivateSuperAdmin()
+    {
+        using var context = DbContextFactory.Create();
+        var service = CreateService(context);
+
+        var superAdminRole = new Role { Name = "Super Admin", Permission = Permission.ReadWrite };
+        var adminRole = new Role { Name = "Admin", Permission = Permission.ReadWrite };
+        context.Roles.AddRange(superAdminRole, adminRole);
+        await context.SaveChangesAsync();
+
+        var targetUser = new User { Username = "superadmin", Email = "sa@test.be", PasswordHash = "hash", IsActive = true, CreatedAt = DateTime.UtcNow };
+        var actingUser = new User { Username = "admin", Email = "admin@test.be", PasswordHash = "hash", IsActive = true, CreatedAt = DateTime.UtcNow };
+        context.Users.AddRange(targetUser, actingUser);
+        await context.SaveChangesAsync();
+
+        context.UserRoles.Add(new UserRole { UserId = targetUser.Id, RoleId = superAdminRole.Id });
+        context.UserRoles.Add(new UserRole { UserId = actingUser.Id, RoleId = adminRole.Id });
+        await context.SaveChangesAsync();
+
+        var result = await service.DeactivateUserAsync(targetUser.Id, actingUser.Id, "admin", "127.0.0.1");
+
+        Assert.IsFalse(result, "An Admin should not be able to deactivate a Super Admin");
+        var user = await service.GetRawUserByIdAsync(targetUser.Id);
+        Assert.IsNotNull(user);
+        Assert.IsTrue(user.IsActive, "Super Admin should still be active");
+    }
+
+    [TestMethod]
+    public async Task DeactivateUser_SuperAdminCanDeactivateSuperAdmin()
+    {
+        using var context = DbContextFactory.Create();
+        var service = CreateService(context);
+
+        var superAdminRole = new Role { Name = "Super Admin", Permission = Permission.ReadWrite };
+        context.Roles.Add(superAdminRole);
+        await context.SaveChangesAsync();
+
+        var targetUser = new User { Username = "superadmin1", Email = "sa1@test.be", PasswordHash = "hash", IsActive = true, CreatedAt = DateTime.UtcNow };
+        var actingUser = new User { Username = "superadmin2", Email = "sa2@test.be", PasswordHash = "hash", IsActive = true, CreatedAt = DateTime.UtcNow };
+        context.Users.AddRange(targetUser, actingUser);
+        await context.SaveChangesAsync();
+
+        context.UserRoles.Add(new UserRole { UserId = targetUser.Id, RoleId = superAdminRole.Id });
+        context.UserRoles.Add(new UserRole { UserId = actingUser.Id, RoleId = superAdminRole.Id });
+        await context.SaveChangesAsync();
+
+        var result = await service.DeactivateUserAsync(targetUser.Id, actingUser.Id, "superadmin2", "127.0.0.1");
+
+        Assert.IsTrue(result, "A Super Admin should be able to deactivate another Super Admin");
+        var user = await service.GetRawUserByIdAsync(targetUser.Id);
+        Assert.IsNotNull(user);
+        Assert.IsFalse(user.IsActive, "Target Super Admin should be deactivated");
+    }
 }

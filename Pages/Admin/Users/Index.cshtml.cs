@@ -167,6 +167,17 @@ namespace AdminMembers.Pages.Admin.Users
                 return RedirectToPage();
             }
 
+            // Prevent non-Super Admins from deleting a Super Admin
+            var targetUser = await _context.Users
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (targetUser != null && targetUser.UserRoles.Any(ur => ur.Role.Name == "Super Admin") && !IsSuperAdmin())
+            {
+                ErrorMessage = _localizer["CannotDeleteSuperAdmin"].Value;
+                return RedirectToPage();
+            }
+
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var ok = await _authService.DeleteUserAsync(userId, CurrentUser.Id, CurrentUser.Username, ip);
             if (!ok) ErrorMessage = _localizer["FailedDeleteUser"].Value;

@@ -311,8 +311,20 @@ namespace AdminMembers.Services
         {
             try
             {
-                var user = await _context.Users.FindAsync(userId);
+                var user = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null) return false;
+
+                // Prevent non-Super Admins from deactivating a Super Admin
+                if (user.UserRoles.Any(ur => ur.Role.Name == "Super Admin"))
+                {
+                    var actingUser = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(u => u.Id == deactivatedByUserId);
+                    if (actingUser == null || !actingUser.UserRoles.Any(ur => ur.Role.Name == "Super Admin"))
+                    {
+                        _logger.LogWarning("User {ActingUser} attempted to deactivate Super Admin {TargetUser} without Super Admin rights.", deactivatedByUsername, user.Username);
+                        await _auditLogService.LogActionAsync(deactivatedByUserId, deactivatedByUsername, "Deactivate Denied", "User", userId, $"Attempted to deactivate Super Admin {user.Username} without sufficient privileges", ipAddress);
+                        return false;
+                    }
+                }
 
                 user.IsActive = false;
                 await _context.SaveChangesAsync();
@@ -396,8 +408,20 @@ namespace AdminMembers.Services
         {
             try
             {
-                var user = await _context.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null) return false;
+
+                // Prevent non-Super Admins from deleting a Super Admin
+                if (user.UserRoles.Any(ur => ur.Role.Name == "Super Admin"))
+                {
+                    var actingUser = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(u => u.Id == deletedByUserId);
+                    if (actingUser == null || !actingUser.UserRoles.Any(ur => ur.Role.Name == "Super Admin"))
+                    {
+                        _logger.LogWarning("User {ActingUser} attempted to delete Super Admin {TargetUser} without Super Admin rights.", deletedByUsername, user.Username);
+                        await _auditLogService.LogActionAsync(deletedByUserId, deletedByUsername, "Delete Denied", "User", userId, $"Attempted to delete Super Admin {user.Username} without sufficient privileges", ipAddress);
+                        return false;
+                    }
+                }
 
                 _context.UserRoles.RemoveRange(user.UserRoles);
                 _context.Users.Remove(user);

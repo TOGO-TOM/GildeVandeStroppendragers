@@ -657,6 +657,7 @@
   <data name="UserApproved" xml:space="preserve"><value>Gebruiker goedgekeurd.</value></data>
   <data name="RegistrationRejected" xml:space="preserve"><value>Registratieverzoek geweigerd en verwijderd.</value></data>
   <data name="CannotDeleteOwnAccount" xml:space="preserve"><value>U kunt uw eigen account niet verwijderen.</value></data>
+  <data name="CannotDeleteSuperAdmin" xml:space="preserve"><value>Alleen een Super Admin kan een andere Super Admin verwijderen.</value></data>
   <data name="FailedDeleteUser" xml:space="preserve"><value>Gebruiker verwijderen mislukt.</value></data>
   <data name="UserDeleted" xml:space="preserve"><value>Gebruiker verwijderd.</value></data>
   <data name="UserCreatedSuccess" xml:space="preserve"><value>Gebruiker '{0}' aangemaakt.</value></data>
