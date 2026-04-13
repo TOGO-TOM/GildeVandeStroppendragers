@@ -257,19 +257,41 @@ namespace AdminMembers.Controllers
             try
             {
                 var settings = await _context.AppSettings.FirstOrDefaultAsync();
-                if (_blobStorageService != null && settings?.LogoBlobName != null)
+                if (settings == null)
+                {
+                    _logger.LogWarning("No AppSettings found in database — cannot load logo");
+                    return null;
+                }
+
+                // Try blob storage first
+                if (_blobStorageService != null && !string.IsNullOrEmpty(settings.LogoBlobName))
                 {
                     try
                     {
                         var containerName = _configuration.GetValue<string>("AzureStorageBlob:LogoContainerName") ?? "logos";
-                        return await _blobStorageService.DownloadBlobAsync(containerName, settings.LogoBlobName);
+                        var data = await _blobStorageService.DownloadBlobAsync(containerName, settings.LogoBlobName);
+                        if (data?.Length > 0)
+                        {
+                            _logger.LogInformation("Logo loaded from blob storage ({Bytes} bytes)", data.Length);
+                            return data;
+                        }
                     }
                     catch (Exception ex)
                     {
                         _logger.LogWarning(ex, "Failed to fetch logo from blob storage, falling back to database");
                     }
                 }
-                return settings?.LogoData;
+
+                // Fallback to database
+                if (settings.LogoData?.Length > 0)
+                {
+                    _logger.LogInformation("Logo loaded from database ({Bytes} bytes)", settings.LogoData.Length);
+                    return settings.LogoData;
+                }
+
+                _logger.LogWarning("No logo data available (blob name: {BlobName}, DB data null: {IsNull})",
+                    settings.LogoBlobName, settings.LogoData == null);
+                return null;
             }
             catch (Exception ex)
             {

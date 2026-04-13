@@ -20,13 +20,13 @@ namespace AdminMembers.Services
 {
     public class BoardReportExportService
     {
-        // B&W color scheme
         private const string BlackHex = "000000";
-        private const string DarkGrayHex = "333333";
-        private const string MedGrayHex = "666666";
-        private const string LightGrayHex = "F0F0F0";
+        private const string DarkGrayHex = "2D2D2D";
+        private const string MedGrayHex = "5A5A5A";
+        private const string LightGrayHex = "F5F5F5";
         private const string WhiteHex = "FFFFFF";
-        private const string AgendaBarHex = "D6E4F0"; // light blue bar for agenda items
+        private const string AccentHex = "1B3A5C"; // dark navy accent
+        private const string AccentLightHex = "E8EEF4"; // very light blue for agenda bars
 
         private record AgendaEntry(string Title, string Notes);
 
@@ -46,10 +46,33 @@ namespace AdminMembers.Services
             }
             catch
             {
-                // Fallback: old newline-separated format
                 return agendaJson.Split('\n', StringSplitOptions.RemoveEmptyEntries)
                     .Select(l => new AgendaEntry(l.Trim(), "")).ToList();
             }
+        }
+
+        private static string FormatAttendeeList(IEnumerable<BoardReportAttendee> attendees, bool present)
+        {
+            var names = attendees
+                .Where(a => a.IsPresent == present)
+                .OrderBy(a => a.Member?.FirstName)
+                .Select(a => a.Member != null ? $"{a.Member.FirstName} {a.Member.LastName}" : $"Lid #{a.MemberId}")
+                .ToList();
+            if (names.Count == 0) return "";
+            if (names.Count == 1) return names[0];
+            return string.Join(", ", names.Take(names.Count - 1)) + " en " + names.Last();
+        }
+
+        private static string DetectImageContentType(byte[] data)
+        {
+            if (data.Length >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF)
+                return "image/jpeg";
+            if (data.Length >= 4 && data[0] == 0x47 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x38)
+                return "image/gif";
+            if (data.Length >= 2 && data[0] == 0x42 && data[1] == 0x4D)
+                return "image/bmp";
+            // Default to PNG
+            return "image/png";
         }
 
         // ── Word (.docx) export ─────────────────────────────────────────
@@ -62,114 +85,119 @@ namespace AdminMembers.Services
                 mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
                 var body = mainPart.Document.AppendChild(new Body());
 
-                // Page margins
                 var sectionProps = new SectionProperties(
-                    new PageMargin { Top = 1134, Bottom = 1134, Left = 1134u, Right = 1134u });
+                    new PageMargin { Top = 850, Bottom = 850, Left = 1100u, Right = 1100u });
                 body.AppendChild(sectionProps);
 
-                // Logo in top-right
+                // ── Logo top-right ──
                 if (logoData?.Length > 0)
                 {
                     try
                     {
-                        var imagePart = mainPart.AddImagePart(ImagePartType.Png);
+                        var contentType = DetectImageContentType(logoData);
+                        var imagePart = mainPart.AddImagePart(contentType);
                         using (var ms = new MemoryStream(logoData))
                             imagePart.FeedData(ms);
 
                         var imageId = mainPart.GetIdOfPart(imagePart);
-                        var drawing = CreateWordImage(imageId, 1800000, 900000); // ~1.8cm x 0.9cm
+                        var drawing = CreateWordImage(imageId, 1600000, 800000);
                         var imgRun = new Run(drawing);
                         var imgPara = new Paragraph(
-                            new ParagraphProperties(new Justification { Val = JustificationValues.Right }));
+                            new ParagraphProperties(
+                                new Justification { Val = JustificationValues.Right },
+                                new SpacingBetweenLines { After = "100" }));
                         imgPara.Append(imgRun);
                         body.InsertBefore(imgPara, body.Descendants<SectionProperties>().FirstOrDefault());
                     }
                     catch { /* skip bad logo */ }
                 }
 
-                // Title
-                AddWordParagraph(body, report.Title, 24, true, BlackHex, JustificationValues.Center);
-                AddWordParagraph(body, "Bestuursverslag", 12, false, MedGrayHex, JustificationValues.Center);
-                AddWordSpacer(body);
+                // ── Title ──
+                AddWordParagraph(body, report.Title, 22, true, AccentHex, JustificationValues.Left);
+                // Thin accent line
+                var linePara = new Paragraph();
+                var lineProps = new ParagraphProperties(
+                    new ParagraphBorders(
+                        new BottomBorder { Val = BorderValues.Single, Color = AccentHex, Size = 8, Space = 1 }),
+                    new SpacingBetweenLines { After = "200" });
+                linePara.Append(lineProps);
+                body.InsertBefore(linePara, body.Descendants<SectionProperties>().FirstOrDefault());
 
-                // Meeting details table
-                var detailsTable = CreateWordTable(body);
-                AddWordDetailRow(detailsTable, "Datum", report.MeetingDate.ToString("dddd d MMMM yyyy"));
-                AddWordDetailRow(detailsTable, "Locatie", report.Location);
-                AddWordDetailRow(detailsTable, "Status", report.Status);
-                AddWordDetailRow(detailsTable, "Opgesteld door", report.CreatedByUsername);
-                AddWordSpacer(body);
+                // ── Meeting info block ──
+                AddWordLabelValue(body, "Datum", report.MeetingDate.ToString("dddd d MMMM yyyy"));
+                AddWordLabelValue(body, "Aanvang", report.MeetingDate.ToString("HH:mm") + " uur");
+                AddWordLabelValue(body, "Locatie", report.Location);
+                AddWordLabelValue(body, "Opgesteld door", report.CreatedByUsername);
 
-                // Attendees
+                // ── Attendees inline ──
                 if (report.Attendees?.Any() == true)
                 {
-                    AddWordParagraph(body, "Aanwezigen", 14, true, BlackHex);
+                    var presentList = FormatAttendeeList(report.Attendees, true);
+                    var absentList = FormatAttendeeList(report.Attendees, false);
 
-                    var attendeeTable = CreateWordTable(body);
-                    AddWordHeaderRow(attendeeTable, "Naam", "Status");
-
-                    foreach (var a in report.Attendees.OrderBy(x => x.Member?.FirstName))
-                    {
-                        var name = a.Member != null ? $"{a.Member.FirstName} {a.Member.LastName}" : $"Lid #{a.MemberId}";
-                        AddWordDataRow(attendeeTable, name, a.IsPresent ? "Aanwezig" : "Afwezig");
-                    }
-                    AddWordSpacer(body);
+                    if (!string.IsNullOrEmpty(presentList))
+                        AddWordLabelValue(body, "Aanwezig", presentList);
+                    if (!string.IsNullOrEmpty(absentList))
+                        AddWordLabelValue(body, "Verontschuldigd", absentList);
                 }
+                AddWordSpacer(body);
 
-                // Agenda items — light blue bars with notes
+                // ── Agenda overview ──
                 var agenda = ParseAgendaItems(report.AgendaItems);
                 if (agenda.Count > 0)
                 {
-                    AddWordParagraph(body, "Agendapunten", 14, true, BlackHex);
+                    AddWordSectionHeader(body, "AGENDA");
 
-                    // Summary list of all items
-                    int idx = 1;
-                    foreach (var item in agenda)
+                    for (int i = 0; i < agenda.Count; i++)
                     {
-                        AddWordAgendaBar(body, $"{idx}. {item.Title}");
-                        idx++;
+                        AddWordAgendaBar(body, $"{i + 1}.  {agenda[i].Title}");
                     }
                     AddWordSpacer(body);
 
-                    // Detailed items with notes
-                    bool hasAnyNotes = agenda.Any(a => !string.IsNullOrWhiteSpace(a.Notes));
-                    if (hasAnyNotes)
+                    // ── Detailed agenda items with notes ──
+                    AddWordSectionHeader(body, "VERSLAG");
+
+                    for (int i = 0; i < agenda.Count; i++)
                     {
-                        AddWordParagraph(body, "Verslag per agendapunt", 14, true, BlackHex);
-                        idx = 1;
-                        foreach (var item in agenda)
+                        AddWordAgendaBar(body, $"{i + 1}.  {agenda[i].Title}");
+                        if (!string.IsNullOrWhiteSpace(agenda[i].Notes))
                         {
-                            AddWordAgendaBar(body, $"{idx}. {item.Title}");
-                            if (!string.IsNullOrWhiteSpace(item.Notes))
-                            {
-                                foreach (var line in item.Notes.Split('\n'))
-                                    AddWordParagraph(body, line, 10, false, DarkGrayHex);
-                            }
-                            else
-                            {
-                                AddWordParagraph(body, "—", 10, false, MedGrayHex);
-                            }
-                            idx++;
+                            foreach (var line in agenda[i].Notes.Split('\n'))
+                                AddWordParagraph(body, line, 10, false, MedGrayHex);
                         }
-                        AddWordSpacer(body);
+                        else
+                        {
+                            AddWordParagraph(body, "Geen notities.", 9, false, "999999");
+                        }
                     }
+                    AddWordSpacer(body);
                 }
 
-                // Notes
+                // ── General notes ──
                 if (!string.IsNullOrWhiteSpace(report.Notes))
                 {
-                    AddWordParagraph(body, "Opmerkingen", 14, true, BlackHex);
+                    AddWordSectionHeader(body, "OPMERKINGEN");
                     foreach (var line in report.Notes.Split('\n'))
                         AddWordParagraph(body, line, 10, false, MedGrayHex);
+                    AddWordSpacer(body);
                 }
 
-                // Footer
-                AddWordSpacer(body);
-                AddWordParagraph(body, $"Geëxporteerd op {DateTime.Now:dd/MM/yyyy HH:mm}", 8, false, "999999", JustificationValues.Center);
+                // ── Footer ──
+                var footerPara = new Paragraph();
+                var footerProps = new ParagraphProperties(
+                    new Justification { Val = JustificationValues.Center },
+                    new ParagraphBorders(
+                        new TopBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4, Space = 4 }),
+                    new SpacingBetweenLines { Before = "400" });
+                footerPara.Append(footerProps);
+                var footerRun = new Run(
+                    new RunProperties(new FontSize { Val = "16" }, new Color { Val = "AAAAAA" }),
+                    new Text($"Geëxporteerd op {DateTime.Now:dd/MM/yyyy HH:mm}") { Space = SpaceProcessingModeValues.Preserve });
+                footerPara.Append(footerRun);
+                body.InsertBefore(footerPara, body.Descendants<SectionProperties>().FirstOrDefault());
 
                 mainPart.Document.Save();
             }
-
             return stream.ToArray();
         }
 
@@ -177,184 +205,195 @@ namespace AdminMembers.Services
         public byte[] ExportToPdf(BoardReport report, byte[]? logoData = null)
         {
             using var stream = new MemoryStream();
-            var document = new Document(iTextSharp.text.PageSize.A4, 40, 40, 40, 40);
+            var document = new Document(iTextSharp.text.PageSize.A4, 50, 50, 45, 40);
             var writer = PdfWriter.GetInstance(document, stream);
             document.Open();
 
             // Colors
-            var black = BaseColor.Black;
-            var darkGray = new BaseColor(51, 51, 51);
-            var medGray = new BaseColor(102, 102, 102);
-            var lightGray = new BaseColor(240, 240, 240);
-            var lightBlue = new BaseColor(214, 228, 240); // #D6E4F0
+            var accent = new BaseColor(27, 58, 92);       // #1B3A5C navy
+            var accentLight = new BaseColor(232, 238, 244); // #E8EEF4
+            var dark = new BaseColor(45, 45, 45);
+            var medium = new BaseColor(90, 90, 90);
+            var light = new BaseColor(245, 245, 245);
 
             // Fonts
-            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 22, black);
-            var subFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, medGray);
-            var sectionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 13, black);
-            var bodyFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, darkGray);
-            var boldFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, darkGray);
-            var smallFont = FontFactory.GetFont(FontFactory.HELVETICA, 8, new BaseColor(153, 153, 153));
-            var agendaTitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 11, black);
-            var notesFont = FontFactory.GetFont(FontFactory.HELVETICA, 9, darkGray);
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 20, accent);
+            var labelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9, dark);
+            var valueFont = FontFactory.GetFont(FontFactory.HELVETICA, 9, medium);
+            var sectionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 11, accent);
+            var bodyFont = FontFactory.GetFont(FontFactory.HELVETICA, 9.5f, dark);
+            var agendaTitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, dark);
+            var notesFont = FontFactory.GetFont(FontFactory.HELVETICA, 9, medium);
+            var emptyFont = FontFactory.GetFont(FontFactory.HELVETICA_OBLIQUE, 9, new BaseColor(170, 170, 170));
+            var footerFont = FontFactory.GetFont(FontFactory.HELVETICA, 7.5f, new BaseColor(170, 170, 170));
 
-            // ── Header row: title left, logo right ──
+            // ── Logo top-right ──
             if (logoData?.Length > 0)
             {
                 try
                 {
-                    var headerTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 8 };
-                    headerTable.SetWidths(new float[] { 75, 25 });
+                    var headerTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 4 };
+                    headerTable.SetWidths(new float[] { 70, 30 });
+                    headerTable.AddCell(new PdfPCell { Border = iTextSharp.text.Rectangle.NO_BORDER, MinimumHeight = 10 });
 
-                    // Left cell: empty (title goes below)
-                    headerTable.AddCell(new PdfPCell { Border = iTextSharp.text.Rectangle.NO_BORDER });
-
-                    // Right cell: logo
                     var logo = iTextSharp.text.Image.GetInstance(logoData);
-                    logo.ScaleToFit(120f, 65f);
+                    logo.ScaleToFit(110f, 55f);
                     var logoCell = new PdfPCell(logo)
                     {
                         Border = iTextSharp.text.Rectangle.NO_BORDER,
                         HorizontalAlignment = Element.ALIGN_RIGHT,
-                        VerticalAlignment = Element.ALIGN_MIDDLE,
-                        PaddingBottom = 8
+                        VerticalAlignment = Element.ALIGN_TOP,
+                        PaddingBottom = 4
                     };
                     headerTable.AddCell(logoCell);
                     document.Add(headerTable);
                 }
-                catch { /* skip bad logo */ }
+                catch { /* skip bad logo data */ }
             }
 
-            // Title
+            // ── Title + accent line ──
             document.Add(new iTextSharp.text.Paragraph(report.Title, titleFont)
-                { Alignment = Element.ALIGN_CENTER, SpacingAfter = 2 });
-            document.Add(new iTextSharp.text.Paragraph("Bestuursverslag", subFont)
-                { Alignment = Element.ALIGN_CENTER, SpacingAfter = 12 });
+                { SpacingAfter = 3 });
 
-            // Decorative line
-            var lineTable = new PdfPTable(1) { WidthPercentage = 40, SpacingAfter = 18, HorizontalAlignment = Element.ALIGN_CENTER };
-            lineTable.AddCell(new PdfPCell { BackgroundColor = darkGray, FixedHeight = 1f, Border = iTextSharp.text.Rectangle.NO_BORDER });
-            document.Add(lineTable);
+            var accentLine = new PdfPTable(1) { WidthPercentage = 100, SpacingAfter = 14 };
+            accentLine.AddCell(new PdfPCell
+            {
+                BackgroundColor = accent,
+                FixedHeight = 2.5f,
+                Border = iTextSharp.text.Rectangle.NO_BORDER
+            });
+            document.Add(accentLine);
 
-            // ── Meeting details (bordered box) ──
-            var detailTable = new PdfPTable(2) { WidthPercentage = 60, SpacingAfter = 18, HorizontalAlignment = Element.ALIGN_LEFT };
-            detailTable.SetWidths(new float[] { 35, 65 });
+            // ── Meeting details (clean label: value lines) ──
+            var infoTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 4 };
+            infoTable.SetWidths(new float[] { 22, 78 });
 
-            AddPdfDetailRow(detailTable, "Datum:", report.MeetingDate.ToString("dddd d MMMM yyyy"), boldFont, bodyFont);
-            AddPdfDetailRow(detailTable, "Locatie:", report.Location, boldFont, bodyFont);
-            AddPdfDetailRow(detailTable, "Status:", report.Status, boldFont, bodyFont);
-            AddPdfDetailRow(detailTable, "Opgesteld door:", report.CreatedByUsername, boldFont, bodyFont);
-            document.Add(detailTable);
+            AddPdfInfoRow(infoTable, "Datum", report.MeetingDate.ToString("dddd d MMMM yyyy"), labelFont, valueFont);
+            AddPdfInfoRow(infoTable, "Aanvang", report.MeetingDate.ToString("HH:mm") + " uur", labelFont, valueFont);
+            AddPdfInfoRow(infoTable, "Locatie", report.Location, labelFont, valueFont);
+            AddPdfInfoRow(infoTable, "Opgesteld door", report.CreatedByUsername, labelFont, valueFont);
 
-            // ── Attendees ──
+            // ── Attendees inline ──
             if (report.Attendees?.Any() == true)
             {
-                document.Add(new iTextSharp.text.Paragraph("Aanwezigen", sectionFont) { SpacingBefore = 6, SpacingAfter = 8 });
+                var presentList = FormatAttendeeList(report.Attendees, true);
+                var absentList = FormatAttendeeList(report.Attendees, false);
 
-                var attTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 14 };
-                attTable.SetWidths(new float[] { 70, 30 });
-
-                var thFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9, BaseColor.White);
-                attTable.AddCell(new PdfPCell(new Phrase("Naam", thFont)) { BackgroundColor = darkGray, Padding = 6, BorderColor = darkGray });
-                attTable.AddCell(new PdfPCell(new Phrase("Status", thFont)) { BackgroundColor = darkGray, Padding = 6, HorizontalAlignment = Element.ALIGN_CENTER, BorderColor = darkGray });
-
-                bool alt = false;
-                foreach (var a in report.Attendees.OrderBy(x => x.Member?.FirstName))
-                {
-                    var bg = alt ? lightGray : BaseColor.White;
-                    var name = a.Member != null ? $"{a.Member.FirstName} {a.Member.LastName}" : $"Lid #{a.MemberId}";
-                    var statusLabel = a.IsPresent ? "Aanwezig" : "Afwezig";
-
-                    attTable.AddCell(new PdfPCell(new Phrase(name, bodyFont)) { BackgroundColor = bg, Padding = 5, BorderColor = lightGray });
-                    attTable.AddCell(new PdfPCell(new Phrase(statusLabel, boldFont))
-                        { BackgroundColor = bg, Padding = 5, HorizontalAlignment = Element.ALIGN_CENTER, BorderColor = lightGray });
-
-                    alt = !alt;
-                }
-                document.Add(attTable);
+                if (!string.IsNullOrEmpty(presentList))
+                    AddPdfInfoRow(infoTable, "Aanwezig", presentList, labelFont, valueFont);
+                if (!string.IsNullOrEmpty(absentList))
+                    AddPdfInfoRow(infoTable, "Verontschuldigd", absentList, labelFont, valueFont);
             }
+            document.Add(infoTable);
+            document.Add(new iTextSharp.text.Paragraph(" ") { SpacingAfter = 6 });
 
-            // ── Agenda items — light blue bars with notes underneath ──
+            // ── Agenda overview ──
             var agenda = ParseAgendaItems(report.AgendaItems);
             if (agenda.Count > 0)
             {
-                document.Add(new iTextSharp.text.Paragraph("Agendapunten", sectionFont) { SpacingBefore = 8, SpacingAfter = 8 });
+                AddPdfSectionHeader(document, "AGENDA", sectionFont, accent);
 
-                // First: summary overview of all agenda points
-                var summaryTable = new PdfPTable(1) { WidthPercentage = 100, SpacingAfter = 14 };
+                var summaryTable = new PdfPTable(1) { WidthPercentage = 100, SpacingAfter = 12 };
                 for (int i = 0; i < agenda.Count; i++)
                 {
-                    var summaryCell = new PdfPCell(new Phrase($"  {i + 1}. {agenda[i].Title}", agendaTitleFont))
+                    var cell = new PdfPCell(new Phrase($"  {i + 1}.   {agenda[i].Title}", agendaTitleFont))
                     {
-                        BackgroundColor = lightBlue,
+                        BackgroundColor = accentLight,
                         Border = iTextSharp.text.Rectangle.NO_BORDER,
                         Padding = 7,
-                        PaddingLeft = 12
+                        PaddingLeft = 14
                     };
-                    summaryTable.AddCell(summaryCell);
-                    // Tiny spacer between items
-                    var spacerCell = new PdfPCell { Border = iTextSharp.text.Rectangle.NO_BORDER, FixedHeight = 3 };
-                    summaryTable.AddCell(spacerCell);
+                    summaryTable.AddCell(cell);
+                    summaryTable.AddCell(new PdfPCell { Border = iTextSharp.text.Rectangle.NO_BORDER, FixedHeight = 2 });
                 }
                 document.Add(summaryTable);
 
-                // Then: detailed agenda items with notes
-                bool hasAnyNotes = agenda.Any(a => !string.IsNullOrWhiteSpace(a.Notes));
-                if (hasAnyNotes)
+                // ── Detailed agenda + notes ──
+                AddPdfSectionHeader(document, "VERSLAG", sectionFont, accent);
+
+                for (int i = 0; i < agenda.Count; i++)
                 {
-                    document.Add(new iTextSharp.text.Paragraph("Verslag per agendapunt", sectionFont) { SpacingBefore = 6, SpacingAfter = 8 });
+                    var item = agenda[i];
 
-                    for (int i = 0; i < agenda.Count; i++)
+                    // Title bar
+                    var barTable = new PdfPTable(1) { WidthPercentage = 100, SpacingBefore = 3, SpacingAfter = 2 };
+                    barTable.AddCell(new PdfPCell(new Phrase($"  {i + 1}.   {item.Title}", agendaTitleFont))
                     {
-                        var item = agenda[i];
+                        BackgroundColor = accentLight,
+                        Border = iTextSharp.text.Rectangle.NO_BORDER,
+                        Padding = 7,
+                        PaddingLeft = 14
+                    });
+                    document.Add(barTable);
 
-                        // Agenda item title bar
-                        var barTable = new PdfPTable(1) { WidthPercentage = 100, SpacingBefore = 4, SpacingAfter = 2 };
-                        var barCell = new PdfPCell(new Phrase($"  {i + 1}. {item.Title}", agendaTitleFont))
+                    // Notes text
+                    if (!string.IsNullOrWhiteSpace(item.Notes))
+                    {
+                        foreach (var line in item.Notes.Split('\n'))
                         {
-                            BackgroundColor = lightBlue,
-                            Border = iTextSharp.text.Rectangle.NO_BORDER,
-                            Padding = 7,
-                            PaddingLeft = 12
-                        };
-                        barTable.AddCell(barCell);
-                        document.Add(barTable);
-
-                        // Notes text underneath
-                        if (!string.IsNullOrWhiteSpace(item.Notes))
-                        {
-                            foreach (var line in item.Notes.Split('\n'))
-                            {
-                                document.Add(new iTextSharp.text.Paragraph($"     {line}", notesFont) { SpacingAfter = 2, IndentationLeft = 16 });
-                            }
-                            document.Add(new iTextSharp.text.Paragraph(" ") { SpacingAfter = 4 });
+                            document.Add(new iTextSharp.text.Paragraph(line, notesFont)
+                                { SpacingAfter = 1, IndentationLeft = 18 });
                         }
-                        else
-                        {
-                            document.Add(new iTextSharp.text.Paragraph("     —", FontFactory.GetFont(FontFactory.HELVETICA_OBLIQUE, 9, medGray)) { SpacingAfter = 4, IndentationLeft = 16 });
-                        }
+                        document.Add(new iTextSharp.text.Paragraph(" ") { SpacingAfter = 4 });
+                    }
+                    else
+                    {
+                        document.Add(new iTextSharp.text.Paragraph("Geen notities.", emptyFont)
+                            { SpacingAfter = 6, IndentationLeft = 18 });
                     }
                 }
             }
 
-            // ── General Notes ──
+            // ── General notes ──
             if (!string.IsNullOrWhiteSpace(report.Notes))
             {
-                document.Add(new iTextSharp.text.Paragraph("Opmerkingen", sectionFont) { SpacingBefore = 14, SpacingAfter = 6 });
+                AddPdfSectionHeader(document, "OPMERKINGEN", sectionFont, accent);
                 foreach (var line in report.Notes.Split('\n'))
-                    document.Add(new iTextSharp.text.Paragraph(line, FontFactory.GetFont(FontFactory.HELVETICA_OBLIQUE, 9, medGray)) { SpacingAfter = 2, IndentationLeft = 8 });
+                    document.Add(new iTextSharp.text.Paragraph(line, notesFont) { SpacingAfter = 2, IndentationLeft = 4 });
             }
 
             // ── Footer ──
-            document.Add(new iTextSharp.text.Paragraph(" ") { SpacingAfter = 20 });
+            document.Add(new iTextSharp.text.Paragraph(" ") { SpacingAfter = 18 });
             var footerLine = new PdfPTable(1) { WidthPercentage = 100, SpacingAfter = 6 };
-            footerLine.AddCell(new PdfPCell { BackgroundColor = lightGray, FixedHeight = 1, Border = iTextSharp.text.Rectangle.NO_BORDER });
+            footerLine.AddCell(new PdfPCell
+            {
+                BackgroundColor = new BaseColor(220, 220, 220),
+                FixedHeight = 0.5f,
+                Border = iTextSharp.text.Rectangle.NO_BORDER
+            });
             document.Add(footerLine);
-            document.Add(new iTextSharp.text.Paragraph($"Geëxporteerd op {DateTime.Now:dd/MM/yyyy HH:mm}", smallFont)
+            document.Add(new iTextSharp.text.Paragraph(
+                $"Geëxporteerd op {DateTime.Now:dd/MM/yyyy HH:mm}", footerFont)
                 { Alignment = Element.ALIGN_CENTER });
 
             document.Close();
             return stream.ToArray();
+        }
+
+        // ── PDF helpers ─────────────────────────────────────────────────
+        private static void AddPdfInfoRow(PdfPTable table, string label, string value, Font labelFont, Font valueFont)
+        {
+            table.AddCell(new PdfPCell(new Phrase(label + ":", labelFont))
+            {
+                Border = iTextSharp.text.Rectangle.NO_BORDER,
+                PaddingTop = 3,
+                PaddingBottom = 3,
+                PaddingLeft = 2
+            });
+            table.AddCell(new PdfPCell(new Phrase(value, valueFont))
+            {
+                Border = iTextSharp.text.Rectangle.NO_BORDER,
+                PaddingTop = 3,
+                PaddingBottom = 3
+            });
+        }
+
+        private static void AddPdfSectionHeader(Document document, string text, Font font, BaseColor accentColor)
+        {
+            document.Add(new iTextSharp.text.Paragraph(text, font) { SpacingBefore = 10, SpacingAfter = 2 });
+            var line = new PdfPTable(1) { WidthPercentage = 100, SpacingAfter = 8 };
+            line.AddCell(new PdfPCell { BackgroundColor = accentColor, FixedHeight = 1f, Border = iTextSharp.text.Rectangle.NO_BORDER });
+            document.Add(line);
         }
 
         // ── Word helpers ────────────────────────────────────────────────
@@ -372,7 +411,41 @@ namespace AdminMembers.Services
             run.Append(new Text(text) { Space = SpaceProcessingModeValues.Preserve });
 
             var para = new Paragraph();
-            para.Append(new ParagraphProperties(new Justification { Val = justify }));
+            para.Append(new ParagraphProperties(
+                new Justification { Val = justify },
+                new SpacingBetweenLines { After = "40" }));
+            para.Append(run);
+            body.InsertBefore(para, body.Descendants<SectionProperties>().FirstOrDefault());
+        }
+
+        private static void AddWordLabelValue(Body body, string label, string value)
+        {
+            var para = new Paragraph();
+            para.Append(new ParagraphProperties(new SpacingBetweenLines { After = "20" }));
+
+            var labelRun = new Run(
+                new RunProperties(new Bold(), new FontSize { Val = "18" }, new Color { Val = DarkGrayHex }),
+                new Text(label + ":  ") { Space = SpaceProcessingModeValues.Preserve });
+            var valueRun = new Run(
+                new RunProperties(new FontSize { Val = "18" }, new Color { Val = MedGrayHex }),
+                new Text(value) { Space = SpaceProcessingModeValues.Preserve });
+
+            para.Append(labelRun);
+            para.Append(valueRun);
+            body.InsertBefore(para, body.Descendants<SectionProperties>().FirstOrDefault());
+        }
+
+        private static void AddWordSectionHeader(Body body, string text)
+        {
+            var run = new Run(
+                new RunProperties(new Bold(), new FontSize { Val = "22" }, new Color { Val = AccentHex }),
+                new Text(text) { Space = SpaceProcessingModeValues.Preserve });
+
+            var para = new Paragraph();
+            para.Append(new ParagraphProperties(
+                new SpacingBetweenLines { Before = "240", After = "60" },
+                new ParagraphBorders(
+                    new BottomBorder { Val = BorderValues.Single, Color = AccentHex, Size = 4, Space = 2 })));
             para.Append(run);
             body.InsertBefore(para, body.Descendants<SectionProperties>().FirstOrDefault());
         }
@@ -381,16 +454,16 @@ namespace AdminMembers.Services
         {
             var run = new Run();
             var rp = new RunProperties();
-            rp.Append(new FontSize { Val = "22" });
-            rp.Append(new Color { Val = BlackHex });
+            rp.Append(new FontSize { Val = "20" });
+            rp.Append(new Color { Val = DarkGrayHex });
             rp.Append(new Bold());
             run.Append(rp);
             run.Append(new Text(text) { Space = SpaceProcessingModeValues.Preserve });
 
             var para = new Paragraph();
             var paraProps = new ParagraphProperties();
-            paraProps.Append(new Shading { Val = ShadingPatternValues.Clear, Fill = AgendaBarHex });
-            paraProps.Append(new SpacingBetweenLines { Before = "120", After = "60" });
+            paraProps.Append(new Shading { Val = ShadingPatternValues.Clear, Fill = AccentLightHex });
+            paraProps.Append(new SpacingBetweenLines { Before = "80", After = "40" });
             para.Append(paraProps);
             para.Append(run);
             body.InsertBefore(para, body.Descendants<SectionProperties>().FirstOrDefault());
@@ -399,68 +472,8 @@ namespace AdminMembers.Services
         private static void AddWordSpacer(Body body)
         {
             var para = new Paragraph(new Run(new Text(" ") { Space = SpaceProcessingModeValues.Preserve }));
+            para.Append(new ParagraphProperties(new SpacingBetweenLines { After = "80" }));
             body.InsertBefore(para, body.Descendants<SectionProperties>().FirstOrDefault());
-        }
-
-        private static Table CreateWordTable(Body body)
-        {
-            var table = new Table();
-            var tblProps = new TableProperties(
-                new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct },
-                new TableBorders(
-                    new TopBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
-                    new BottomBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
-                    new LeftBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
-                    new RightBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
-                    new InsideHorizontalBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
-                    new InsideVerticalBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 }));
-            table.Append(tblProps);
-            body.InsertBefore(table, body.Descendants<SectionProperties>().FirstOrDefault());
-            return table;
-        }
-
-        private static void AddWordDetailRow(Table table, string label, string value)
-        {
-            var row = new TableRow();
-
-            var labelCell = new TableCell();
-            var labelRun = new Run(new RunProperties(new Bold(), new FontSize { Val = "20" }, new Color { Val = BlackHex }), new Text(label));
-            labelCell.Append(new Paragraph(labelRun));
-            labelCell.Append(new TableCellProperties(new Shading { Val = ShadingPatternValues.Clear, Fill = LightGrayHex }));
-
-            var valueCell = new TableCell();
-            var valueRun = new Run(new RunProperties(new FontSize { Val = "20" }, new Color { Val = DarkGrayHex }), new Text(value));
-            valueCell.Append(new Paragraph(valueRun));
-
-            row.Append(labelCell, valueCell);
-            table.Append(row);
-        }
-
-        private static void AddWordHeaderRow(Table table, params string[] headers)
-        {
-            var row = new TableRow();
-            foreach (var h in headers)
-            {
-                var cell = new TableCell();
-                var run = new Run(new RunProperties(new Bold(), new FontSize { Val = "18" }, new Color { Val = WhiteHex }), new Text(h));
-                cell.Append(new Paragraph(run));
-                cell.Append(new TableCellProperties(new Shading { Val = ShadingPatternValues.Clear, Fill = BlackHex }));
-                row.Append(cell);
-            }
-            table.Append(row);
-        }
-
-        private static void AddWordDataRow(Table table, params string[] values)
-        {
-            var row = new TableRow();
-            foreach (var v in values)
-            {
-                var cell = new TableCell();
-                var run = new Run(new RunProperties(new FontSize { Val = "20" }, new Color { Val = DarkGrayHex }), new Text(v));
-                cell.Append(new Paragraph(run));
-                row.Append(cell);
-            }
-            table.Append(row);
         }
 
         private static DocumentFormat.OpenXml.Wordprocessing.Drawing CreateWordImage(string relationshipId, long cx, long cy)
@@ -488,15 +501,6 @@ namespace AdminMembers.Services
                 ) { DistanceFromTop = 0U, DistanceFromBottom = 0U, DistanceFromLeft = 0U, DistanceFromRight = 0U });
 
             return element;
-        }
-
-        // ── PDF helpers ─────────────────────────────────────────────────
-        private static void AddPdfDetailRow(PdfPTable table, string label, string value, Font labelFont, Font valueFont)
-        {
-            table.AddCell(new PdfPCell(new Phrase(label, labelFont))
-                { Border = iTextSharp.text.Rectangle.NO_BORDER, Padding = 4, BackgroundColor = new BaseColor(240, 240, 240) });
-            table.AddCell(new PdfPCell(new Phrase(value, valueFont))
-                { Border = iTextSharp.text.Rectangle.NO_BORDER, Padding = 4 });
         }
     }
 }
