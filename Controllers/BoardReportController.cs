@@ -247,8 +247,6 @@ namespace AdminMembers.Controllers
             if (report == null) return NotFound();
 
             var (logoData, logoContentType) = await GetLogoDataAsync();
-            _logger.LogInformation("PDF export: logo data is {Status} ({Bytes} bytes, type: {Type})",
-                logoData != null ? "PRESENT" : "NULL", logoData?.Length ?? 0, logoContentType ?? "none");
             var bytes = _exportService.ExportToPdf(report, logoData, logoContentType);
             var fileName = $"Verslag_{report.MeetingDate:yyyyMMdd}_{SanitizeFileName(report.Title)}.pdf";
             return File(bytes, "application/pdf", fileName);
@@ -260,10 +258,7 @@ namespace AdminMembers.Controllers
             {
                 var settings = await _context.AppSettings.FirstOrDefaultAsync();
                 if (settings == null)
-                {
-                    _logger.LogWarning("No AppSettings found in database — cannot load logo");
                     return (null, null);
-                }
 
                 // Try blob storage first
                 if (_blobStorageService != null && !string.IsNullOrEmpty(settings.LogoBlobName))
@@ -273,10 +268,7 @@ namespace AdminMembers.Controllers
                         var containerName = _configuration.GetValue<string>("AzureStorageBlob:LogoContainerName") ?? "logos";
                         var data = await _blobStorageService.DownloadBlobAsync(containerName, settings.LogoBlobName);
                         if (data?.Length > 0)
-                        {
-                            _logger.LogInformation("Logo loaded from blob storage ({Bytes} bytes, type: {Type})", data.Length, settings.LogoContentType);
                             return (data, settings.LogoContentType);
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -286,13 +278,8 @@ namespace AdminMembers.Controllers
 
                 // Fallback to database
                 if (settings.LogoData?.Length > 0)
-                {
-                    _logger.LogInformation("Logo loaded from database ({Bytes} bytes, type: {Type})", settings.LogoData.Length, settings.LogoContentType);
                     return (settings.LogoData, settings.LogoContentType);
-                }
 
-                _logger.LogWarning("No logo data available (blob name: {BlobName}, DB data null: {IsNull})",
-                    settings.LogoBlobName, settings.LogoData == null);
                 return (null, null);
             }
             catch (Exception ex)

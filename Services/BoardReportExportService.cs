@@ -9,9 +9,6 @@ using Paragraph = DocumentFormat.OpenXml.Wordprocessing.Paragraph;
 using ParagraphProperties = DocumentFormat.OpenXml.Wordprocessing.ParagraphProperties;
 using Run = DocumentFormat.OpenXml.Wordprocessing.Run;
 using RunProperties = DocumentFormat.OpenXml.Wordprocessing.RunProperties;
-using Table = DocumentFormat.OpenXml.Wordprocessing.Table;
-using TableRow = DocumentFormat.OpenXml.Wordprocessing.TableRow;
-using TableCell = DocumentFormat.OpenXml.Wordprocessing.TableCell;
 using Document = iTextSharp.text.Document;
 using Font = iTextSharp.text.Font;
 using Bold = DocumentFormat.OpenXml.Wordprocessing.Bold;
@@ -91,20 +88,24 @@ namespace AdminMembers.Services
                 // ── Logo top-right ──
                 if (logoData?.Length > 0)
                 {
-                    var ct = logoContentType ?? DetectImageContentType(logoData);
-                    var imagePart = mainPart.AddImagePart(ct);
-                    using (var ms = new MemoryStream(logoData))
-                        imagePart.FeedData(ms);
+                    try
+                    {
+                        var ct = logoContentType ?? DetectImageContentType(logoData);
+                        var imagePart = mainPart.AddImagePart(ct);
+                        using (var ms = new MemoryStream(logoData))
+                            imagePart.FeedData(ms);
 
-                    var imageId = mainPart.GetIdOfPart(imagePart);
-                    var drawing = CreateWordImage(imageId, 1600000, 800000);
-                    var imgRun = new Run(drawing);
-                    var imgPara = new Paragraph(
-                        new ParagraphProperties(
-                            new Justification { Val = JustificationValues.Right },
-                            new SpacingBetweenLines { After = "100" }));
-                    imgPara.Append(imgRun);
-                    body.InsertBefore(imgPara, body.Descendants<SectionProperties>().FirstOrDefault());
+                        var imageId = mainPart.GetIdOfPart(imagePart);
+                        var drawing = CreateWordImage(imageId, 1600000, 800000);
+                        var imgRun = new Run(drawing);
+                        var imgPara = new Paragraph(
+                            new ParagraphProperties(
+                                new Justification { Val = JustificationValues.Right },
+                                new SpacingBetweenLines { After = "100" }));
+                        imgPara.Append(imgRun);
+                        body.InsertBefore(imgPara, body.Descendants<SectionProperties>().FirstOrDefault());
+                    }
+                    catch { /* Logo rendering failed — continue without logo */ }
                 }
 
                 // ── Title ──
@@ -195,14 +196,12 @@ namespace AdminMembers.Services
             var accentLight = new BaseColor(232, 238, 244); // #E8EEF4
             var dark = new BaseColor(45, 45, 45);
             var medium = new BaseColor(90, 90, 90);
-            var light = new BaseColor(245, 245, 245);
 
             // Fonts
             var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 20, accent);
             var labelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9, dark);
             var valueFont = FontFactory.GetFont(FontFactory.HELVETICA, 9, medium);
             var sectionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 11, accent);
-            var bodyFont = FontFactory.GetFont(FontFactory.HELVETICA, 9.5f, dark);
             var agendaTitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, dark);
             var notesFont = FontFactory.GetFont(FontFactory.HELVETICA, 9, medium);
             var emptyFont = FontFactory.GetFont(FontFactory.HELVETICA_OBLIQUE, 9, new BaseColor(170, 170, 170));
@@ -210,21 +209,25 @@ namespace AdminMembers.Services
             // ── Logo top-right ──
             if (logoData?.Length > 0)
             {
-                var headerTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 4 };
-                headerTable.SetWidths(new float[] { 70, 30 });
-                headerTable.AddCell(new PdfPCell { Border = iTextSharp.text.Rectangle.NO_BORDER, MinimumHeight = 10 });
-
-                var logo = iTextSharp.text.Image.GetInstance(logoData);
-                logo.ScaleToFit(110f, 55f);
-                var logoCell = new PdfPCell(logo)
+                try
                 {
-                    Border = iTextSharp.text.Rectangle.NO_BORDER,
-                    HorizontalAlignment = Element.ALIGN_RIGHT,
-                    VerticalAlignment = Element.ALIGN_TOP,
-                    PaddingBottom = 4
-                };
-                headerTable.AddCell(logoCell);
-                document.Add(headerTable);
+                    var headerTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 4 };
+                    headerTable.SetWidths(new float[] { 70, 30 });
+                    headerTable.AddCell(new PdfPCell { Border = iTextSharp.text.Rectangle.NO_BORDER, MinimumHeight = 10 });
+
+                    var logo = iTextSharp.text.Image.GetInstance(logoData);
+                    logo.ScaleToFit(110f, 55f);
+                    var logoCell = new PdfPCell(logo)
+                    {
+                        Border = iTextSharp.text.Rectangle.NO_BORDER,
+                        HorizontalAlignment = Element.ALIGN_RIGHT,
+                        VerticalAlignment = Element.ALIGN_TOP,
+                        PaddingBottom = 4
+                    };
+                    headerTable.AddCell(logoCell);
+                    document.Add(headerTable);
+                }
+                catch { /* Logo rendering failed — continue without logo */ }
             }
 
             // ── Title + accent line ──
