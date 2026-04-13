@@ -57,11 +57,15 @@
                 </div>
             </div>
 
-            <!-- Row 2: Date + Location -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <!-- Row 2: Date + Time + Location -->
+            <div style="display:grid;grid-template-columns:1fr 140px 1fr;gap:12px;margin-bottom:16px;">
                 <div class="form-group" style="margin:0;">
                     <label>@Localizer["BoardReportDate"] *</label>
                     <input id="f_date" type="date" required style="padding:10px 14px;" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>@Localizer["BoardReportTime"]</label>
+                    <input id="f_time" type="time" style="padding:10px 14px;" />
                 </div>
                 <div class="form-group" style="margin:0;">
                     <label>@Localizer["BoardReportLocation"] *</label>
@@ -410,6 +414,7 @@
         document.getElementById('f_id').value = data?.Id || '0';
         document.getElementById('f_title').value = data?.Title || '';
         document.getElementById('f_date').value = data?.MeetingDate || '';
+        document.getElementById('f_time').value = data?.MeetingTime || '';
         document.getElementById('f_location').value = data?.Location || '';
         document.getElementById('f_status').value = data?.Status || 'Draft';
         document.getElementById('f_notes').value = data?.Notes || '';
@@ -444,6 +449,7 @@
         const dto = {
             Title: title,
             MeetingDate: date,
+            MeetingTime: document.getElementById('f_time').value || null,
             Location: loc,
             AgendaItems: getAgendaJson(),
             Content: '',
@@ -496,6 +502,7 @@
             document.getElementById('viewBody').innerHTML = `
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-bottom:20px;padding:16px;background:var(--surface);border-radius:10px;border:1px solid var(--border);">
                     <div><strong style="color:var(--accent);">Datum</strong><br>${fmtDate(r.MeetingDate)}</div>
+                    <div><strong style="color:var(--accent);">Aanvang</strong><br>${r.MeetingTime ? esc(r.MeetingTime) + ' uur' : '—'}</div>
                     <div><strong style="color:var(--accent);">Locatie</strong><br>${esc(r.Location)}</div>
                     <div><strong style="color:var(--accent);">Status</strong><br><span class="status-pill ${r.Status==='Final'?'status-ok':'status-draft'}">${esc(r.Status)}</span></div>
                     <div><strong style="color:var(--accent);">Opgesteld door</strong><br>${esc(r.CreatedByUsername)}</div>

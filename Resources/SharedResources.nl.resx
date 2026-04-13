@@ -793,6 +793,7 @@
   <data name="EditBoardReport" xml:space="preserve"><value>Verslag bewerken</value></data>
   <data name="BoardReportTitle" xml:space="preserve"><value>Titel</value></data>
   <data name="BoardReportDate" xml:space="preserve"><value>Datum vergadering</value></data>
+  <data name="BoardReportTime" xml:space="preserve"><value>Aanvang (uur)</value></data>
   <data name="BoardReportLocation" xml:space="preserve"><value>Locatie</value></data>
   <data name="BoardReportAgenda" xml:space="preserve"><value>Agendapunten</value></data>
   <data name="BoardReportContent" xml:space="preserve"><value>Inhoud verslag</value></data>

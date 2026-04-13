@@ -793,6 +793,7 @@
   <data name="EditBoardReport" xml:space="preserve"><value>Edit report</value></data>
   <data name="BoardReportTitle" xml:space="preserve"><value>Title</value></data>
   <data name="BoardReportDate" xml:space="preserve"><value>Meeting date</value></data>
+  <data name="BoardReportTime" xml:space="preserve"><value>Start time</value></data>
   <data name="BoardReportLocation" xml:space="preserve"><value>Location</value></data>
   <data name="BoardReportAgenda" xml:space="preserve"><value>Agenda items</value></data>
   <data name="BoardReportContent" xml:space="preserve"><value>Report content</value></data>

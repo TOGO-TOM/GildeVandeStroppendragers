@@ -5,6 +5,7 @@ namespace AdminMembers.Models
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public DateTime MeetingDate { get; set; }
+        public string? MeetingTime { get; set; }
         public string Location { get; set; } = string.Empty;
         public string? AgendaItems { get; set; }
         public string? Content { get; set; }

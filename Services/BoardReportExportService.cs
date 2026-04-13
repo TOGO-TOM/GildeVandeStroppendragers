@@ -91,12 +91,19 @@ namespace AdminMembers.Services
                     try
                     {
                         var ct = logoContentType ?? DetectImageContentType(logoData);
-                        var imagePart = mainPart.AddImagePart(ct);
+                        var imagePartType = ct switch
+                        {
+                            "image/jpeg" => ImagePartType.Jpeg,
+                            "image/gif" => ImagePartType.Gif,
+                            "image/bmp" => ImagePartType.Bmp,
+                            _ => ImagePartType.Png
+                        };
+                        var imagePart = mainPart.AddImagePart(imagePartType);
                         using (var ms = new MemoryStream(logoData))
                             imagePart.FeedData(ms);
 
                         var imageId = mainPart.GetIdOfPart(imagePart);
-                        var drawing = CreateWordImage(imageId, 1600000, 800000);
+                        var drawing = CreateWordImage(imageId, 2400000, 1200000);
                         var imgRun = new Run(drawing);
                         var imgPara = new Paragraph(
                             new ParagraphProperties(
@@ -121,7 +128,8 @@ namespace AdminMembers.Services
 
                 // ── Meeting info block ──
                 AddWordLabelValue(body, "Datum", report.MeetingDate.ToString("dddd d MMMM yyyy"));
-                AddWordLabelValue(body, "Aanvang", report.MeetingDate.ToString("HH:mm") + " uur");
+                if (!string.IsNullOrWhiteSpace(report.MeetingTime))
+                    AddWordLabelValue(body, "Aanvang", report.MeetingTime + " uur");
                 AddWordLabelValue(body, "Locatie", report.Location);
                 AddWordLabelValue(body, "Opgesteld door", report.CreatedByUsername);
 
@@ -216,7 +224,7 @@ namespace AdminMembers.Services
                     headerTable.AddCell(new PdfPCell { Border = iTextSharp.text.Rectangle.NO_BORDER, MinimumHeight = 10 });
 
                     var logo = iTextSharp.text.Image.GetInstance(logoData);
-                    logo.ScaleToFit(110f, 55f);
+                    logo.ScaleToFit(180f, 90f);
                     var logoCell = new PdfPCell(logo)
                     {
                         Border = iTextSharp.text.Rectangle.NO_BORDER,
@@ -248,7 +256,8 @@ namespace AdminMembers.Services
             infoTable.SetWidths(new float[] { 22, 78 });
 
             AddPdfInfoRow(infoTable, "Datum", report.MeetingDate.ToString("dddd d MMMM yyyy"), labelFont, valueFont);
-            AddPdfInfoRow(infoTable, "Aanvang", report.MeetingDate.ToString("HH:mm") + " uur", labelFont, valueFont);
+            if (!string.IsNullOrWhiteSpace(report.MeetingTime))
+                AddPdfInfoRow(infoTable, "Aanvang", report.MeetingTime + " uur", labelFont, valueFont);
             AddPdfInfoRow(infoTable, "Locatie", report.Location, labelFont, valueFont);
             AddPdfInfoRow(infoTable, "Opgesteld door", report.CreatedByUsername, labelFont, valueFont);
 

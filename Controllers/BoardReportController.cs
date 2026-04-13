@@ -49,6 +49,7 @@ namespace AdminMembers.Controllers
                     r.Id,
                     r.Title,
                     MeetingDate = r.MeetingDate.ToString("yyyy-MM-dd"),
+                    r.MeetingTime,
                     r.Location,
                     r.Status,
                     r.CreatedByUsername,
@@ -79,6 +80,7 @@ namespace AdminMembers.Controllers
                 report.Id,
                 report.Title,
                 MeetingDate = report.MeetingDate.ToString("yyyy-MM-dd"),
+                report.MeetingTime,
                 report.Location,
                 report.AgendaItems,
                 report.Content,
@@ -112,6 +114,7 @@ namespace AdminMembers.Controllers
             {
                 Title = dto.Title,
                 MeetingDate = DateTime.Parse(dto.MeetingDate),
+                MeetingTime = dto.MeetingTime,
                 Location = dto.Location,
                 AgendaItems = dto.AgendaItems,
                 Content = dto.Content,
@@ -166,6 +169,7 @@ namespace AdminMembers.Controllers
 
             report.Title = dto.Title;
             report.MeetingDate = DateTime.Parse(dto.MeetingDate);
+            report.MeetingTime = dto.MeetingTime;
             report.Location = dto.Location;
             report.AgendaItems = dto.AgendaItems;
             report.Content = dto.Content;
@@ -301,6 +305,7 @@ namespace AdminMembers.Controllers
     {
         public string Title { get; set; } = string.Empty;
         public string MeetingDate { get; set; } = string.Empty;
+        public string? MeetingTime { get; set; }
         public string Location { get; set; } = string.Empty;
         public string? AgendaItems { get; set; }
         public string? Content { get; set; }
