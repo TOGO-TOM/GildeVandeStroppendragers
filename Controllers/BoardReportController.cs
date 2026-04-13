@@ -41,8 +41,6 @@ namespace AdminMembers.Controllers
         {
             var reports = await _context.BoardReports
                 .AsNoTracking()
-                .Include(r => r.Attendees)
-                    .ThenInclude(a => a.Member)
                 .OrderByDescending(r => r.MeetingDate)
                 .Select(r => new
                 {

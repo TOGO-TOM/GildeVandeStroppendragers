@@ -17,11 +17,8 @@ namespace AdminMembers.Services
 {
     public class BoardReportExportService
     {
-        private const string BlackHex = "000000";
         private const string DarkGrayHex = "2D2D2D";
         private const string MedGrayHex = "5A5A5A";
-        private const string LightGrayHex = "F5F5F5";
-        private const string WhiteHex = "FFFFFF";
         private const string AccentHex = "1B3A5C"; // dark navy accent
         private const string AccentLightHex = "E8EEF4"; // very light blue for agenda bars
 
