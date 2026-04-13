@@ -1,0 +1,155 @@
+name: Analyze Feature Request
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: 'Feature request ID'
+        required: true
+      title:
+        description: 'Feature request title'
+        required: true
+      description:
+        description: 'Feature request description'
+        required: true
+      submitted_by:
+        description: 'Username who submitted the request'
+        required: true
+
+permissions:
+  models: read
+
+env:
+  APP_BASE_URL: 'https://app-gilde-prod.azurewebsites.net'
+
+jobs:
+  analyze:
+    name: AI Analysis Pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Agent 1 — Request Analyzer"
+        id: agent1
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `${{ github.event.inputs.title }}`;
+            const description = `${{ github.event.inputs.description }}`;
+
+            const response = await github.request("POST /models/chat/completions", {
+              model: "gpt-4o",
+              messages: [
+                {
+                  role: "system",
+                  content: `You are a request analyst for a member administration web application (.NET Razor Pages).
+            Analyze the feature request and return a JSON object with exactly these fields:
+            - "summary": A clear 2-3 sentence summary of what is being requested.
+            - "category": One of: "UI/UX", "Backend", "Database", "Security", "Integration", "Performance", "New Feature", "Bug Fix".
+            - "priority": One of: "Low", "Medium", "High", "Critical".
+            Return ONLY valid JSON, no markdown fences.`
+                },
+                {
+                  role: "user",
+                  content: `Title: ${title}\n\nDescription: ${description}`
+                }
+              ]
+            });
+
+            const content = response.data.choices[0].message.content.trim();
+            console.log("Agent 1 raw output:", content);
+
+            // Parse, stripping any accidental markdown fences
+            const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            const parsed = JSON.parse(cleaned);
+
+            core.setOutput("summary", parsed.summary);
+            core.setOutput("category", parsed.category);
+            core.setOutput("priority", parsed.priority);
+
+      - name: "Agent 2 — Feasibility & Architecture Planner"
+        id: agent2
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `${{ github.event.inputs.title }}`;
+            const description = `${{ github.event.inputs.description }}`;
+            const summary = `${{ steps.agent1.outputs.summary }}`;
+            const category = `${{ steps.agent1.outputs.category }}`;
+            const priority = `${{ steps.agent1.outputs.priority }}`;
+
+            const response = await github.request("POST /models/chat/completions", {
+              model: "gpt-4o",
+              messages: [
+                {
+                  role: "system",
+                  content: `You are a senior .NET architect reviewing feature requests for a Razor Pages web application.
+            The tech stack is: .NET 10, Razor Pages, EF Core with SQL Server, MailKit, Azure Blob Storage, custom session-based auth with role hierarchy (Super Admin > Admin > Member Editor/Viewer > Stock Editor/Viewer).
+
+            Given the analyzed request, produce a JSON object with exactly these fields:
+            - "feasibility": A paragraph assessing feasibility — is it doable? What are the risks or dependencies?
+            - "architecture": A detailed architectural plan in Markdown format using the following structure:
+
+            ## Affected Components
+            (list files/layers that need changes)
+
+            ## Data Model Changes
+            (any new entities, properties, or migrations needed)
+
+            ## Implementation Steps
+            (numbered step-by-step plan)
+
+            ## Security Considerations
+            (role/permission implications)
+
+            ## Estimated Effort
+            (Small / Medium / Large with brief justification)
+
+            Return ONLY valid JSON, no markdown fences.`
+                },
+                {
+                  role: "user",
+                  content: `Title: ${title}\nDescription: ${description}\n\nAgent 1 Analysis:\n- Summary: ${summary}\n- Category: ${category}\n- Priority: ${priority}`
+                }
+              ]
+            });
+
+            const content = response.data.choices[0].message.content.trim();
+            console.log("Agent 2 raw output:", content);
+
+            const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            const parsed = JSON.parse(cleaned);
+
+            core.setOutput("feasibility", parsed.feasibility);
+            core.setOutput("architecture", parsed.architecture);
+
+      - name: "Callback — Post results to application"
+        uses: actions/github-script@v7
+        env:
+          WEBHOOK_SECRET: ${{ secrets.FEATURE_REQUEST_WEBHOOK_SECRET }}
+        with:
+          script: |
+            const requestId = `${{ github.event.inputs.request_id }}`;
+            const url = `${process.env.APP_BASE_URL}/api/feature-requests/${requestId}/analysis-result`;
+
+            const body = {
+              analysisSummary: `${{ steps.agent1.outputs.summary }}`,
+              category: `${{ steps.agent1.outputs.category }}`,
+              priority: `${{ steps.agent1.outputs.priority }}`,
+              feasibilityAssessment: `${{ steps.agent2.outputs.feasibility }}`,
+              architecturalPlan: `${{ steps.agent2.outputs.architecture }}`
+            };
+
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Webhook-Secret': process.env.WEBHOOK_SECRET
+              },
+              body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+              const text = await response.text();
+              core.setFailed(`Callback failed (${response.status}): ${text}`);
+            } else {
+              console.log(`Results posted to request ${requestId}`);
+            }

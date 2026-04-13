@@ -63,6 +63,8 @@
         {
             <a href="/Admin/AuditLogs" class="@(layoutPage == "admin-audit" ? "active" : "")">@Localizer["AuditLogs"]</a>
             <a href="/Admin/EmailSettings" class="@(layoutPage == "email-settings" ? "active" : "")">@Localizer["EmailSettings"]</a>
+            <a href="/Admin/FeatureRequests" class="@(layoutPage == "feature-requests" ? "active" : "")">@Localizer["FeatureRequests"]</a>
+            <a href="/Admin/AiSettings" class="@(layoutPage == "ai-settings" ? "active" : "")">@Localizer["AiSettings"]</a>
         }
         <a href="/Settings" class="@(layoutPage == "settings" ? "active" : "")">@Localizer["Settings"]</a>
     </nav>
@@ -129,6 +131,8 @@
     {
         <a href="/Admin/AuditLogs" class="mobile-nav-item @(layoutPage == "admin-audit" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["AuditLogs"]</a>
         <a href="/Admin/EmailSettings" class="mobile-nav-item @(layoutPage == "email-settings" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["EmailSettings"]</a>
+        <a href="/Admin/FeatureRequests" class="mobile-nav-item @(layoutPage == "feature-requests" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["FeatureRequests"]</a>
+        <a href="/Admin/AiSettings" class="mobile-nav-item @(layoutPage == "ai-settings" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["AiSettings"]</a>
     }
     <a href="/Settings" class="mobile-nav-item @(layoutPage == "settings" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Settings"]</a>
     @if (layoutUser != null)

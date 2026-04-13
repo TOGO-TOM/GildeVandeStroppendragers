@@ -743,4 +743,47 @@
   <data name="Sending" xml:space="preserve"><value>Sending…</value></data>
   <data name="TestEmailSent" xml:space="preserve"><value>Test email sent successfully!</value></data>
   <data name="TestEmailFailed" xml:space="preserve"><value>Failed to send test email.</value></data>
+  <data name="FeatureRequests" xml:space="preserve"><value>Feature Requests</value></data>
+  <data name="FeatureRequestsDescription" xml:space="preserve"><value>Submit feature requests and let AI agents analyze feasibility and create an architectural plan.</value></data>
+  <data name="SubmitRequest" xml:space="preserve"><value>Submit Request</value></data>
+  <data name="AllRequests" xml:space="preserve"><value>All Requests</value></data>
+  <data name="NewFeatureRequest" xml:space="preserve"><value>New Feature Request</value></data>
+  <data name="RequestTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="RequestTitleDescription" xml:space="preserve"><value>A short summary of what you need.</value></data>
+  <data name="RequestTitlePlaceholder" xml:space="preserve"><value>e.g. Add bulk import for members</value></data>
+  <data name="RequestDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="RequestDescriptionHelp" xml:space="preserve"><value>Describe the feature in detail — what, why, and any constraints.</value></data>
+  <data name="RequestDescriptionPlaceholder" xml:space="preserve"><value>Describe the feature you would like, the problem it solves, and any technical details…</value></data>
+  <data name="SubmitForAnalysis" xml:space="preserve"><value>Submit for AI Analysis</value></data>
+  <data name="RequestSubmitted" xml:space="preserve"><value>Request submitted! AI analysis has been triggered.</value></data>
+  <data name="Submitting" xml:space="preserve"><value>Submitting…</value></data>
+  <data name="HowItWorks" xml:space="preserve"><value>How It Works</value></data>
+  <data name="StepSubmit" xml:space="preserve"><value>Submit</value></data>
+  <data name="StepSubmitDesc" xml:space="preserve"><value>Describe your feature request using the form above.</value></data>
+  <data name="StepAnalyze" xml:space="preserve"><value>AI Analyzes</value></data>
+  <data name="StepAnalyzeDesc" xml:space="preserve"><value>Agent 1 classifies the request, determines category and priority.</value></data>
+  <data name="StepArchitect" xml:space="preserve"><value>Architecture Plan</value></data>
+  <data name="StepArchitectDesc" xml:space="preserve"><value>Agent 2 assesses feasibility and produces a detailed architectural plan.</value></data>
+  <data name="Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="Processing" xml:space="preserve"><value>Processing</value></data>
+  <data name="Analyzed" xml:space="preserve"><value>Analyzed</value></data>
+  <data name="Planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="NoFeatureRequests" xml:space="preserve"><value>No feature requests yet.</value></data>
+  <data name="DeleteFeatureRequestConfirm" xml:space="preserve"><value>Are you sure you want to delete this feature request?</value></data>
+  <data name="Analysis" xml:space="preserve"><value>Analysis</value></data>
+  <data name="Feasibility" xml:space="preserve"><value>Feasibility</value></data>
+  <data name="ArchitecturalPlan" xml:space="preserve"><value>Architectural Plan</value></data>
+  <data name="Category" xml:space="preserve"><value>Category</value></data>
+  <data name="FRPriority" xml:space="preserve"><value>Priority</value></data>
+  <data name="AwaitingAi" xml:space="preserve"><value>AI analysis is in progress. Results will appear here once the GitHub Action completes.</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="AiSettings" xml:space="preserve"><value>AI Settings</value></data>
+  <data name="AiSettingsDescription" xml:space="preserve"><value>Configure the GitHub integration that powers AI-driven feature request analysis.</value></data>
+  <data name="GitHubConfiguration" xml:space="preserve"><value>GitHub Configuration</value></data>
+  <data name="GitHubOwner" xml:space="preserve"><value>Repository Owner</value></data>
+  <data name="GitHubOwnerDescription" xml:space="preserve"><value>The GitHub user or organisation that owns the repository.</value></data>
+  <data name="GitHubRepo" xml:space="preserve"><value>Repository Name</value></data>
+  <data name="GitHubRepoDescription" xml:space="preserve"><value>The name of the GitHub repository.</value></data>
+  <data name="GitHubToken" xml:space="preserve"><value>GitHub Token</value></data>
+  <data name="GitHubTokenDescription" xml:space="preserve"><value>A personal access token with workflow dispatch permission. Leave empty to keep the current value.</value></data>
 </root>

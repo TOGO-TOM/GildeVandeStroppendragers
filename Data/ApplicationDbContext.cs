@@ -27,6 +27,8 @@ namespace AdminMembers.Data
         public DbSet<StockMovement> StockMovements { get; set; }
         public DbSet<AgendaEvent> AgendaEvents { get; set; }
         public DbSet<EmailSettings> EmailSettings { get; set; }
+        public DbSet<AiSettings> AiSettings { get; set; }
+        public DbSet<FeatureRequest> FeatureRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -240,6 +242,30 @@ namespace AdminMembers.Data
                 entity.Property(e => e.ApiKey).HasMaxLength(500);
                 entity.Property(e => e.FromAddress).HasMaxLength(200);
                 entity.Property(e => e.FromName).HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<AiSettings>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("AiSettings");
+                entity.Property(e => e.GitHubToken).HasMaxLength(500);
+                entity.Property(e => e.GitHubOwner).HasMaxLength(100);
+                entity.Property(e => e.GitHubRepo).HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<FeatureRequest>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("FeatureRequests");
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Description).IsRequired();
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Category).HasMaxLength(50);
+                entity.Property(e => e.Priority).HasMaxLength(20);
+                entity.Property(e => e.SubmittedByUsername).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.SubmittedByUserId);
+                entity.HasIndex(e => e.CreatedAt);
             });
 
             // Seed default roles
