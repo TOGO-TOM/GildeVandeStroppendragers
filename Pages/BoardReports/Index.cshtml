@@ -72,18 +72,20 @@
             <!-- Row 3: Attendees (full width) -->
             <div class="form-group" style="margin-bottom:16px;">
                 <label>@Localizer["BoardReportAttendees"] — @Localizer["BoardReportSelectMembers"]</label>
-                <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
                     <button class="btn btn-xs btn-icon" type="button" onclick="selectAllAttendees(true)">✅ Alles aanwezig</button>
                     <button class="btn btn-xs btn-icon" type="button" onclick="selectAllAttendees(false)">Deselecteer alles</button>
+                    <button class="btn btn-xs btn-icon" type="button" onclick="saveDefaultMembers()" title="Sla huidige selectie op als standaard">💾 Standaard opslaan</button>
+                    <button class="btn btn-xs btn-icon" type="button" onclick="loadDefaultMembers()" title="Laad opgeslagen standaard bestuursleden">📋 Standaard laden</button>
                 </div>
                 <div id="attendeesContainer" class="attendees-grid">
                     <div style="color:var(--text-muted);font-size:12px;padding:12px;">Laden...</div>
                 </div>
             </div>
 
-            <!-- Row 4: Agenda items (drag & drop) -->
+            <!-- Row 4: Agenda items (drag & drop with notes per item) -->
             <div class="form-group" style="margin-bottom:16px;">
-                <label>@Localizer["BoardReportAgenda"] — <span style="font-weight:400;color:var(--text-muted);">Sleep om te herschikken, klik + om toe te voegen</span></label>
+                <label>@Localizer["BoardReportAgenda"] — <span style="font-weight:400;color:var(--text-muted);">Sleep om te herschikken, klik + om toe te voegen. Elke punt heeft een notitieveld.</span></label>
                 <div style="display:flex;gap:8px;margin-bottom:8px;">
                     <input id="agendaInput" placeholder="Nieuw agendapunt typen..." style="flex:1;padding:10px 14px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgendaItem();}" />
                     <button class="btn btn-primary" type="button" onclick="addAgendaItem()">+ Toevoegen</button>
@@ -93,13 +95,7 @@
                 </div>
             </div>
 
-            <!-- Row 5: Content (large) -->
-            <div class="form-group" style="margin-bottom:16px;">
-                <label>@Localizer["BoardReportContent"]</label>
-                <textarea id="f_content" rows="12" placeholder="Schrijf hier het verslag van de vergadering..." style="resize:vertical;font-size:14px;line-height:1.7;padding:14px;min-height:200px;"></textarea>
-            </div>
-
-            <!-- Row 6: Notes -->
+            <!-- Row 5: General Notes -->
             <div class="form-group" style="margin-bottom:0;">
                 <label>@Localizer["BoardReportNotes"]</label>
                 <textarea id="f_notes" rows="4" placeholder="Extra opmerkingen, actiepunten, etc." style="resize:vertical;font-size:13px;padding:12px;"></textarea>
@@ -151,10 +147,11 @@
     const CAN_WRITE = @(Model.CanWrite ? "true" : "false");
     const API = '/api/boardreports';
     const MEMBERS_API = '/api/members';
+    const DEFAULT_MEMBERS_KEY = 'gilde_default_board_members';
 
     let reports = [];
     let members = [];
-    let agendaItems = [];
+    let agendaItems = []; // [{Title:'...', Notes:'...'},...]
     let viewingId = 0;
     let deleteId = 0;
     let dragSrcIdx = null;
@@ -211,12 +208,28 @@
         return result;
     }
 
-    // ════════════════════ AGENDA DRAG & DROP ════════════════════
+    // ════════════════════ DEFAULT MEMBERS ════════════════════
+    function saveDefaultMembers() {
+        const selected = getSelectedAttendees();
+        localStorage.setItem(DEFAULT_MEMBERS_KEY, JSON.stringify(selected));
+        alert(`Standaard bestuursleden opgeslagen (${selected.length} leden)`);
+    }
+
+    function loadDefaultMembers() {
+        const saved = localStorage.getItem(DEFAULT_MEMBERS_KEY);
+        if (!saved) { alert('Nog geen standaard bestuursleden opgeslagen. Selecteer eerst leden en klik "Standaard opslaan".'); return; }
+        try {
+            const defaults = JSON.parse(saved);
+            renderAttendees(defaults);
+        } catch (e) { alert('Fout bij laden standaard leden.'); }
+    }
+
+    // ════════════════════ AGENDA DRAG & DROP (structured) ════════════════════
     function addAgendaItem() {
         const inp = document.getElementById('agendaInput');
         const text = inp.value.trim();
         if (!text) return;
-        agendaItems.push(text);
+        agendaItems.push({ Title: text, Notes: '' });
         inp.value = '';
         renderAgenda();
         inp.focus();
@@ -225,6 +238,11 @@
     function removeAgendaItem(idx) {
         agendaItems.splice(idx, 1);
         renderAgenda();
+    }
+
+    function updateAgendaNotes(idx) {
+        const ta = document.querySelector(`.agenda-notes[data-idx="${idx}"]`);
+        if (ta) agendaItems[idx].Notes = ta.value;
     }
 
     function renderAgenda() {
@@ -238,15 +256,26 @@
                  ondragstart="onDragStart(event)" ondragover="onDragOver(event)"
                  ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)"
                  ondrop="onDrop(event)" ondragend="onDragEnd(event)">
-                <span class="agenda-grip" title="Sleep om te verplaatsen">⠿</span>
-                <span class="agenda-num">${i + 1}.</span>
-                <span class="agenda-text">${esc(item)}</span>
-                <button class="btn btn-xs btn-danger-ghost agenda-rm" onclick="removeAgendaItem(${i})" title="Verwijderen">&times;</button>
+                <div class="agenda-item-header">
+                    <span class="agenda-grip" title="Sleep om te verplaatsen">⠿</span>
+                    <span class="agenda-num">${i + 1}.</span>
+                    <span class="agenda-text">${esc(item.Title)}</span>
+                    <button class="btn btn-xs btn-danger-ghost agenda-rm" onclick="removeAgendaItem(${i})" title="Verwijderen">&times;</button>
+                </div>
+                <textarea class="agenda-notes" data-idx="${i}" rows="2"
+                    placeholder="Notities bij dit agendapunt..."
+                    onchange="updateAgendaNotes(${i})"
+                    onblur="updateAgendaNotes(${i})">${esc(item.Notes)}</textarea>
             </div>
         `).join('');
     }
 
     function onDragStart(e) {
+        // Save notes before drag
+        document.querySelectorAll('.agenda-notes').forEach(ta => {
+            const idx = +ta.dataset.idx;
+            agendaItems[idx].Notes = ta.value;
+        });
         dragSrcIdx = +e.currentTarget.dataset.idx;
         e.currentTarget.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
@@ -269,10 +298,28 @@
         renderAgenda();
     }
 
-    function getAgendaText() { return agendaItems.join('\n'); }
+    function getAgendaJson() {
+        // Save latest notes from textareas
+        document.querySelectorAll('.agenda-notes').forEach(ta => {
+            const idx = +ta.dataset.idx;
+            if (agendaItems[idx]) agendaItems[idx].Notes = ta.value;
+        });
+        return agendaItems.length ? JSON.stringify(agendaItems) : '';
+    }
 
-    function setAgendaFromText(text) {
-        agendaItems = (text || '').split('\n').map(s => s.trim()).filter(Boolean);
+    function setAgendaFromData(data) {
+        if (!data) { agendaItems = []; renderAgenda(); return; }
+        try {
+            const parsed = JSON.parse(data);
+            if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'object') {
+                agendaItems = parsed.map(p => ({ Title: p.Title || '', Notes: p.Notes || '' }));
+            } else {
+                throw new Error('not structured');
+            }
+        } catch {
+            // Fallback: old newline-separated format
+            agendaItems = (data || '').split('\n').map(s => s.trim()).filter(Boolean).map(t => ({ Title: t, Notes: '' }));
+        }
         renderAgenda();
     }
 
@@ -333,11 +380,10 @@
         document.getElementById('f_date').value = data?.MeetingDate || '';
         document.getElementById('f_location').value = data?.Location || '';
         document.getElementById('f_status').value = data?.Status || 'Draft';
-        document.getElementById('f_content').value = data?.Content || '';
         document.getElementById('f_notes').value = data?.Notes || '';
         document.getElementById('editorTitle').textContent = data ? '@Localizer["EditBoardReport"]' : '@Localizer["NewBoardReport"]';
 
-        setAgendaFromText(data?.AgendaItems || '');
+        setAgendaFromData(data?.AgendaItems || '');
         renderAttendees(data?.Attendees || []);
         showModal('editorModal');
     }
@@ -362,8 +408,8 @@
             Title: title,
             MeetingDate: date,
             Location: loc,
-            AgendaItems: getAgendaText(),
-            Content: document.getElementById('f_content').value,
+            AgendaItems: getAgendaJson(),
+            Content: '',
             Notes: document.getElementById('f_notes').value,
             Status: document.getElementById('f_status').value,
             Attendees: getSelectedAttendees()
@@ -387,6 +433,28 @@
             if (!res.ok) throw new Error();
             const r = await res.json();
 
+            // Parse agenda items
+            let agendaHtml = '';
+            if (r.AgendaItems) {
+                let items = [];
+                try {
+                    const parsed = JSON.parse(r.AgendaItems);
+                    if (Array.isArray(parsed) && parsed.length && typeof parsed[0] === 'object') {
+                        items = parsed;
+                    } else { throw 0; }
+                } catch { items = r.AgendaItems.split('\n').filter(Boolean).map(t => ({Title:t.trim(),Notes:''})); }
+
+                if (items.length) {
+                    agendaHtml = `<h4 style="color:var(--accent);margin:0 0 8px;">Agendapunten</h4>
+                    <div style="margin-bottom:20px;">${items.map((a, i) =>
+                        `<div style="background:#e8f0fe;border-radius:8px;padding:10px 14px;margin-bottom:6px;">
+                            <strong>${i+1}. ${esc(a.Title)}</strong>
+                            ${a.Notes ? `<div style="margin-top:4px;color:var(--text-muted);font-size:13px;white-space:pre-wrap;">${esc(a.Notes)}</div>` : ''}
+                        </div>`
+                    ).join('')}</div>`;
+                }
+            }
+
             document.getElementById('viewTitle').textContent = r.Title;
             document.getElementById('viewBody').innerHTML = `
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-bottom:20px;padding:16px;background:var(--surface);border-radius:10px;border:1px solid var(--border);">
@@ -399,10 +467,7 @@
                 <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">${r.Attendees.map(a =>
                     `<span class="badge ${a.IsPresent?'badge-success':'badge-danger'}">${esc(a.MemberName||'Lid #'+a.MemberId)} — ${a.IsPresent?'Aanwezig':'Afwezig'}</span>`
                 ).join('')}</div>` : ''}
-                ${r.AgendaItems ? `<h4 style="color:var(--accent);margin:0 0 8px;">Agendapunten</h4>
-                <ol style="margin:0 0 20px 20px;line-height:2;">${r.AgendaItems.split('\n').filter(Boolean).map(a => `<li style="padding:2px 0;">${esc(a.trim())}</li>`).join('')}</ol>` : ''}
-                ${r.Content ? `<h4 style="color:var(--accent);margin:0 0 8px;">Verslag</h4>
-                <div style="white-space:pre-wrap;line-height:1.7;margin-bottom:20px;padding:16px;background:var(--surface);border-radius:10px;border:1px solid var(--border);">${esc(r.Content)}</div>` : ''}
+                ${agendaHtml}
                 ${r.Notes ? `<h4 style="color:var(--accent);margin:0 0 8px;">Opmerkingen</h4>
                 <div style="white-space:pre-wrap;line-height:1.6;color:var(--text-muted);font-style:italic;padding:12px;background:var(--surface);border-radius:8px;">${esc(r.Notes)}</div>` : ''}`;
             showModal('viewModal');
@@ -482,7 +547,7 @@
     /* Agenda drag list */
     .agenda-drag-list {
         min-height: 60px;
-        max-height: 400px;
+        max-height: 500px;
         overflow-y: auto;
         border: 2px dashed var(--border);
         border-radius: 10px;
@@ -491,23 +556,41 @@
     }
     .agenda-item {
         display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 9px 12px;
-        margin-bottom: 4px;
+        flex-direction: column;
+        gap: 4px;
+        padding: 10px 12px;
+        margin-bottom: 6px;
         background: var(--panel);
         border: 1px solid var(--border);
         border-radius: 8px;
         cursor: grab;
         transition: box-shadow .15s, transform .15s;
     }
+    .agenda-item-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
     .agenda-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
     .agenda-item.dragging { opacity: .4; transform: scale(.97); }
     .agenda-item.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99,102,241,.25); }
     .agenda-grip { cursor: grab; color: var(--text-muted); font-size: 16px; user-select: none; }
     .agenda-num { font-weight: 700; color: var(--accent); min-width: 24px; font-size: 13px; }
-    .agenda-text { flex: 1; font-size: 13px; }
+    .agenda-text { flex: 1; font-size: 13px; font-weight: 600; }
     .agenda-rm { font-size: 18px; line-height: 1; padding: 2px 6px; }
+    .agenda-notes {
+        width: 100%;
+        font-size: 12px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--surface);
+        resize: vertical;
+        min-height: 40px;
+        line-height: 1.5;
+        font-family: inherit;
+    }
+    .agenda-notes:focus { outline: none; border-color: var(--accent); }
     .agenda-empty { padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
     /* Table & badges */

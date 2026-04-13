@@ -14,18 +14,24 @@ namespace AdminMembers.Controllers
         private readonly ApplicationDbContext _context;
         private readonly AuditLogService _auditLogService;
         private readonly BoardReportExportService _exportService;
+        private readonly BlobStorageService? _blobStorageService;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<BoardReportController> _logger;
 
         public BoardReportController(
             ApplicationDbContext context,
             AuditLogService auditLogService,
             BoardReportExportService exportService,
-            ILogger<BoardReportController> logger)
+            IConfiguration configuration,
+            ILogger<BoardReportController> logger,
+            BlobStorageService? blobStorageService = null)
         {
             _context = context;
             _auditLogService = auditLogService;
             _exportService = exportService;
+            _configuration = configuration;
             _logger = logger;
+            _blobStorageService = blobStorageService;
         }
 
         // GET /api/boardreports
@@ -223,7 +229,8 @@ namespace AdminMembers.Controllers
 
             if (report == null) return NotFound();
 
-            var bytes = _exportService.ExportToWord(report);
+            var logoData = await GetLogoDataAsync();
+            var bytes = _exportService.ExportToWord(report, logoData);
             var fileName = $"Verslag_{report.MeetingDate:yyyyMMdd}_{SanitizeFileName(report.Title)}.docx";
             return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", fileName);
         }
@@ -239,9 +246,36 @@ namespace AdminMembers.Controllers
 
             if (report == null) return NotFound();
 
-            var bytes = _exportService.ExportToPdf(report);
+            var logoData = await GetLogoDataAsync();
+            var bytes = _exportService.ExportToPdf(report, logoData);
             var fileName = $"Verslag_{report.MeetingDate:yyyyMMdd}_{SanitizeFileName(report.Title)}.pdf";
             return File(bytes, "application/pdf", fileName);
+        }
+
+        private async Task<byte[]?> GetLogoDataAsync()
+        {
+            try
+            {
+                var settings = await _context.AppSettings.FirstOrDefaultAsync();
+                if (_blobStorageService != null && settings?.LogoBlobName != null)
+                {
+                    try
+                    {
+                        var containerName = _configuration.GetValue<string>("AzureStorageBlob:LogoContainerName") ?? "logos";
+                        return await _blobStorageService.DownloadBlobAsync(containerName, settings.LogoBlobName);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to fetch logo from blob storage, falling back to database");
+                    }
+                }
+                return settings?.LogoData;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to fetch logo data");
+                return null;
+            }
         }
 
         private static string SanitizeFileName(string name)

@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using System.Text.Json;
 using Paragraph = DocumentFormat.OpenXml.Wordprocessing.Paragraph;
 using ParagraphProperties = DocumentFormat.OpenXml.Wordprocessing.ParagraphProperties;
 using Run = DocumentFormat.OpenXml.Wordprocessing.Run;
@@ -19,13 +20,40 @@ namespace AdminMembers.Services
 {
     public class BoardReportExportService
     {
-        private const string AccentHex = "4F46E5";
-        private const string LightGrayHex = "F1F5F9";
+        // B&W color scheme
+        private const string BlackHex = "000000";
+        private const string DarkGrayHex = "333333";
+        private const string MedGrayHex = "666666";
+        private const string LightGrayHex = "F0F0F0";
         private const string WhiteHex = "FFFFFF";
-        private const string TextDarkHex = "1E293B";
+        private const string AgendaBarHex = "D6E4F0"; // light blue bar for agenda items
+
+        private record AgendaEntry(string Title, string Notes);
+
+        private static List<AgendaEntry> ParseAgendaItems(string? agendaJson)
+        {
+            if (string.IsNullOrWhiteSpace(agendaJson)) return [];
+            try
+            {
+                var items = JsonSerializer.Deserialize<List<JsonElement>>(agendaJson);
+                if (items == null) return [];
+                return items.Select(el =>
+                {
+                    var title = el.TryGetProperty("Title", out var t) ? t.GetString() ?? "" : "";
+                    var notes = el.TryGetProperty("Notes", out var n) ? n.GetString() ?? "" : "";
+                    return new AgendaEntry(title, notes);
+                }).Where(a => !string.IsNullOrWhiteSpace(a.Title)).ToList();
+            }
+            catch
+            {
+                // Fallback: old newline-separated format
+                return agendaJson.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(l => new AgendaEntry(l.Trim(), "")).ToList();
+            }
+        }
 
         // ── Word (.docx) export ─────────────────────────────────────────
-        public byte[] ExportToWord(BoardReport report)
+        public byte[] ExportToWord(BoardReport report, byte[]? logoData = null)
         {
             using var stream = new MemoryStream();
             using (var doc = WordprocessingDocument.Create(stream, WordprocessingDocumentType.Document, true))
@@ -39,11 +67,29 @@ namespace AdminMembers.Services
                     new PageMargin { Top = 1134, Bottom = 1134, Left = 1134u, Right = 1134u });
                 body.AppendChild(sectionProps);
 
-                // Title
-                AddWordParagraph(body, report.Title, 28, true, AccentHex, JustificationValues.Center);
+                // Logo in top-right
+                if (logoData?.Length > 0)
+                {
+                    try
+                    {
+                        var imagePart = mainPart.AddImagePart(ImagePartType.Png);
+                        using (var ms = new MemoryStream(logoData))
+                            imagePart.FeedData(ms);
 
-                // Subtitle: "Bestuursverslag"
-                AddWordParagraph(body, "Bestuursverslag", 14, false, "64748B", JustificationValues.Center);
+                        var imageId = mainPart.GetIdOfPart(imagePart);
+                        var drawing = CreateWordImage(imageId, 1200000, 600000); // ~1.2cm x 0.6cm
+                        var imgRun = new Run(drawing);
+                        var imgPara = new Paragraph(
+                            new ParagraphProperties(new Justification { Val = JustificationValues.Right }));
+                        imgPara.Append(imgRun);
+                        body.InsertBefore(imgPara, body.Descendants<SectionProperties>().FirstOrDefault());
+                    }
+                    catch { /* skip bad logo */ }
+                }
+
+                // Title
+                AddWordParagraph(body, report.Title, 24, true, BlackHex, JustificationValues.Center);
+                AddWordParagraph(body, "Bestuursverslag", 12, false, MedGrayHex, JustificationValues.Center);
                 AddWordSpacer(body);
 
                 // Meeting details table
@@ -57,7 +103,7 @@ namespace AdminMembers.Services
                 // Attendees
                 if (report.Attendees?.Any() == true)
                 {
-                    AddWordParagraph(body, "Aanwezigen", 16, true, AccentHex);
+                    AddWordParagraph(body, "Aanwezigen", 14, true, BlackHex);
 
                     var attendeeTable = CreateWordTable(body);
                     AddWordHeaderRow(attendeeTable, "Naam", "Status");
@@ -70,15 +116,20 @@ namespace AdminMembers.Services
                     AddWordSpacer(body);
                 }
 
-                // Agenda
-                if (!string.IsNullOrWhiteSpace(report.AgendaItems))
+                // Agenda items — light blue bars with notes
+                var agenda = ParseAgendaItems(report.AgendaItems);
+                if (agenda.Count > 0)
                 {
-                    AddWordParagraph(body, "Agendapunten", 16, true, AccentHex);
-                    var items = report.AgendaItems.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                    AddWordParagraph(body, "Agendapunten", 14, true, BlackHex);
                     int idx = 1;
-                    foreach (var item in items)
+                    foreach (var item in agenda)
                     {
-                        AddWordParagraph(body, $"{idx}. {item.Trim()}", 11, false, TextDarkHex);
+                        AddWordAgendaBar(body, $"{idx}. {item.Title}");
+                        if (!string.IsNullOrWhiteSpace(item.Notes))
+                        {
+                            foreach (var line in item.Notes.Split('\n'))
+                                AddWordParagraph(body, line, 10, false, DarkGrayHex);
+                        }
                         idx++;
                     }
                     AddWordSpacer(body);
@@ -87,27 +138,23 @@ namespace AdminMembers.Services
                 // Content
                 if (!string.IsNullOrWhiteSpace(report.Content))
                 {
-                    AddWordParagraph(body, "Verslag", 16, true, AccentHex);
+                    AddWordParagraph(body, "Verslag", 14, true, BlackHex);
                     foreach (var line in report.Content.Split('\n'))
-                    {
-                        AddWordParagraph(body, line, 11, false, TextDarkHex);
-                    }
+                        AddWordParagraph(body, line, 10, false, DarkGrayHex);
                     AddWordSpacer(body);
                 }
 
                 // Notes
                 if (!string.IsNullOrWhiteSpace(report.Notes))
                 {
-                    AddWordParagraph(body, "Opmerkingen", 16, true, AccentHex);
+                    AddWordParagraph(body, "Opmerkingen", 14, true, BlackHex);
                     foreach (var line in report.Notes.Split('\n'))
-                    {
-                        AddWordParagraph(body, line, 11, false, "64748B");
-                    }
+                        AddWordParagraph(body, line, 10, false, MedGrayHex);
                 }
 
                 // Footer
                 AddWordSpacer(body);
-                AddWordParagraph(body, $"Geëxporteerd op {DateTime.Now:dd/MM/yyyy HH:mm}", 9, false, "94A3B8", JustificationValues.Center);
+                AddWordParagraph(body, $"Geëxporteerd op {DateTime.Now:dd/MM/yyyy HH:mm}", 8, false, "999999", JustificationValues.Center);
 
                 mainPart.Document.Save();
             }
@@ -116,32 +163,57 @@ namespace AdminMembers.Services
         }
 
         // ── PDF export ──────────────────────────────────────────────────
-        public byte[] ExportToPdf(BoardReport report)
+        public byte[] ExportToPdf(BoardReport report, byte[]? logoData = null)
         {
             using var stream = new MemoryStream();
             var document = new Document(iTextSharp.text.PageSize.A4, 40, 40, 50, 40);
             PdfWriter.GetInstance(document, stream);
             document.Open();
 
-            var accent = new BaseColor(79, 70, 229);
-            var textDark = new BaseColor(30, 41, 59);
-            var textMuted = new BaseColor(100, 116, 139);
-            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 22, accent);
-            var subFont = FontFactory.GetFont(FontFactory.HELVETICA, 11, textMuted);
-            var sectionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14, accent);
-            var bodyFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, textDark);
-            var boldFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, textDark);
-            var smallFont = FontFactory.GetFont(FontFactory.HELVETICA, 8, new BaseColor(148, 163, 184));
+            // B&W fonts
+            var black = BaseColor.Black;
+            var darkGray = new BaseColor(51, 51, 51);
+            var medGray = new BaseColor(102, 102, 102);
+            var lightBlue = new BaseColor(214, 228, 240); // #D6E4F0
+
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 20, black);
+            var subFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, medGray);
+            var sectionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 13, black);
+            var bodyFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, darkGray);
+            var boldFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, darkGray);
+            var smallFont = FontFactory.GetFont(FontFactory.HELVETICA, 8, new BaseColor(153, 153, 153));
+            var agendaTitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, black);
+            var notesFont = FontFactory.GetFont(FontFactory.HELVETICA, 9, darkGray);
+
+            // Logo in top-right corner
+            if (logoData?.Length > 0)
+            {
+                try
+                {
+                    var logoTable = new PdfPTable(1) { WidthPercentage = 100, SpacingAfter = 4 };
+                    var logo = iTextSharp.text.Image.GetInstance(logoData);
+                    logo.ScaleToFit(80f, 50f);
+                    var logoCell = new PdfPCell(logo)
+                    {
+                        Border = iTextSharp.text.Rectangle.NO_BORDER,
+                        HorizontalAlignment = Element.ALIGN_RIGHT,
+                        PaddingBottom = 4
+                    };
+                    logoTable.AddCell(logoCell);
+                    document.Add(logoTable);
+                }
+                catch { /* skip bad logo */ }
+            }
 
             // Title
             document.Add(new iTextSharp.text.Paragraph(report.Title, headerFont)
                 { Alignment = Element.ALIGN_CENTER, SpacingAfter = 4 });
             document.Add(new iTextSharp.text.Paragraph("Bestuursverslag", subFont)
-                { Alignment = Element.ALIGN_CENTER, SpacingAfter = 20 });
+                { Alignment = Element.ALIGN_CENTER, SpacingAfter = 16 });
 
-            // Accent line
-            var lineTable = new PdfPTable(1) { WidthPercentage = 40, SpacingAfter = 16, HorizontalAlignment = Element.ALIGN_CENTER };
-            lineTable.AddCell(new PdfPCell { BackgroundColor = accent, FixedHeight = 3, Border = iTextSharp.text.Rectangle.NO_BORDER });
+            // Thin black line
+            var lineTable = new PdfPTable(1) { WidthPercentage = 50, SpacingAfter = 14, HorizontalAlignment = Element.ALIGN_CENTER };
+            lineTable.AddCell(new PdfPCell { BackgroundColor = black, FixedHeight = 1.5f, Border = iTextSharp.text.Rectangle.NO_BORDER });
             document.Add(lineTable);
 
             // Meeting details
@@ -157,41 +229,60 @@ namespace AdminMembers.Services
             // Attendees
             if (report.Attendees?.Any() == true)
             {
-                document.Add(new iTextSharp.text.Paragraph("Aanwezigen", sectionFont) { SpacingBefore = 12, SpacingAfter = 8 });
+                document.Add(new iTextSharp.text.Paragraph("Aanwezigen", sectionFont) { SpacingBefore = 10, SpacingAfter = 8 });
 
                 var attTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 12 };
                 attTable.SetWidths(new float[] { 70, 30 });
 
                 var thFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9, BaseColor.White);
-                attTable.AddCell(new PdfPCell(new Phrase("Naam", thFont)) { BackgroundColor = accent, Padding = 6 });
-                attTable.AddCell(new PdfPCell(new Phrase("Status", thFont)) { BackgroundColor = accent, Padding = 6, HorizontalAlignment = Element.ALIGN_CENTER });
+                attTable.AddCell(new PdfPCell(new Phrase("Naam", thFont)) { BackgroundColor = black, Padding = 6 });
+                attTable.AddCell(new PdfPCell(new Phrase("Status", thFont)) { BackgroundColor = black, Padding = 6, HorizontalAlignment = Element.ALIGN_CENTER });
 
                 bool alt = false;
                 foreach (var a in report.Attendees.OrderBy(x => x.Member?.FirstName))
                 {
-                    var bg = alt ? new BaseColor(241, 245, 249) : BaseColor.White;
+                    var bg = alt ? new BaseColor(240, 240, 240) : BaseColor.White;
                     var name = a.Member != null ? $"{a.Member.FirstName} {a.Member.LastName}" : $"Lid #{a.MemberId}";
                     var statusLabel = a.IsPresent ? "Aanwezig" : "Afwezig";
-                    var statusColor = a.IsPresent ? new BaseColor(220, 252, 231) : new BaseColor(254, 226, 226);
 
                     attTable.AddCell(new PdfPCell(new Phrase(name, bodyFont)) { BackgroundColor = bg, Padding = 5 });
-                    attTable.AddCell(new PdfPCell(new Phrase(statusLabel, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9, textDark)))
-                        { BackgroundColor = statusColor, Padding = 5, HorizontalAlignment = Element.ALIGN_CENTER });
+                    attTable.AddCell(new PdfPCell(new Phrase(statusLabel, boldFont))
+                        { BackgroundColor = bg, Padding = 5, HorizontalAlignment = Element.ALIGN_CENTER });
 
                     alt = !alt;
                 }
                 document.Add(attTable);
             }
 
-            // Agenda
-            if (!string.IsNullOrWhiteSpace(report.AgendaItems))
+            // Agenda — light blue bars per item with notes underneath
+            var agenda = ParseAgendaItems(report.AgendaItems);
+            if (agenda.Count > 0)
             {
-                document.Add(new iTextSharp.text.Paragraph("Agendapunten", sectionFont) { SpacingBefore = 12, SpacingAfter = 6 });
-                var items = report.AgendaItems.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                document.Add(new iTextSharp.text.Paragraph("Agendapunten", sectionFont) { SpacingBefore = 10, SpacingAfter = 6 });
+
                 int idx = 1;
-                foreach (var item in items)
+                foreach (var item in agenda)
                 {
-                    document.Add(new iTextSharp.text.Paragraph($"  {idx}. {item.Trim()}", bodyFont) { SpacingAfter = 2 });
+                    // Light blue bar with agenda title
+                    var barTable = new PdfPTable(1) { WidthPercentage = 100, SpacingBefore = 4, SpacingAfter = 2 };
+                    var barCell = new PdfPCell(new Phrase($"  {idx}. {item.Title}", agendaTitleFont))
+                    {
+                        BackgroundColor = lightBlue,
+                        Border = iTextSharp.text.Rectangle.NO_BORDER,
+                        Padding = 7,
+                        PaddingLeft = 10
+                    };
+                    barTable.AddCell(barCell);
+                    document.Add(barTable);
+
+                    // Notes underneath
+                    if (!string.IsNullOrWhiteSpace(item.Notes))
+                    {
+                        foreach (var line in item.Notes.Split('\n'))
+                        {
+                            document.Add(new iTextSharp.text.Paragraph($"     {line}", notesFont) { SpacingAfter = 1 });
+                        }
+                    }
                     idx++;
                 }
             }
@@ -201,9 +292,7 @@ namespace AdminMembers.Services
             {
                 document.Add(new iTextSharp.text.Paragraph("Verslag", sectionFont) { SpacingBefore = 14, SpacingAfter = 6 });
                 foreach (var line in report.Content.Split('\n'))
-                {
                     document.Add(new iTextSharp.text.Paragraph(line, bodyFont) { SpacingAfter = 3 });
-                }
             }
 
             // Notes
@@ -211,9 +300,7 @@ namespace AdminMembers.Services
             {
                 document.Add(new iTextSharp.text.Paragraph("Opmerkingen", sectionFont) { SpacingBefore = 14, SpacingAfter = 6 });
                 foreach (var line in report.Notes.Split('\n'))
-                {
-                    document.Add(new iTextSharp.text.Paragraph(line, FontFactory.GetFont(FontFactory.HELVETICA_OBLIQUE, 10, textMuted)) { SpacingAfter = 2 });
-                }
+                    document.Add(new iTextSharp.text.Paragraph(line, FontFactory.GetFont(FontFactory.HELVETICA_OBLIQUE, 9, medGray)) { SpacingAfter = 2 });
             }
 
             // Footer
@@ -244,6 +331,25 @@ namespace AdminMembers.Services
             body.InsertBefore(para, body.Descendants<SectionProperties>().FirstOrDefault());
         }
 
+        private static void AddWordAgendaBar(Body body, string text)
+        {
+            var run = new Run();
+            var rp = new RunProperties();
+            rp.Append(new FontSize { Val = "22" });
+            rp.Append(new Color { Val = BlackHex });
+            rp.Append(new Bold());
+            run.Append(rp);
+            run.Append(new Text(text) { Space = SpaceProcessingModeValues.Preserve });
+
+            var para = new Paragraph();
+            var paraProps = new ParagraphProperties();
+            paraProps.Append(new Shading { Val = ShadingPatternValues.Clear, Fill = AgendaBarHex });
+            paraProps.Append(new SpacingBetweenLines { Before = "120", After = "60" });
+            para.Append(paraProps);
+            para.Append(run);
+            body.InsertBefore(para, body.Descendants<SectionProperties>().FirstOrDefault());
+        }
+
         private static void AddWordSpacer(Body body)
         {
             var para = new Paragraph(new Run(new Text(" ") { Space = SpaceProcessingModeValues.Preserve }));
@@ -256,12 +362,12 @@ namespace AdminMembers.Services
             var tblProps = new TableProperties(
                 new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct },
                 new TableBorders(
-                    new TopBorder { Val = BorderValues.Single, Color = "E2E8F0", Size = 4 },
-                    new BottomBorder { Val = BorderValues.Single, Color = "E2E8F0", Size = 4 },
-                    new LeftBorder { Val = BorderValues.Single, Color = "E2E8F0", Size = 4 },
-                    new RightBorder { Val = BorderValues.Single, Color = "E2E8F0", Size = 4 },
-                    new InsideHorizontalBorder { Val = BorderValues.Single, Color = "E2E8F0", Size = 4 },
-                    new InsideVerticalBorder { Val = BorderValues.Single, Color = "E2E8F0", Size = 4 }));
+                    new TopBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
+                    new BottomBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
+                    new LeftBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
+                    new RightBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
+                    new InsideHorizontalBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 },
+                    new InsideVerticalBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4 }));
             table.Append(tblProps);
             body.InsertBefore(table, body.Descendants<SectionProperties>().FirstOrDefault());
             return table;
@@ -272,12 +378,12 @@ namespace AdminMembers.Services
             var row = new TableRow();
 
             var labelCell = new TableCell();
-            var labelRun = new Run(new RunProperties(new Bold(), new FontSize { Val = "20" }, new Color { Val = AccentHex }), new Text(label));
+            var labelRun = new Run(new RunProperties(new Bold(), new FontSize { Val = "20" }, new Color { Val = BlackHex }), new Text(label));
             labelCell.Append(new Paragraph(labelRun));
             labelCell.Append(new TableCellProperties(new Shading { Val = ShadingPatternValues.Clear, Fill = LightGrayHex }));
 
             var valueCell = new TableCell();
-            var valueRun = new Run(new RunProperties(new FontSize { Val = "20" }, new Color { Val = TextDarkHex }), new Text(value));
+            var valueRun = new Run(new RunProperties(new FontSize { Val = "20" }, new Color { Val = DarkGrayHex }), new Text(value));
             valueCell.Append(new Paragraph(valueRun));
 
             row.Append(labelCell, valueCell);
@@ -292,7 +398,7 @@ namespace AdminMembers.Services
                 var cell = new TableCell();
                 var run = new Run(new RunProperties(new Bold(), new FontSize { Val = "18" }, new Color { Val = WhiteHex }), new Text(h));
                 cell.Append(new Paragraph(run));
-                cell.Append(new TableCellProperties(new Shading { Val = ShadingPatternValues.Clear, Fill = AccentHex }));
+                cell.Append(new TableCellProperties(new Shading { Val = ShadingPatternValues.Clear, Fill = BlackHex }));
                 row.Append(cell);
             }
             table.Append(row);
@@ -304,18 +410,45 @@ namespace AdminMembers.Services
             foreach (var v in values)
             {
                 var cell = new TableCell();
-                var run = new Run(new RunProperties(new FontSize { Val = "20" }, new Color { Val = TextDarkHex }), new Text(v));
+                var run = new Run(new RunProperties(new FontSize { Val = "20" }, new Color { Val = DarkGrayHex }), new Text(v));
                 cell.Append(new Paragraph(run));
                 row.Append(cell);
             }
             table.Append(row);
         }
 
+        private static DocumentFormat.OpenXml.Wordprocessing.Drawing CreateWordImage(string relationshipId, long cx, long cy)
+        {
+            var element = new DocumentFormat.OpenXml.Wordprocessing.Drawing(
+                new DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline(
+                    new DocumentFormat.OpenXml.Drawing.Wordprocessing.Extent { Cx = cx, Cy = cy },
+                    new DocumentFormat.OpenXml.Drawing.Wordprocessing.DocProperties { Id = 1U, Name = "Logo" },
+                    new DocumentFormat.OpenXml.Drawing.Graphic(
+                        new DocumentFormat.OpenXml.Drawing.GraphicData(
+                            new DocumentFormat.OpenXml.Drawing.Pictures.Picture(
+                                new DocumentFormat.OpenXml.Drawing.Pictures.NonVisualPictureProperties(
+                                    new DocumentFormat.OpenXml.Drawing.Pictures.NonVisualDrawingProperties { Id = 0U, Name = "logo.png" },
+                                    new DocumentFormat.OpenXml.Drawing.Pictures.NonVisualPictureDrawingProperties()),
+                                new DocumentFormat.OpenXml.Drawing.Pictures.BlipFill(
+                                    new DocumentFormat.OpenXml.Drawing.Blip { Embed = relationshipId },
+                                    new DocumentFormat.OpenXml.Drawing.Stretch(new DocumentFormat.OpenXml.Drawing.FillRectangle())),
+                                new DocumentFormat.OpenXml.Drawing.Pictures.ShapeProperties(
+                                    new DocumentFormat.OpenXml.Drawing.Transform2D(
+                                        new DocumentFormat.OpenXml.Drawing.Offset { X = 0, Y = 0 },
+                                        new DocumentFormat.OpenXml.Drawing.Extents { Cx = cx, Cy = cy }),
+                                    new DocumentFormat.OpenXml.Drawing.PresetGeometry(
+                                        new DocumentFormat.OpenXml.Drawing.AdjustValueList()) { Preset = DocumentFormat.OpenXml.Drawing.ShapeTypeValues.Rectangle }))
+                        ) { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
+                ) { DistanceFromTop = 0U, DistanceFromBottom = 0U, DistanceFromLeft = 0U, DistanceFromRight = 0U });
+
+            return element;
+        }
+
         // ── PDF helpers ─────────────────────────────────────────────────
         private static void AddPdfDetailRow(PdfPTable table, string label, string value, Font labelFont, Font valueFont)
         {
             table.AddCell(new PdfPCell(new Phrase(label, labelFont))
-                { Border = iTextSharp.text.Rectangle.NO_BORDER, Padding = 4, BackgroundColor = new BaseColor(241, 245, 249) });
+                { Border = iTextSharp.text.Rectangle.NO_BORDER, Padding = 4, BackgroundColor = new BaseColor(240, 240, 240) });
             table.AddCell(new PdfPCell(new Phrase(value, valueFont))
                 { Border = iTextSharp.text.Rectangle.NO_BORDER, Padding = 4 });
         }
