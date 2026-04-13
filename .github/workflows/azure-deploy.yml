@@ -33,19 +33,36 @@ jobs:
       - name: Restore
         run: dotnet restore ${{ env.PROJECT_PATH }}
 
-      - name: Build
-        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
-
       - name: Publish
-        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --no-build --output ${{ env.PUBLISH_PATH }}
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} \
+            --configuration Release \
+            --no-restore \
+            --output ${{ env.PUBLISH_PATH }}
+          echo "=== Publish output file count ==="
+          find ${{ env.PUBLISH_PATH }} -type f | wc -l
+          echo "=== Top-level directories ==="
+          ls -la ${{ env.PUBLISH_PATH }}/
+          echo "=== Checking wwwroot ==="
+          ls -la ${{ env.PUBLISH_PATH }}/wwwroot/ || echo "WARNING: wwwroot missing!"
 
       - name: Enable stdout logging in web.config
         run: |
-          sed -i 's/stdoutLogEnabled="false"/stdoutLogEnabled="true"/' ${{ env.PUBLISH_PATH }}/web.config
-          cat ${{ env.PUBLISH_PATH }}/web.config
+          if [ -f "${{ env.PUBLISH_PATH }}/web.config" ]; then
+            sed -i 's/stdoutLogEnabled="false"/stdoutLogEnabled="true"/' ${{ env.PUBLISH_PATH }}/web.config
+            cat ${{ env.PUBLISH_PATH }}/web.config
+          else
+            echo "No web.config found (Linux deployment)"
+          fi
 
       - name: Zip publish output
-        run: cd ${{ env.PUBLISH_PATH }} && zip -r ../publish.zip .
+        run: |
+          cd ${{ env.PUBLISH_PATH }}
+          # Remove any nested publish/test-publish folders that shouldn't be deployed
+          rm -rf publish test-publish test-publish2
+          echo "=== Final file count in zip ==="
+          find . -type f | wc -l
+          zip -r ../publish.zip .
 
       - name: Generate idempotent migration script
         run: |
@@ -135,7 +152,8 @@ jobs:
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --src-path publish.zip \
             --type zip \
-            --async false
+            --async false \
+            --clean true
 
 
       - name: Enable App Service logging
