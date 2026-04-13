@@ -34,13 +34,13 @@
 </div>
 
 <!-- ═══════════════════ EDITOR MODAL (full-screen) ═══════════════════ -->
-<div class="modal-overlay" id="editorModal" style="display:none;" onclick="if(event.target===this)closeModal('editorModal')">
-    <div class="modal" style="max-width:960px;width:95vw;max-height:92vh;display:flex;flex-direction:column;">
-        <div class="modal-header" style="flex-shrink:0;">
+<div class="br-overlay" id="editorModal" style="display:none;" onclick="if(event.target===this)closeModal('editorModal')">
+    <div class="br-dialog" style="max-width:960px;width:95vw;max-height:92vh;display:flex;flex-direction:column;">
+        <div class="br-dialog-header">
             <h3 id="editorTitle" style="margin:0;">@Localizer["NewBoardReport"]</h3>
             <button class="btn btn-xs btn-icon" onclick="closeModal('editorModal')">&times;</button>
         </div>
-        <div class="modal-body" style="flex:1;overflow-y:auto;padding:20px;">
+        <div class="br-dialog-body" style="flex:1;overflow-y:auto;padding:20px;">
 
             <!-- Row 1: Title + Status -->
             <div style="display:grid;grid-template-columns:1fr 160px;gap:12px;margin-bottom:16px;">
@@ -103,7 +103,7 @@
 
             <input type="hidden" id="f_id" value="0" />
         </div>
-        <div class="modal-footer" style="flex-shrink:0;display:flex;gap:8px;justify-content:flex-end;">
+        <div class="br-dialog-footer">
             <button class="btn btn-primary" onclick="saveReport()">@Localizer["BoardReportSave"]</button>
             <button class="btn btn-secondary" onclick="closeModal('editorModal')">Annuleren</button>
         </div>
@@ -111,14 +111,14 @@
 </div>
 
 <!-- ═══════════════════ VIEW MODAL ═══════════════════ -->
-<div class="modal-overlay" id="viewModal" style="display:none;" onclick="if(event.target===this)closeModal('viewModal')">
-    <div class="modal" style="max-width:780px;width:92vw;max-height:90vh;display:flex;flex-direction:column;">
-        <div class="modal-header" style="flex-shrink:0;">
+<div class="br-overlay" id="viewModal" style="display:none;" onclick="if(event.target===this)closeModal('viewModal')">
+    <div class="br-dialog" style="max-width:780px;width:92vw;max-height:90vh;display:flex;flex-direction:column;">
+        <div class="br-dialog-header">
             <h3 id="viewTitle" style="margin:0;"></h3>
             <button class="btn btn-xs btn-icon" onclick="closeModal('viewModal')">&times;</button>
         </div>
-        <div class="modal-body" id="viewBody" style="flex:1;overflow-y:auto;"></div>
-        <div class="modal-footer" style="flex-shrink:0;display:flex;gap:8px;justify-content:flex-end;">
+        <div class="br-dialog-body" id="viewBody" style="flex:1;overflow-y:auto;"></div>
+        <div class="br-dialog-footer">
             <button class="btn btn-icon" onclick="exportWord()">📄 @Localizer["BoardReportExportWord"]</button>
             <button class="btn btn-icon" onclick="exportPdf()">📕 @Localizer["BoardReportExportPdf"]</button>
             <button class="btn btn-secondary" onclick="closeModal('viewModal')">Sluiten</button>
@@ -127,14 +127,14 @@
 </div>
 
 <!-- ═══════════════════ DELETE MODAL ═══════════════════ -->
-<div class="modal-overlay" id="deleteModal" style="display:none;" onclick="if(event.target===this)closeModal('deleteModal')">
-    <div class="modal" style="max-width:400px;">
-        <div class="modal-header">
+<div class="br-overlay" id="deleteModal" style="display:none;" onclick="if(event.target===this)closeModal('deleteModal')">
+    <div class="br-dialog" style="max-width:400px;">
+        <div class="br-dialog-header">
             <h3 style="margin:0;">@Localizer["BoardReportDelete"]</h3>
             <button class="btn btn-xs btn-icon" onclick="closeModal('deleteModal')">&times;</button>
         </div>
-        <div class="modal-body"><p>@Localizer["BoardReportDeleteConfirm"]</p></div>
-        <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+        <div class="br-dialog-body"><p>@Localizer["BoardReportDeleteConfirm"]</p></div>
+        <div class="br-dialog-footer">
             <button class="btn btn-danger" onclick="confirmDelete()">@Localizer["BoardReportDelete"]</button>
             <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Annuleren</button>
         </div>
@@ -510,6 +510,56 @@
 </script>
 
 <style>
+    /* Board Reports Modal System (scoped, avoids global .modal conflict) */
+    .br-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: brFadeIn .15s ease;
+        padding: 20px;
+    }
+    .br-dialog {
+        background: var(--panel, #fff);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        width: 95vw;
+        max-width: 960px;
+        max-height: 92vh;
+        display: flex;
+        flex-direction: column;
+        animation: brSlideUp .2s ease;
+        overflow: hidden;
+    }
+    .br-dialog-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+    .br-dialog-header h3 { font-size: 17px; font-weight: 700; }
+    .br-dialog-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+    }
+    .br-dialog-footer {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        padding: 14px 24px;
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+        background: var(--surface, #f9fafb);
+    }
+    @@keyframes brFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @@keyframes brSlideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
     /* Attendees grid */
     .attendees-grid {
         display: grid;
