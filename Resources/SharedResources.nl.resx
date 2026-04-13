@@ -743,4 +743,47 @@
   <data name="Sending" xml:space="preserve"><value>Verzenden…</value></data>
   <data name="TestEmailSent" xml:space="preserve"><value>Test e-mail succesvol verzonden!</value></data>
   <data name="TestEmailFailed" xml:space="preserve"><value>Kon de test e-mail niet verzenden.</value></data>
+  <data name="FeatureRequests" xml:space="preserve"><value>Functieverzoeken</value></data>
+  <data name="FeatureRequestsDescription" xml:space="preserve"><value>Dien functieverzoeken in en laat AI-agents de haalbaarheid analyseren en een architectuurplan opstellen.</value></data>
+  <data name="SubmitRequest" xml:space="preserve"><value>Verzoek indienen</value></data>
+  <data name="AllRequests" xml:space="preserve"><value>Alle verzoeken</value></data>
+  <data name="NewFeatureRequest" xml:space="preserve"><value>Nieuw functieverzoek</value></data>
+  <data name="RequestTitle" xml:space="preserve"><value>Titel</value></data>
+  <data name="RequestTitleDescription" xml:space="preserve"><value>Een korte samenvatting van wat je nodig hebt.</value></data>
+  <data name="RequestTitlePlaceholder" xml:space="preserve"><value>bijv. Bulkimport voor leden toevoegen</value></data>
+  <data name="RequestDescription" xml:space="preserve"><value>Beschrijving</value></data>
+  <data name="RequestDescriptionHelp" xml:space="preserve"><value>Beschrijf de functie in detail — wat, waarom en eventuele beperkingen.</value></data>
+  <data name="RequestDescriptionPlaceholder" xml:space="preserve"><value>Beschrijf de functie die je wilt, het probleem dat het oplost en eventuele technische details…</value></data>
+  <data name="SubmitForAnalysis" xml:space="preserve"><value>Indienen voor AI-analyse</value></data>
+  <data name="RequestSubmitted" xml:space="preserve"><value>Verzoek ingediend! AI-analyse is gestart.</value></data>
+  <data name="Submitting" xml:space="preserve"><value>Indienen…</value></data>
+  <data name="HowItWorks" xml:space="preserve"><value>Hoe het werkt</value></data>
+  <data name="StepSubmit" xml:space="preserve"><value>Indienen</value></data>
+  <data name="StepSubmitDesc" xml:space="preserve"><value>Beschrijf je functieverzoek via het formulier hierboven.</value></data>
+  <data name="StepAnalyze" xml:space="preserve"><value>AI analyseert</value></data>
+  <data name="StepAnalyzeDesc" xml:space="preserve"><value>Agent 1 classificeert het verzoek, bepaalt categorie en prioriteit.</value></data>
+  <data name="StepArchitect" xml:space="preserve"><value>Architectuurplan</value></data>
+  <data name="StepArchitectDesc" xml:space="preserve"><value>Agent 2 beoordeelt haalbaarheid en maakt een gedetailleerd architectuurplan.</value></data>
+  <data name="Pending" xml:space="preserve"><value>In afwachting</value></data>
+  <data name="Processing" xml:space="preserve"><value>Verwerken</value></data>
+  <data name="Analyzed" xml:space="preserve"><value>Geanalyseerd</value></data>
+  <data name="Planned" xml:space="preserve"><value>Gepland</value></data>
+  <data name="NoFeatureRequests" xml:space="preserve"><value>Nog geen functieverzoeken.</value></data>
+  <data name="DeleteFeatureRequestConfirm" xml:space="preserve"><value>Weet je zeker dat je dit functieverzoek wilt verwijderen?</value></data>
+  <data name="Analysis" xml:space="preserve"><value>Analyse</value></data>
+  <data name="Feasibility" xml:space="preserve"><value>Haalbaarheid</value></data>
+  <data name="ArchitecturalPlan" xml:space="preserve"><value>Architectuurplan</value></data>
+  <data name="Category" xml:space="preserve"><value>Categorie</value></data>
+  <data name="FRPriority" xml:space="preserve"><value>Prioriteit</value></data>
+  <data name="AwaitingAi" xml:space="preserve"><value>AI-analyse is bezig. Resultaten verschijnen hier zodra de GitHub Action klaar is.</value></data>
+  <data name="Close" xml:space="preserve"><value>Sluiten</value></data>
+  <data name="AiSettings" xml:space="preserve"><value>AI-instellingen</value></data>
+  <data name="AiSettingsDescription" xml:space="preserve"><value>Configureer de GitHub-integratie die AI-gestuurde functieverzoekanalyse mogelijk maakt.</value></data>
+  <data name="GitHubConfiguration" xml:space="preserve"><value>GitHub-configuratie</value></data>
+  <data name="GitHubOwner" xml:space="preserve"><value>Repository-eigenaar</value></data>
+  <data name="GitHubOwnerDescription" xml:space="preserve"><value>De GitHub-gebruiker of organisatie die eigenaar is van de repository.</value></data>
+  <data name="GitHubRepo" xml:space="preserve"><value>Repositorynaam</value></data>
+  <data name="GitHubRepoDescription" xml:space="preserve"><value>De naam van de GitHub-repository.</value></data>
+  <data name="GitHubToken" xml:space="preserve"><value>GitHub Token</value></data>
+  <data name="GitHubTokenDescription" xml:space="preserve"><value>Een persoonlijk toegangstoken met workflow dispatch-machtiging. Laat leeg om de huidige waarde te behouden.</value></data>
 </root>

@@ -90,6 +90,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TotpService>();
 builder.Services.AddScoped<MemberDocumentService>();
+builder.Services.AddScoped<FeatureRequestService>();
 builder.Services.AddHostedService<AuditLogCleanupService>();
 
 builder.Services.AddSession(options =>

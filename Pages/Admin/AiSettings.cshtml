@@ -1,0 +1,129 @@
+@page
+@model AdminMembers.Pages.Admin.AiSettingsModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Localizer["AiSettings"];
+    ViewData["LayoutPage"] = "ai-settings";
+    ViewData["LayoutUser"] = Model.CurrentUser;
+}
+
+<div class="page-body-full settings-page">
+
+    <div class="page-heading">
+        <h1>@Localizer["AiSettings"]</h1>
+        <p>@Localizer["AiSettingsDescription"]</p>
+    </div>
+
+    <div class="settings-grid">
+        <div class="settings-nav card">
+            <a class="settings-nav-item active" href="#">
+                <span class="nav-icon">&#129302;</span> @Localizer["GitHubConfiguration"]
+            </a>
+        </div>
+
+        <div class="settings-content">
+            <div class="settings-section active">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">@Localizer["GitHubConfiguration"]</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="aiForm" onsubmit="saveAiSettings(event)">
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["GitHubOwner"]</div>
+                                    <div class="settings-row-desc">@Localizer["GitHubOwnerDescription"]</div>
+                                </div>
+                                <input id="ghOwner" type="text" placeholder="TOGO-TOM"
+                                       style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                            </div>
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["GitHubRepo"]</div>
+                                    <div class="settings-row-desc">@Localizer["GitHubRepoDescription"]</div>
+                                </div>
+                                <input id="ghRepo" type="text" placeholder="GildeVandeStroppendragers"
+                                       style="width:260px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                            </div>
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-row-label">@Localizer["GitHubToken"]</div>
+                                    <div class="settings-row-desc">@Localizer["GitHubTokenDescription"]</div>
+                                </div>
+                                <input id="ghToken" type="password" placeholder="ghp_xxxx..."
+                                       style="width:340px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13px;" />
+                            </div>
+                            <div class="settings-row" style="border-bottom:none;padding-bottom:0;justify-content:flex-end;gap:12px;align-items:center;">
+                                <span id="aiStatus" style="font-size:12px;color:var(--text-muted);"></span>
+                                <button type="submit" class="btn btn-accent">&#10003; @Localizer["SaveSettings"]</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const pageToken = '@Model.AuthToken';
+const L = {
+    saving: '@Html.Raw(Localizer["Saving"].Value.Replace("'", "\\'"))',
+    saved: '@Html.Raw(Localizer["Saved"].Value.Replace("'", "\\'"))',
+    saveFailed: '@Html.Raw(Localizer["SaveFailed"].Value.Replace("'", "\\'"))',
+    requestFailed: '@Html.Raw(Localizer["RequestFailed"].Value.Replace("'", "\\'"))',
+};
+
+async function loadAiSettings() {
+    try {
+        const r = await fetch('/api/settings/ai', {
+            headers: { ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {}) }
+        });
+        if (!r.ok) return;
+        const s = await r.json();
+        document.getElementById('ghOwner').value = s.GitHubOwner || '';
+        document.getElementById('ghRepo').value  = s.GitHubRepo || '';
+        document.getElementById('ghToken').value = s.GitHubToken || '';
+    } catch {}
+}
+
+async function saveAiSettings(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById('aiStatus');
+    statusEl.textContent = L.saving;
+    statusEl.style.color = '';
+
+    try {
+        const r = await fetch('/api/settings/ai', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {})
+            },
+            body: JSON.stringify({
+                gitHubOwner: document.getElementById('ghOwner').value,
+                gitHubRepo:  document.getElementById('ghRepo').value,
+                gitHubToken: document.getElementById('ghToken').value
+            })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) {
+            statusEl.style.color = 'green';
+            statusEl.textContent = L.saved;
+            setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = ''; }, 3000);
+        } else {
+            statusEl.style.color = 'red';
+            statusEl.textContent = data.error ?? L.saveFailed;
+        }
+    } catch {
+        statusEl.style.color = 'red';
+        statusEl.textContent = L.requestFailed;
+    }
+}
+
+loadAiSettings();
+</script>
+}
