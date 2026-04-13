@@ -125,22 +125,34 @@ namespace AdminMembers.Controllers
         /// <summary>
         /// Webhook callback from GitHub Actions to post analysis results.
         /// Secured by a shared secret in the X-Webhook-Secret header.
+        /// Accepts: the FEATURE_REQUEST_WEBHOOK_SECRET env var, the first 16 chars of the GitHub token, or the full token.
         /// </summary>
         [HttpPost("{id}/analysis-result")]
         public async Task<IActionResult> ReceiveAnalysisResult(int id, [FromBody] AnalysisResultDto dto, [FromHeader(Name = "X-Webhook-Secret")] string? webhookSecret)
         {
-            // Validate webhook secret
-            var settings = await _context.AiSettings.FirstOrDefaultAsync();
-            if (settings == null || string.IsNullOrEmpty(settings.GitHubToken))
-                return StatusCode(403, new { error = "Not configured" });
+            if (string.IsNullOrEmpty(webhookSecret))
+                return StatusCode(403, new { error = "Missing X-Webhook-Secret header" });
 
-            // Accept first 16 chars of token OR the full token as webhook secret
-            var shortSecret = settings.GitHubToken.Length >= 16
-                ? settings.GitHubToken[..16]
-                : settings.GitHubToken;
+            // Check 1: dedicated environment variable
+            var envSecret = Environment.GetEnvironmentVariable("FEATURE_REQUEST_WEBHOOK_SECRET");
+            if (!string.IsNullOrEmpty(envSecret) && webhookSecret == envSecret)
+            {
+                // Valid via env var
+            }
+            else
+            {
+                // Check 2: match against stored GitHub token (first 16 chars or full)
+                var settings = await _context.AiSettings.FirstOrDefaultAsync();
+                if (settings == null || string.IsNullOrEmpty(settings.GitHubToken))
+                    return StatusCode(403, new { error = "Webhook secret not configured. Set FEATURE_REQUEST_WEBHOOK_SECRET env var or configure AI settings." });
 
-            if (webhookSecret != shortSecret && webhookSecret != settings.GitHubToken)
-                return StatusCode(403, new { error = "Invalid webhook secret" });
+                var shortSecret = settings.GitHubToken.Length >= 16
+                    ? settings.GitHubToken[..16]
+                    : settings.GitHubToken;
+
+                if (webhookSecret != shortSecret && webhookSecret != settings.GitHubToken)
+                    return StatusCode(403, new { error = "Invalid webhook secret" });
+            }
 
             var request = await _context.FeatureRequests.FindAsync(id);
             if (request == null) return NotFound();

@@ -145,6 +145,13 @@ jobs:
             --linux-fx-version "DOTNETCORE|10.0"
           echo "Runtime set to DOTNETCORE|10.0"
 
+      - name: Set webhook secret app setting
+        run: |
+          az webapp config appsettings set \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --settings FEATURE_REQUEST_WEBHOOK_SECRET="${{ secrets.FEATURE_REQUEST_WEBHOOK_SECRET }}"
+
       - name: Deploy zip to App Service
         run: |
           az webapp deploy \
