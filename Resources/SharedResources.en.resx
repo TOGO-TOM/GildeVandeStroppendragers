@@ -786,4 +786,30 @@
   <data name="GitHubRepoDescription" xml:space="preserve"><value>The name of the GitHub repository.</value></data>
   <data name="GitHubToken" xml:space="preserve"><value>GitHub Token</value></data>
   <data name="GitHubTokenDescription" xml:space="preserve"><value>A personal access token with workflow dispatch permission. Leave empty to keep the current value.</value></data>
+  <data name="BoardReports" xml:space="preserve"><value>Board Reports</value></data>
+  <data name="BoardReportsDashboardDescription" xml:space="preserve"><value>Manage, create and export board meeting reports</value></data>
+  <data name="ViewBoardReports" xml:space="preserve"><value>View reports</value></data>
+  <data name="NewBoardReport" xml:space="preserve"><value>New report</value></data>
+  <data name="EditBoardReport" xml:space="preserve"><value>Edit report</value></data>
+  <data name="BoardReportTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="BoardReportDate" xml:space="preserve"><value>Meeting date</value></data>
+  <data name="BoardReportLocation" xml:space="preserve"><value>Location</value></data>
+  <data name="BoardReportAgenda" xml:space="preserve"><value>Agenda items</value></data>
+  <data name="BoardReportContent" xml:space="preserve"><value>Report content</value></data>
+  <data name="BoardReportNotes" xml:space="preserve"><value>Notes</value></data>
+  <data name="BoardReportAttendees" xml:space="preserve"><value>Attendees</value></data>
+  <data name="BoardReportPresent" xml:space="preserve"><value>Present</value></data>
+  <data name="BoardReportAbsent" xml:space="preserve"><value>Absent</value></data>
+  <data name="BoardReportStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="BoardReportDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="BoardReportFinal" xml:space="preserve"><value>Final</value></data>
+  <data name="BoardReportExportWord" xml:space="preserve"><value>Export to Word</value></data>
+  <data name="BoardReportExportPdf" xml:space="preserve"><value>Export to PDF</value></data>
+  <data name="BoardReportCreatedBy" xml:space="preserve"><value>Created by</value></data>
+  <data name="BoardReportSave" xml:space="preserve"><value>Save report</value></data>
+  <data name="BoardReportDelete" xml:space="preserve"><value>Delete report</value></data>
+  <data name="BoardReportDeleteConfirm" xml:space="preserve"><value>Are you sure you want to delete this report?</value></data>
+  <data name="BoardReportNoReports" xml:space="preserve"><value>No reports created yet</value></data>
+  <data name="BoardReportSelectMembers" xml:space="preserve"><value>Select board members</value></data>
+  <data name="BoardReportMeetingDetails" xml:space="preserve"><value>Meeting details</value></data>
 </root>

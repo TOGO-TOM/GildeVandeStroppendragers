@@ -46,6 +46,9 @@
                 || layoutUser?.Roles?.Contains("Stock Viewer") == true;
             var canSeeUsersNav = layoutUser?.Roles?.Contains("Super Admin") == true
                 || layoutUser?.Roles?.Contains("Admin") == true;
+            var canSeeBoardReportsNav = layoutUser?.Roles?.Contains("Super Admin") == true
+                || layoutUser?.Roles?.Contains("Admin") == true
+                || layoutUser?.Roles?.Contains("Secretaris") == true;
         }
         @if (canSeeMembersNav)
         {
@@ -54,6 +57,10 @@
         @if (canSeeStockNav)
         {
             <a href="/Stock" class="@(layoutPage == "stock" ? "active" : "")">@Localizer["Stock"]</a>
+        }
+        @if (canSeeBoardReportsNav)
+        {
+            <a href="/BoardReports" class="@(layoutPage == "board-reports" ? "active" : "")">@Localizer["BoardReports"]</a>
         }
         @if (canSeeUsersNav)
         {
@@ -122,6 +129,10 @@
     @if (canSeeStockNav)
     {
         <a href="/Stock" class="mobile-nav-item @(layoutPage == "stock" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["Stock"]</a>
+    }
+    @if (canSeeBoardReportsNav)
+    {
+        <a href="/BoardReports" class="mobile-nav-item @(layoutPage == "board-reports" ? "active" : "")" onclick="closeMobileMenu()">@Localizer["BoardReports"]</a>
     }
     @if (canSeeUsersNav)
     {

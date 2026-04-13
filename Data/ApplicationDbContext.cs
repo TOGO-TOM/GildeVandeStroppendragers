@@ -29,6 +29,8 @@ namespace AdminMembers.Data
         public DbSet<EmailSettings> EmailSettings { get; set; }
         public DbSet<AiSettings> AiSettings { get; set; }
         public DbSet<FeatureRequest> FeatureRequests { get; set; }
+        public DbSet<BoardReport> BoardReports { get; set; }
+        public DbSet<BoardReportAttendee> BoardReportAttendees { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -268,6 +270,36 @@ namespace AdminMembers.Data
                 entity.HasIndex(e => e.CreatedAt);
             });
 
+            modelBuilder.Entity<BoardReport>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("BoardReports");
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Location).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.CreatedByUsername).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.MeetingDate);
+                entity.HasIndex(e => e.Status);
+            });
+
+            modelBuilder.Entity<BoardReportAttendee>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("BoardReportAttendees");
+
+                entity.HasOne(a => a.BoardReport)
+                      .WithMany(r => r.Attendees)
+                      .HasForeignKey(a => a.BoardReportId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(a => a.Member)
+                      .WithMany()
+                      .HasForeignKey(a => a.MemberId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => new { e.BoardReportId, e.MemberId }).IsUnique();
+            });
+
             // Seed default roles
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Name = "Super Admin",     Description = "All rights including audit logs",          Permission = Permission.ReadWrite },
@@ -275,7 +307,8 @@ namespace AdminMembers.Data
                 new Role { Id = 3, Name = "Member Editor",   Description = "Can add, edit and delete members",         Permission = Permission.ReadWrite },
                 new Role { Id = 4, Name = "Member Viewer",   Description = "Read-only access to members",              Permission = Permission.Read },
                 new Role { Id = 5, Name = "Stock Editor",    Description = "Can add, edit and manage stock",           Permission = Permission.ReadWrite },
-                new Role { Id = 6, Name = "Stock Viewer",    Description = "Read-only access to stock",                Permission = Permission.Read }
+                new Role { Id = 6, Name = "Stock Viewer",    Description = "Read-only access to stock",                Permission = Permission.Read },
+                new Role { Id = 7, Name = "Secretaris",      Description = "Secretary - read/write all homepage features", Permission = Permission.ReadWrite }
             );
         }
     }
