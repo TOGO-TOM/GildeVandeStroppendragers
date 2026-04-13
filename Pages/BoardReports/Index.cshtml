@@ -72,7 +72,8 @@
             <!-- Row 3: Attendees (full width) -->
             <div class="form-group" style="margin-bottom:16px;">
                 <label>@Localizer["BoardReportAttendees"] — @Localizer["BoardReportSelectMembers"]</label>
-                <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center;">
+                    <input id="memberSearch" type="text" placeholder="🔍 Zoek lid..." style="width:200px;padding:6px 12px;font-size:12px;" oninput="filterMembers()" />
                     <button class="btn btn-xs btn-icon" type="button" onclick="selectAllAttendees(true)">✅ Alles aanwezig</button>
                     <button class="btn btn-xs btn-icon" type="button" onclick="selectAllAttendees(false)">Deselecteer alles</button>
                     <button class="btn btn-xs btn-icon" type="button" onclick="saveDefaultMembers()" title="Sla huidige selectie op als standaard">💾 Standaard opslaan</button>
@@ -152,6 +153,7 @@
     let reports = [];
     let members = [];
     let agendaItems = []; // [{Title:'...', Notes:'...'},...]
+    let hiddenSelections = []; // Selections for members hidden by search filter
     let viewingId = 0;
     let deleteId = 0;
     let dragSrcIdx = null;
@@ -174,7 +176,12 @@
         const c = document.getElementById('attendeesContainer');
         if (!members.length) { c.innerHTML = '<div style="padding:12px;color:var(--text-muted);">Geen leden gevonden</div>'; return; }
 
-        c.innerHTML = members.map(m => {
+        const q = (document.getElementById('memberSearch')?.value || '').toLowerCase();
+        const filtered = q ? members.filter(m => `${m.FirstName} ${m.LastName}`.toLowerCase().includes(q)) : members;
+
+        if (!filtered.length) { c.innerHTML = '<div style="padding:12px;color:var(--text-muted);">Geen leden gevonden voor deze zoekopdracht</div>'; return; }
+
+        c.innerHTML = filtered.map(m => {
             const sel = selected.find(s => s.MemberId === m.Id);
             const checked = sel ? 'checked' : '';
             const present = !sel || sel.IsPresent;
@@ -190,6 +197,24 @@
         }).join('');
     }
 
+    function filterMembers() {
+        // Save current visible selections + hidden ones
+        const visibleSelected = [];
+        document.querySelectorAll('.att-check:checked').forEach(cb => {
+            const mid = Number(cb.dataset.id);
+            const sel = document.querySelector(`.att-status[data-id="${mid}"]`);
+            visibleSelected.push({ MemberId: mid, IsPresent: sel?.value !== 'false' });
+        });
+        // Merge: hidden selections for members NOT currently in DOM, plus visible checked ones
+        const visibleIds = new Set([...document.querySelectorAll('.att-check')].map(cb => Number(cb.dataset.id)));
+        const merged = [
+            ...hiddenSelections.filter(h => !visibleIds.has(h.MemberId)),
+            ...visibleSelected
+        ];
+        hiddenSelections = merged;
+        renderAttendees(merged);
+    }
+
     function selectAllAttendees(check) {
         document.querySelectorAll('.att-check').forEach(cb => {
             cb.checked = check;
@@ -200,10 +225,17 @@
 
     function getSelectedAttendees() {
         const result = [];
+        // Get visible selections
+        const visibleIds = new Set();
         document.querySelectorAll('.att-check:checked').forEach(cb => {
             const mid = Number(cb.dataset.id);
+            visibleIds.add(mid);
             const sel = document.querySelector(`.att-status[data-id="${mid}"]`);
             result.push({ MemberId: mid, IsPresent: sel?.value !== 'false' });
+        });
+        // Add hidden selections not currently visible
+        hiddenSelections.forEach(h => {
+            if (!visibleIds.has(h.MemberId)) result.push(h);
         });
         return result;
     }
@@ -382,6 +414,11 @@
         document.getElementById('f_status').value = data?.Status || 'Draft';
         document.getElementById('f_notes').value = data?.Notes || '';
         document.getElementById('editorTitle').textContent = data ? '@Localizer["EditBoardReport"]' : '@Localizer["NewBoardReport"]';
+
+        // Reset search and hidden selections
+        const searchInput = document.getElementById('memberSearch');
+        if (searchInput) searchInput.value = '';
+        hiddenSelections = [];
 
         setAgendaFromData(data?.AgendaItems || '');
         renderAttendees(data?.Attendees || []);
