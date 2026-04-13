@@ -99,6 +99,30 @@
     </div>
 </div>
 
+<style>
+.fr-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+.fr-row:last-child { border-bottom: none; }
+.fr-row:hover { background: var(--bg); }
+.fr-info { flex: 1; min-width: 0; }
+.fr-info-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fr-info-meta { font-size: 12px; color: var(--text-muted); }
+.fr-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+@@media (max-width: 768px) {
+    .fr-row { flex-wrap: wrap; padding: 12px 14px; }
+    .fr-info { min-width: 100%; }
+    .fr-actions { width: 100%; justify-content: flex-start; margin-top: 6px; }
+}
+</style>
+
 <!-- Detail Modal -->
 <div id="detailModal" class="modal" onclick="if(event.target===this)hideModal('detailModal')">
     <div class="modal-box" style="max-width:720px;">
@@ -128,6 +152,8 @@ const L = {
     analyzed: '@Html.Raw(Localizer["Analyzed"].Value.Replace("'", "\\'"))',
     planned: '@Html.Raw(Localizer["Planned"].Value.Replace("'", "\\'"))',
     noRequests: '@Html.Raw(Localizer["NoFeatureRequests"].Value.Replace("'", "\\'"))',
+    retrigger: '@Html.Raw(Localizer["Retrigger"]?.Value.Replace("'", "\\'") ?? "Retry AI")',
+    retriggering: '@Html.Raw(Localizer["Retriggering"]?.Value.Replace("'", "\\'") ?? "Triggering...")',
     deleteConfirm: '@Html.Raw(Localizer["DeleteFeatureRequestConfirm"].Value.Replace("'", "\\'"))',
     analysis: '@Html.Raw(Localizer["Analysis"].Value.Replace("'", "\\'"))',
     feasibility: '@Html.Raw(Localizer["Feasibility"].Value.Replace("'", "\\'"))',
@@ -226,15 +252,16 @@ async function loadRequests() {
         for (const req of data) {
             const date = new Date(req.CreatedAt).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
             html += `
-                <div class="settings-row" style="cursor:pointer;" onclick="showDetail(${req.Id})">
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-weight:600;font-size:14px;margin-bottom:2px;">${esc(req.Title)}</div>
-                        <div style="font-size:12px;color:var(--text-muted);">${esc(req.SubmittedByUsername)} &middot; ${date}</div>
+                <div class="fr-row" onclick="showDetail(${req.Id})">
+                    <div class="fr-info">
+                        <div class="fr-info-title">${esc(req.Title)}</div>
+                        <div class="fr-info-meta">${esc(req.SubmittedByUsername)} &middot; ${date}</div>
                     </div>
-                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                    <div class="fr-actions">
                         ${req.Category ? `<span class="badge badge-gray">${esc(req.Category)}</span>` : ''}
                         ${priorityBadge(req.Priority)}
                         ${statusBadge(req.Status)}
+                        ${req.Status === 'Pending' ? `<button class="btn btn-accent btn-sm" onclick="event.stopPropagation();retrigger(${req.Id})" title="${L.retrigger}">&#9889;</button>` : ''}
                         <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteRequest(${req.Id})">&#128465;</button>
                     </div>
                 </div>`;
@@ -323,6 +350,20 @@ function renderMarkdown(md) {
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/`(.+?)`/g, '<code style="background:var(--border);padding:1px 5px;border-radius:3px;font-size:12px;">$1</code>')
         .replace(/\n/g, '<br>');
+}
+
+async function retrigger(id) {
+    try {
+        const r = await fetch(`/api/feature-requests/${id}/retrigger`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {})
+            }
+        });
+        if (r.ok) { loadRequests(); }
+        else { const d = await r.json().catch(() => ({})); alert(d.error ?? L.requestFailed); }
+    } catch { alert(L.requestFailed); }
 }
 
 window.addEventListener('keydown', e => { if (e.key === 'Escape') hideModal('detailModal'); });

@@ -103,6 +103,21 @@ namespace AdminMembers.Controllers
             return Ok(new { success = true });
         }
 
+        [HttpPost("{id}/retrigger")]
+        public async Task<IActionResult> Retrigger(int id)
+        {
+            if (!IsSuperAdmin()) return StatusCode(403, new { error = "Forbidden" });
+
+            var request = await _context.FeatureRequests.FindAsync(id);
+            if (request == null) return NotFound();
+
+            if (request.Status != "Pending")
+                return BadRequest(new { error = "Only pending requests can be retriggered." });
+
+            var triggered = await _featureRequestService.TriggerAnalysisAsync(request);
+            return Ok(new { success = triggered, actionTriggered = triggered });
+        }
+
         /// <summary>
         /// Webhook callback from GitHub Actions to post analysis results.
         /// Secured by a shared secret in the X-Webhook-Secret header.
