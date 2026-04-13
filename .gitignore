@@ -86,3 +86,4 @@ artifacts/
 .gcloudignore
 
 publish/
+test-publish/

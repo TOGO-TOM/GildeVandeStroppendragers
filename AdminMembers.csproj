@@ -17,7 +17,6 @@
   <ItemGroup>
     <None Include=".github\workflows\analyze-feature-request.yml" />
     <None Include=".github\workflows\azure-deploy.yml" />
-    <None Include=".github\workflows\deploy.yml" />
   </ItemGroup>
 
   <ItemGroup>

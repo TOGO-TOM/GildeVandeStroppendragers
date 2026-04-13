@@ -158,6 +158,22 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
+
+// Diagnostic endpoint — returns environment info for troubleshooting
+app.MapGet("/healthz", () =>
+{
+    var info = new
+    {
+        status = "ok",
+        environment = app.Environment.EnvironmentName,
+        contentRoot = app.Environment.ContentRootPath,
+        webRoot = app.Environment.WebRootPath,
+        dotnetVersion = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+        time = DateTime.UtcNow.ToString("o")
+    };
+    return Results.Json(info);
+});
+
 app.MapPost("/set-language", async (HttpContext httpContext) =>
 {
     var form = await httpContext.Request.ReadFormAsync();

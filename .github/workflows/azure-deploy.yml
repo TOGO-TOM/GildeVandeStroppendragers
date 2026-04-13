@@ -39,6 +39,11 @@ jobs:
       - name: Publish
         run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --no-build --output ${{ env.PUBLISH_PATH }}
 
+      - name: Enable stdout logging in web.config
+        run: |
+          sed -i 's/stdoutLogEnabled="false"/stdoutLogEnabled="true"/' ${{ env.PUBLISH_PATH }}/web.config
+          cat ${{ env.PUBLISH_PATH }}/web.config
+
       - name: Zip publish output
         run: cd ${{ env.PUBLISH_PATH }} && zip -r ../publish.zip .
 
@@ -136,16 +141,21 @@ jobs:
       - name: Health check
         run: |
           echo "Waiting for app to stabilise..."
-          sleep 15
+          sleep 20
+
+          echo "--- Checking /healthz diagnostic endpoint ---"
+          HEALTHZ=$(curl -s https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/healthz)
+          echo "healthz response: $HEALTHZ"
+
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L --max-redirs 5 https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/Login)
-          echo "HTTP status: $STATUS"
-          if [ "$STATUS" -ge 500 ]; then
+          echo "Login page HTTP status: $STATUS"
+          if [ "$STATUS" -ne 200 ] && [ "$STATUS" -ne 302 ]; then
             echo "Health check failed with status $STATUS — fetching Azure logs..."
             az webapp log download \
               --name ${{ env.AZURE_WEBAPP_NAME }} \
               --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
               --log-file app_logs.zip || true
-            unzip -p app_logs.zip || true
+            unzip -p app_logs.zip 2>/dev/null || true
             exit 1
           fi
           echo "Health check passed with status $STATUS."
