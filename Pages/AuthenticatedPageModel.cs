@@ -68,8 +68,12 @@ namespace AdminMembers.Pages
 
             var roles = CurrentUser.Roles;
 
-            // Super Admin & Admin have full access to everything (except audit logs, handled separately)
+            // Super Admin, Admin & Secretaris have full access to homepage features
             if (roles.Contains("Super Admin") || roles.Contains("Admin"))
+                return true;
+
+            // Secretaris has read/write on all homepage features but no admin/audit access
+            if (roles.Contains("Secretaris") && permission != "AuditLogs")
                 return true;
 
             return permission switch
@@ -85,6 +89,8 @@ namespace AdminMembers.Pages
                 "AuditLogs"   => roles.Contains("Super Admin"),
                 "AgendaRead"  => true,
                 "AgendaWrite" => roles.Contains("Member Editor"),
+                "BoardReportRead"  => false,
+                "BoardReportWrite" => false,
                 _             => false
             };
         }
@@ -113,6 +119,15 @@ namespace AdminMembers.Pages
 
         protected internal bool CanViewStock()
             => IsAdmin() || HasPermission("StockRead");
+
+        protected internal bool IsSecretaris()
+            => CurrentUser?.Roles?.Contains("Secretaris") == true;
+
+        protected internal bool CanManageBoardReports()
+            => IsAdmin() || IsSecretaris() || HasPermission("BoardReportWrite");
+
+        protected internal bool CanViewBoardReports()
+            => IsAdmin() || IsSecretaris() || HasPermission("BoardReportRead");
 
         protected IActionResult RedirectToLoginWithReturnUrl()
         {

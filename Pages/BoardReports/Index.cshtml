@@ -1,0 +1,466 @@
+@page
+@model AdminMembers.Pages.BoardReports.IndexModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AdminMembers.SharedResources> Localizer
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Localizer["BoardReports"];
+    ViewData["LayoutPage"] = "board-reports";
+    ViewData["LayoutUser"] = Model.CurrentUser;
+}
+
+<div class="page-body">
+
+    <!-- Sidebar: Form + Export -->
+    <div class="sidebar form-panel" id="formPanel">
+        @if (Model.CanWrite)
+        {
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title" id="formTitle">@Localizer["NewBoardReport"]</span>
+                <button type="button" class="btn btn-xs btn-icon" onclick="resetForm()">Reset</button>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>@Localizer["BoardReportTitle"] *</label>
+                    <input id="f_title" placeholder="@Localizer["BoardReportTitle"]" required />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>@Localizer["BoardReportDate"] *</label>
+                        <input id="f_date" type="date" required />
+                    </div>
+                    <div class="form-group">
+                        <label>@Localizer["BoardReportLocation"] *</label>
+                        <input id="f_location" placeholder="@Localizer["BoardReportLocation"]" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>@Localizer["BoardReportStatus"]</label>
+                    <select id="f_status">
+                        <option value="Draft">@Localizer["BoardReportDraft"]</option>
+                        <option value="Final">@Localizer["BoardReportFinal"]</option>
+                    </select>
+                </div>
+
+                <!-- Attendees section -->
+                <div class="form-group">
+                    <label>@Localizer["BoardReportAttendees"]</label>
+                    <div id="attendeesContainer" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--surface);">
+                        <div style="color:var(--text-muted);font-size:12px;padding:8px;">Laden...</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>@Localizer["BoardReportAgenda"]</label>
+                    <textarea id="f_agenda" rows="4" placeholder="Eén agendapunt per regel" style="resize:vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>@Localizer["BoardReportContent"]</label>
+                    <textarea id="f_content" rows="6" placeholder="@Localizer["BoardReportContent"]" style="resize:vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>@Localizer["BoardReportNotes"]</label>
+                    <textarea id="f_notes" rows="3" placeholder="@Localizer["BoardReportNotes"]" style="resize:vertical;"></textarea>
+                </div>
+
+                <input type="hidden" id="f_id" value="0" />
+                <div style="display:flex;gap:8px;margin-top:16px;">
+                    <button class="btn btn-primary" style="flex:1;" onclick="saveReport()">@Localizer["BoardReportSave"]</button>
+                    <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                </div>
+            </div>
+        </div>
+        }
+        else
+        {
+        <div class="card">
+            <div class="card-header"><span class="card-title">@Localizer["BoardReports"]</span></div>
+            <div class="card-body">
+                <div class="viewer-notice">
+                    <svg class="icon icon-xl" style="color:var(--text-muted);"><use href="#icon-lock" /></svg>
+                    <div>
+                        <div style="font-weight:600;font-size:13px;">@Localizer["ReadOnlyAccess"]</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+
+    <!-- Main content: Report list -->
+    <div class="main-content">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">@Localizer["BoardReports"]</span>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input id="searchInput" type="text" placeholder="Zoeken..." style="width:200px;" oninput="filterReports()" />
+                </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div id="reportsList" style="min-height:200px;">
+                    <div style="padding:40px;text-align:center;color:var(--text-muted);">Laden...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detail/View modal -->
+<div class="modal-overlay" id="viewModal" style="display:none;" onclick="if(event.target===this)closeModal('viewModal')">
+    <div class="modal" style="max-width:700px;">
+        <div class="modal-header">
+            <h3 id="viewTitle" style="margin:0;"></h3>
+            <button class="btn btn-xs btn-icon" onclick="closeModal('viewModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="viewBody" style="max-height:70vh;overflow-y:auto;">
+        </div>
+        <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="btn btn-icon" onclick="exportWord()">
+                <svg class="icon icon-sm"><use href="#icon-download" /></svg> @Localizer["BoardReportExportWord"]
+            </button>
+            <button class="btn btn-icon" onclick="exportPdf()">
+                <svg class="icon icon-sm"><use href="#icon-download" /></svg> @Localizer["BoardReportExportPdf"]
+            </button>
+            <button class="btn btn-secondary" onclick="closeModal('viewModal')">Sluiten</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-overlay" id="deleteModal" style="display:none;" onclick="if(event.target===this)closeModal('deleteModal')">
+    <div class="modal" style="max-width:400px;">
+        <div class="modal-header">
+            <h3 style="margin:0;">@Localizer["BoardReportDelete"]</h3>
+            <button class="btn btn-xs btn-icon" onclick="closeModal('deleteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>@Localizer["BoardReportDeleteConfirm"]</p>
+        </div>
+        <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="btn btn-danger" onclick="confirmDelete()">@Localizer["BoardReportDelete"]</button>
+            <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Annuleren</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const AUTH = '@Model.AuthToken';
+    const CAN_WRITE = @(Model.CanWrite ? "true" : "false");
+    const API = '/api/boardreports';
+    const MEMBERS_API = '/api/members';
+
+    let reports = [];
+    let members = [];
+    let viewingId = 0;
+    let deleteId = 0;
+
+    const headers = () => ({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${AUTH}`
+    });
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', () => {
+        loadReports();
+        loadMembers();
+    });
+
+    async function loadMembers() {
+        try {
+            const res = await fetch(MEMBERS_API, { headers: headers() });
+            if (!res.ok) return;
+            members = await res.json();
+            renderAttendees();
+        } catch (e) { console.error('Failed to load members', e); }
+    }
+
+    function renderAttendees(selected = []) {
+        const c = document.getElementById('attendeesContainer');
+        if (!members.length) {
+            c.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px;">Geen leden gevonden</div>';
+            return;
+        }
+        c.innerHTML = members.map(m => {
+            const sel = selected.find(s => s.memberId === m.id);
+            const checked = sel ? 'checked' : '';
+            const present = !sel || sel.isPresent;
+            return `<div style="display:flex;align-items:center;gap:8px;padding:4px 6px;border-bottom:1px solid var(--border);">
+                <input type="checkbox" class="att-check" data-id="${m.id}" ${checked} style="accent-color:var(--accent);" />
+                <span style="flex:1;font-size:13px;">${esc(m.firstName)} ${esc(m.lastName)}</span>
+                <select class="att-present" data-id="${m.id}" style="font-size:11px;padding:2px 6px;border-radius:4px;border:1px solid var(--border);">
+                    <option value="true" ${present ? 'selected' : ''}>Aanwezig</option>
+                    <option value="false" ${!present ? 'selected' : ''}>Afwezig</option>
+                </select>
+            </div>`;
+        }).join('');
+    }
+
+    function getSelectedAttendees() {
+        const result = [];
+        document.querySelectorAll('.att-check:checked').forEach(cb => {
+            const mid = parseInt(cb.dataset.id);
+            const sel = document.querySelector(`.att-present[data-id="${mid}"]`);
+            result.push({ memberId: mid, isPresent: sel?.value !== 'false' });
+        });
+        return result;
+    }
+
+    // ── Load reports ──
+    async function loadReports() {
+        try {
+            const res = await fetch(API, { headers: headers() });
+            if (!res.ok) throw new Error(res.statusText);
+            reports = await res.json();
+            renderReports();
+        } catch (e) {
+            document.getElementById('reportsList').innerHTML =
+                '<div style="padding:40px;text-align:center;color:var(--text-muted);">Fout bij laden van verslagen</div>';
+        }
+    }
+
+    function renderReports() {
+        const search = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+        const filtered = reports.filter(r =>
+            r.title.toLowerCase().includes(search) ||
+            r.location.toLowerCase().includes(search) ||
+            r.createdByUsername.toLowerCase().includes(search)
+        );
+
+        if (!filtered.length) {
+            document.getElementById('reportsList').innerHTML =
+                `<div style="padding:40px;text-align:center;color:var(--text-muted);">@Localizer["BoardReportNoReports"]</div>`;
+            return;
+        }
+
+        const html = `<table class="data-table" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>@Localizer["BoardReportTitle"]</th>
+                    <th>@Localizer["BoardReportDate"]</th>
+                    <th>@Localizer["BoardReportLocation"]</th>
+                    <th>@Localizer["BoardReportAttendees"]</th>
+                    <th>@Localizer["BoardReportStatus"]</th>
+                    <th style="width:120px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filtered.map(r => `<tr>
+                    <td style="font-weight:600;">${esc(r.title)}</td>
+                    <td>${formatDate(r.meetingDate)}</td>
+                    <td>${esc(r.location)}</td>
+                    <td><span class="badge">${r.presentCount}/${r.attendeesCount}</span></td>
+                    <td><span class="status-pill ${r.status === 'Final' ? 'status-ok' : 'status-draft'}">${esc(r.status)}</span></td>
+                    <td style="text-align:right;">
+                        <button class="btn btn-xs btn-icon" onclick="viewReport(${r.id})" title="Bekijken">👁</button>
+                        ${CAN_WRITE ? `<button class="btn btn-xs btn-icon" onclick="editReport(${r.id})" title="Bewerken">✏️</button>
+                        <button class="btn btn-xs btn-icon btn-danger-ghost" onclick="deleteReport(${r.id})" title="Verwijderen">🗑️</button>` : ''}
+                    </td>
+                </tr>`).join('')}
+            </tbody>
+        </table>`;
+        document.getElementById('reportsList').innerHTML = html;
+    }
+
+    function filterReports() { renderReports(); }
+
+    // ── View report ──
+    async function viewReport(id) {
+        viewingId = id;
+        try {
+            const res = await fetch(`${API}/${id}`, { headers: headers() });
+            if (!res.ok) throw new Error();
+            const r = await res.json();
+
+            document.getElementById('viewTitle').textContent = r.title;
+            document.getElementById('viewBody').innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                    <div><strong>Datum:</strong> ${formatDate(r.meetingDate)}</div>
+                    <div><strong>Locatie:</strong> ${esc(r.location)}</div>
+                    <div><strong>Status:</strong> <span class="status-pill ${r.status === 'Final' ? 'status-ok' : 'status-draft'}">${esc(r.status)}</span></div>
+                    <div><strong>Opgesteld door:</strong> ${esc(r.createdByUsername)}</div>
+                </div>
+                ${r.attendees?.length ? `
+                <h4 style="color:var(--accent);margin-bottom:8px;">Aanwezigen</h4>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+                    ${r.attendees.map(a => `<span class="badge ${a.isPresent ? 'badge-success' : 'badge-danger'}">${esc(a.memberName || 'Lid #' + a.memberId)} — ${a.isPresent ? 'Aanwezig' : 'Afwezig'}</span>`).join('')}
+                </div>` : ''}
+                ${r.agendaItems ? `
+                <h4 style="color:var(--accent);margin-bottom:8px;">Agendapunten</h4>
+                <ol style="margin:0 0 16px 20px;line-height:1.8;">${r.agendaItems.split('\\n').filter(Boolean).map(a => `<li>${esc(a.trim())}</li>`).join('')}</ol>` : ''}
+                ${r.content ? `
+                <h4 style="color:var(--accent);margin-bottom:8px;">Verslag</h4>
+                <div style="white-space:pre-wrap;line-height:1.7;margin-bottom:16px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">${esc(r.content)}</div>` : ''}
+                ${r.notes ? `
+                <h4 style="color:var(--accent);margin-bottom:8px;">Opmerkingen</h4>
+                <div style="white-space:pre-wrap;line-height:1.6;color:var(--text-muted);font-style:italic;">${esc(r.notes)}</div>` : ''}
+            `;
+            showModal('viewModal');
+        } catch (e) { alert('Fout bij laden van verslag'); }
+    }
+
+    // ── Edit report ──
+    async function editReport(id) {
+        try {
+            const res = await fetch(`${API}/${id}`, { headers: headers() });
+            if (!res.ok) throw new Error();
+            const r = await res.json();
+
+            document.getElementById('f_id').value = r.id;
+            document.getElementById('f_title').value = r.title;
+            document.getElementById('f_date').value = r.meetingDate;
+            document.getElementById('f_location').value = r.location;
+            document.getElementById('f_status').value = r.status;
+            document.getElementById('f_agenda').value = r.agendaItems || '';
+            document.getElementById('f_content').value = r.content || '';
+            document.getElementById('f_notes').value = r.notes || '';
+            document.getElementById('formTitle').textContent = '@Localizer["EditBoardReport"]';
+
+            renderAttendees(r.attendees || []);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (e) { alert('Fout bij laden van verslag'); }
+    }
+
+    // ── Save report ──
+    async function saveReport() {
+        const id = parseInt(document.getElementById('f_id').value);
+        const title = document.getElementById('f_title').value.trim();
+        const date = document.getElementById('f_date').value;
+        const location = document.getElementById('f_location').value.trim();
+
+        if (!title || !date || !location) {
+            alert('Vul titel, datum en locatie in.');
+            return;
+        }
+
+        const dto = {
+            title,
+            meetingDate: date,
+            location,
+            agendaItems: document.getElementById('f_agenda').value,
+            content: document.getElementById('f_content').value,
+            notes: document.getElementById('f_notes').value,
+            status: document.getElementById('f_status').value,
+            attendees: getSelectedAttendees()
+        };
+
+        try {
+            const url = id > 0 ? `${API}/${id}` : API;
+            const method = id > 0 ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(dto) });
+            if (!res.ok) throw new Error(await res.text());
+
+            resetForm();
+            loadReports();
+        } catch (e) { alert('Fout bij opslaan: ' + e.message); }
+    }
+
+    // ── Delete report ──
+    function deleteReport(id) {
+        deleteId = id;
+        showModal('deleteModal');
+    }
+
+    async function confirmDelete() {
+        try {
+            const res = await fetch(`${API}/${deleteId}`, { method: 'DELETE', headers: headers() });
+            if (!res.ok) throw new Error();
+            closeModal('deleteModal');
+            loadReports();
+        } catch (e) { alert('Fout bij verwijderen'); }
+    }
+
+    // ── Export ──
+    function exportWord() { downloadExport('word', 'docx'); }
+    function exportPdf() { downloadExport('pdf', 'pdf'); }
+
+    async function downloadExport(format, ext) {
+        if (!viewingId) return;
+        try {
+            const res = await fetch(`${API}/${viewingId}/export/${format}`, { headers: headers() });
+            if (!res.ok) throw new Error();
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `verslag_${viewingId}.${ext}`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (e) { alert('Fout bij exporteren'); }
+    }
+
+    // ── Helpers ──
+    function resetForm() {
+        document.getElementById('f_id').value = '0';
+        document.getElementById('f_title').value = '';
+        document.getElementById('f_date').value = '';
+        document.getElementById('f_location').value = '';
+        document.getElementById('f_status').value = 'Draft';
+        document.getElementById('f_agenda').value = '';
+        document.getElementById('f_content').value = '';
+        document.getElementById('f_notes').value = '';
+        document.getElementById('formTitle').textContent = '@Localizer["NewBoardReport"]';
+        renderAttendees([]);
+    }
+
+    function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function formatDate(d) {
+        if (!d) return '';
+        const dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString('nl-BE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function esc(s) {
+        if (!s) return '';
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+</script>
+
+<style>
+    .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        background: var(--surface);
+        border: 1px solid var(--border);
+    }
+    .badge-success {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+    .status-pill {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .status-ok {
+        background: #dcfce7;
+        color: #166534;
+    }
+    .status-draft {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+    .btn-danger-ghost {
+        color: #dc2626 !important;
+    }
+    .btn-danger-ghost:hover {
+        background: #fee2e2 !important;
+    }
+</style>
+}

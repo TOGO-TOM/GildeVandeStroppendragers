@@ -4,7 +4,7 @@ using AdminMembers.Models;
 
 namespace AdminMembers.Attributes
 {
-    public enum ResourceType { Member, Stock, Agenda }
+    public enum ResourceType { Member, Stock, Agenda, BoardReport }
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class RequirePermissionAttribute : Attribute, IAuthorizationFilter
@@ -32,8 +32,8 @@ namespace AdminMembers.Attributes
                 ? rolesValue.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries)
                 : Array.Empty<string>();
 
-            // Super Admin and Admin bypass all permission checks
-            if (roles.Contains("Super Admin") || roles.Contains("Admin"))
+            // Super Admin, Admin and Secretaris bypass all permission checks (Secretaris has no admin pages)
+            if (roles.Contains("Super Admin") || roles.Contains("Admin") || roles.Contains("Secretaris"))
                 return;
 
             bool hasPermission = (_resource, _requiredPermission) switch
@@ -49,6 +49,8 @@ namespace AdminMembers.Attributes
                 (ResourceType.Agenda, Permission.Read) => true,
                 (ResourceType.Agenda, Permission.Write) or (ResourceType.Agenda, Permission.ReadWrite) =>
                     roles.Contains("Member Editor"),
+                (ResourceType.BoardReport, Permission.Read) => false,
+                (ResourceType.BoardReport, Permission.Write) or (ResourceType.BoardReport, Permission.ReadWrite) => false,
                 _ => false
             };
 

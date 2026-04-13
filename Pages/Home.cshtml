@@ -59,6 +59,18 @@
             </div>
         </a>
         }
+
+        @if (Model.CanViewBoardReports)
+        {
+        <a href="/BoardReports" class="dash-card">
+            <div class="dash-icon blue">📋</div>
+            <div>
+                <div class="dash-title">@Localizer["BoardReports"]</div>
+                <div class="dash-desc">@Localizer["BoardReportsDashboardDescription"]</div>
+                <div class="dash-arrow">@Localizer["ViewBoardReports"] &rarr;</div>
+            </div>
+        </a>
+        }
     </div>
 
     <!-- ??? AGENDA CALENDAR ??? -->

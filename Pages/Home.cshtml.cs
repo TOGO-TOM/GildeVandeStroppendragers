@@ -12,6 +12,7 @@ namespace AdminMembers.Pages
         }
 
         public bool CanWriteAgenda { get; set; }
+        public bool CanViewBoardReports { get; set; }
         public string? AuthToken { get; set; }
 
         public IActionResult OnGet()
@@ -22,6 +23,7 @@ namespace AdminMembers.Pages
             }
 
             CanWriteAgenda = CanManageAgenda();
+            CanViewBoardReports = CanViewBoardReports();
             AuthToken = HttpContext.Session.GetString("AuthToken");
 
             return Page();
