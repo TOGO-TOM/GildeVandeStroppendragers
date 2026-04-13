@@ -71,12 +71,11 @@ namespace AdminMembers.Services
                 return "image/gif";
             if (data.Length >= 2 && data[0] == 0x42 && data[1] == 0x4D)
                 return "image/bmp";
-            // Default to PNG
             return "image/png";
         }
 
         // ── Word (.docx) export ─────────────────────────────────────────
-        public byte[] ExportToWord(BoardReport report, byte[]? logoData = null)
+        public byte[] ExportToWord(BoardReport report, byte[]? logoData = null, string? logoContentType = null)
         {
             using var stream = new MemoryStream();
             using (var doc = WordprocessingDocument.Create(stream, WordprocessingDocumentType.Document, true))
@@ -92,24 +91,20 @@ namespace AdminMembers.Services
                 // ── Logo top-right ──
                 if (logoData?.Length > 0)
                 {
-                    try
-                    {
-                        var contentType = DetectImageContentType(logoData);
-                        var imagePart = mainPart.AddImagePart(contentType);
-                        using (var ms = new MemoryStream(logoData))
-                            imagePart.FeedData(ms);
+                    var ct = logoContentType ?? DetectImageContentType(logoData);
+                    var imagePart = mainPart.AddImagePart(ct);
+                    using (var ms = new MemoryStream(logoData))
+                        imagePart.FeedData(ms);
 
-                        var imageId = mainPart.GetIdOfPart(imagePart);
-                        var drawing = CreateWordImage(imageId, 1600000, 800000);
-                        var imgRun = new Run(drawing);
-                        var imgPara = new Paragraph(
-                            new ParagraphProperties(
-                                new Justification { Val = JustificationValues.Right },
-                                new SpacingBetweenLines { After = "100" }));
-                        imgPara.Append(imgRun);
-                        body.InsertBefore(imgPara, body.Descendants<SectionProperties>().FirstOrDefault());
-                    }
-                    catch { /* skip bad logo */ }
+                    var imageId = mainPart.GetIdOfPart(imagePart);
+                    var drawing = CreateWordImage(imageId, 1600000, 800000);
+                    var imgRun = new Run(drawing);
+                    var imgPara = new Paragraph(
+                        new ParagraphProperties(
+                            new Justification { Val = JustificationValues.Right },
+                            new SpacingBetweenLines { After = "100" }));
+                    imgPara.Append(imgRun);
+                    body.InsertBefore(imgPara, body.Descendants<SectionProperties>().FirstOrDefault());
                 }
 
                 // ── Title ──
@@ -202,7 +197,7 @@ namespace AdminMembers.Services
         }
 
         // ── PDF export ──────────────────────────────────────────────────
-        public byte[] ExportToPdf(BoardReport report, byte[]? logoData = null)
+        public byte[] ExportToPdf(BoardReport report, byte[]? logoData = null, string? logoContentType = null)
         {
             using var stream = new MemoryStream();
             var document = new Document(iTextSharp.text.PageSize.A4, 50, 50, 45, 40);
@@ -230,25 +225,21 @@ namespace AdminMembers.Services
             // ── Logo top-right ──
             if (logoData?.Length > 0)
             {
-                try
-                {
-                    var headerTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 4 };
-                    headerTable.SetWidths(new float[] { 70, 30 });
-                    headerTable.AddCell(new PdfPCell { Border = iTextSharp.text.Rectangle.NO_BORDER, MinimumHeight = 10 });
+                var headerTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 4 };
+                headerTable.SetWidths(new float[] { 70, 30 });
+                headerTable.AddCell(new PdfPCell { Border = iTextSharp.text.Rectangle.NO_BORDER, MinimumHeight = 10 });
 
-                    var logo = iTextSharp.text.Image.GetInstance(logoData);
-                    logo.ScaleToFit(110f, 55f);
-                    var logoCell = new PdfPCell(logo)
-                    {
-                        Border = iTextSharp.text.Rectangle.NO_BORDER,
-                        HorizontalAlignment = Element.ALIGN_RIGHT,
-                        VerticalAlignment = Element.ALIGN_TOP,
-                        PaddingBottom = 4
-                    };
-                    headerTable.AddCell(logoCell);
-                    document.Add(headerTable);
-                }
-                catch { /* skip bad logo data */ }
+                var logo = iTextSharp.text.Image.GetInstance(logoData);
+                logo.ScaleToFit(110f, 55f);
+                var logoCell = new PdfPCell(logo)
+                {
+                    Border = iTextSharp.text.Rectangle.NO_BORDER,
+                    HorizontalAlignment = Element.ALIGN_RIGHT,
+                    VerticalAlignment = Element.ALIGN_TOP,
+                    PaddingBottom = 4
+                };
+                headerTable.AddCell(logoCell);
+                document.Add(headerTable);
             }
 
             // ── Title + accent line ──

@@ -229,8 +229,8 @@ namespace AdminMembers.Controllers
 
             if (report == null) return NotFound();
 
-            var logoData = await GetLogoDataAsync();
-            var bytes = _exportService.ExportToWord(report, logoData);
+            var (logoData, logoContentType) = await GetLogoDataAsync();
+            var bytes = _exportService.ExportToWord(report, logoData, logoContentType);
             var fileName = $"Verslag_{report.MeetingDate:yyyyMMdd}_{SanitizeFileName(report.Title)}.docx";
             return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", fileName);
         }
@@ -246,13 +246,13 @@ namespace AdminMembers.Controllers
 
             if (report == null) return NotFound();
 
-            var logoData = await GetLogoDataAsync();
-            var bytes = _exportService.ExportToPdf(report, logoData);
+            var (logoData, logoContentType) = await GetLogoDataAsync();
+            var bytes = _exportService.ExportToPdf(report, logoData, logoContentType);
             var fileName = $"Verslag_{report.MeetingDate:yyyyMMdd}_{SanitizeFileName(report.Title)}.pdf";
             return File(bytes, "application/pdf", fileName);
         }
 
-        private async Task<byte[]?> GetLogoDataAsync()
+        private async Task<(byte[]? Data, string? ContentType)> GetLogoDataAsync()
         {
             try
             {
@@ -260,7 +260,7 @@ namespace AdminMembers.Controllers
                 if (settings == null)
                 {
                     _logger.LogWarning("No AppSettings found in database — cannot load logo");
-                    return null;
+                    return (null, null);
                 }
 
                 // Try blob storage first
@@ -272,8 +272,8 @@ namespace AdminMembers.Controllers
                         var data = await _blobStorageService.DownloadBlobAsync(containerName, settings.LogoBlobName);
                         if (data?.Length > 0)
                         {
-                            _logger.LogInformation("Logo loaded from blob storage ({Bytes} bytes)", data.Length);
-                            return data;
+                            _logger.LogInformation("Logo loaded from blob storage ({Bytes} bytes, type: {Type})", data.Length, settings.LogoContentType);
+                            return (data, settings.LogoContentType);
                         }
                     }
                     catch (Exception ex)
@@ -285,18 +285,18 @@ namespace AdminMembers.Controllers
                 // Fallback to database
                 if (settings.LogoData?.Length > 0)
                 {
-                    _logger.LogInformation("Logo loaded from database ({Bytes} bytes)", settings.LogoData.Length);
-                    return settings.LogoData;
+                    _logger.LogInformation("Logo loaded from database ({Bytes} bytes, type: {Type})", settings.LogoData.Length, settings.LogoContentType);
+                    return (settings.LogoData, settings.LogoContentType);
                 }
 
                 _logger.LogWarning("No logo data available (blob name: {BlobName}, DB data null: {IsNull})",
                     settings.LogoBlobName, settings.LogoData == null);
-                return null;
+                return (null, null);
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to fetch logo data");
-                return null;
+                return (null, null);
             }
         }
 
