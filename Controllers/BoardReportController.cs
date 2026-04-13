@@ -247,6 +247,8 @@ namespace AdminMembers.Controllers
             if (report == null) return NotFound();
 
             var (logoData, logoContentType) = await GetLogoDataAsync();
+            _logger.LogInformation("PDF export: logo data is {Status} ({Bytes} bytes, type: {Type})",
+                logoData != null ? "PRESENT" : "NULL", logoData?.Length ?? 0, logoContentType ?? "none");
             var bytes = _exportService.ExportToPdf(report, logoData, logoContentType);
             var fileName = $"Verslag_{report.MeetingDate:yyyyMMdd}_{SanitizeFileName(report.Title)}.pdf";
             return File(bytes, "application/pdf", fileName);

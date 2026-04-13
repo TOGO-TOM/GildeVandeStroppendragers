@@ -177,20 +177,6 @@ namespace AdminMembers.Services
                     AddWordSpacer(body);
                 }
 
-                // ── Footer ──
-                var footerPara = new Paragraph();
-                var footerProps = new ParagraphProperties(
-                    new Justification { Val = JustificationValues.Center },
-                    new ParagraphBorders(
-                        new TopBorder { Val = BorderValues.Single, Color = "CCCCCC", Size = 4, Space = 4 }),
-                    new SpacingBetweenLines { Before = "400" });
-                footerPara.Append(footerProps);
-                var footerRun = new Run(
-                    new RunProperties(new FontSize { Val = "16" }, new Color { Val = "AAAAAA" }),
-                    new Text($"Geëxporteerd op {DateTime.Now:dd/MM/yyyy HH:mm}") { Space = SpaceProcessingModeValues.Preserve });
-                footerPara.Append(footerRun);
-                body.InsertBefore(footerPara, body.Descendants<SectionProperties>().FirstOrDefault());
-
                 mainPart.Document.Save();
             }
             return stream.ToArray();
@@ -220,7 +206,6 @@ namespace AdminMembers.Services
             var agendaTitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, dark);
             var notesFont = FontFactory.GetFont(FontFactory.HELVETICA, 9, medium);
             var emptyFont = FontFactory.GetFont(FontFactory.HELVETICA_OBLIQUE, 9, new BaseColor(170, 170, 170));
-            var footerFont = FontFactory.GetFont(FontFactory.HELVETICA, 7.5f, new BaseColor(170, 170, 170));
 
             // ── Logo top-right ──
             if (logoData?.Length > 0)
@@ -342,20 +327,6 @@ namespace AdminMembers.Services
                 foreach (var line in report.Notes.Split('\n'))
                     document.Add(new iTextSharp.text.Paragraph(line, notesFont) { SpacingAfter = 2, IndentationLeft = 4 });
             }
-
-            // ── Footer ──
-            document.Add(new iTextSharp.text.Paragraph(" ") { SpacingAfter = 18 });
-            var footerLine = new PdfPTable(1) { WidthPercentage = 100, SpacingAfter = 6 };
-            footerLine.AddCell(new PdfPCell
-            {
-                BackgroundColor = new BaseColor(220, 220, 220),
-                FixedHeight = 0.5f,
-                Border = iTextSharp.text.Rectangle.NO_BORDER
-            });
-            document.Add(footerLine);
-            document.Add(new iTextSharp.text.Paragraph(
-                $"Geëxporteerd op {DateTime.Now:dd/MM/yyyy HH:mm}", footerFont)
-                { Alignment = Element.ALIGN_CENTER });
 
             document.Close();
             return stream.ToArray();
