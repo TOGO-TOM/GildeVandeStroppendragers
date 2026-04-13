@@ -162,6 +162,7 @@ app.MapControllers();
 // Diagnostic endpoint — returns environment info for troubleshooting
 app.MapGet("/healthz", () =>
 {
+    var webhookSecretSet = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("FEATURE_REQUEST_WEBHOOK_SECRET"));
     var info = new
     {
         status = "ok",
@@ -169,7 +170,8 @@ app.MapGet("/healthz", () =>
         contentRoot = app.Environment.ContentRootPath,
         webRoot = app.Environment.WebRootPath,
         dotnetVersion = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
-        time = DateTime.UtcNow.ToString("o")
+        time = DateTime.UtcNow.ToString("o"),
+        webhookSecretConfigured = webhookSecretSet
     };
     return Results.Json(info);
 });

@@ -157,6 +157,11 @@ jobs:
 
             console.log("Posting callback to:", url);
             console.log("Payload keys:", Object.keys(body));
+            console.log("Webhook secret length:", (process.env.WEBHOOK_SECRET || '').length);
+
+            if (!process.env.WEBHOOK_SECRET) {
+              core.warning("FEATURE_REQUEST_WEBHOOK_SECRET is not set! The callback will likely fail with 403.");
+            }
 
             const response = await fetch(url, {
               method: 'POST',
