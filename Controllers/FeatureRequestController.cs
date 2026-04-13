@@ -130,12 +130,12 @@ namespace AdminMembers.Controllers
             if (settings == null || string.IsNullOrEmpty(settings.GitHubToken))
                 return StatusCode(403, new { error = "Not configured" });
 
-            // Use the first 16 chars of the GitHub token as webhook secret for simplicity
-            var expectedSecret = settings.GitHubToken.Length >= 16
+            // Accept first 16 chars of token OR the full token as webhook secret
+            var shortSecret = settings.GitHubToken.Length >= 16
                 ? settings.GitHubToken[..16]
                 : settings.GitHubToken;
 
-            if (webhookSecret != expectedSecret)
+            if (webhookSecret != shortSecret && webhookSecret != settings.GitHubToken)
                 return StatusCode(403, new { error = "Invalid webhook secret" });
 
             var request = await _context.FeatureRequests.FindAsync(id);
