@@ -31,33 +31,42 @@ jobs:
         id: agent1
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const title = `${{ github.event.inputs.title }}`;
             const description = `${{ github.event.inputs.description }}`;
 
-            const response = await github.request("POST /models/chat/completions", {
-              model: "gpt-4o",
-              messages: [
-                {
-                  role: "system",
-                  content: `You are a request analyst for a member administration web application (.NET Razor Pages).
-            Analyze the feature request and return a JSON object with exactly these fields:
-            - "summary": A clear 2-3 sentence summary of what is being requested.
-            - "category": One of: "UI/UX", "Backend", "Database", "Security", "Integration", "Performance", "New Feature", "Bug Fix".
-            - "priority": One of: "Low", "Medium", "High", "Critical".
-            Return ONLY valid JSON, no markdown fences.`
-                },
-                {
-                  role: "user",
-                  content: `Title: ${title}\n\nDescription: ${description}`
-                }
-              ]
+            const res = await fetch("https://models.inference.ai.azure.com/chat/completions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`
+              },
+              body: JSON.stringify({
+                model: "gpt-4o",
+                messages: [
+                  {
+                    role: "system",
+                    content: "You are a request analyst for a member administration web application (.NET Razor Pages). Analyze the feature request and return a JSON object with exactly these fields: \"summary\": A clear 2-3 sentence summary of what is being requested. \"category\": One of: \"UI/UX\", \"Backend\", \"Database\", \"Security\", \"Integration\", \"Performance\", \"New Feature\", \"Bug Fix\". \"priority\": One of: \"Low\", \"Medium\", \"High\", \"Critical\". Return ONLY valid JSON, no markdown fences."
+                  },
+                  {
+                    role: "user",
+                    content: `Title: ${title}\n\nDescription: ${description}`
+                  }
+                ]
+              })
             });
 
-            const content = response.data.choices[0].message.content.trim();
+            if (!res.ok) {
+              const err = await res.text();
+              core.setFailed(`Agent 1 failed (${res.status}): ${err}`);
+              return;
+            }
+
+            const data = await res.json();
+            const content = data.choices[0].message.content.trim();
             console.log("Agent 1 raw output:", content);
 
-            // Parse, stripping any accidental markdown fences
             const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             const parsed = JSON.parse(cleaned);
 
@@ -69,6 +78,7 @@ jobs:
         id: agent2
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const title = `${{ github.event.inputs.title }}`;
             const description = `${{ github.event.inputs.description }}`;
@@ -76,43 +86,35 @@ jobs:
             const category = `${{ steps.agent1.outputs.category }}`;
             const priority = `${{ steps.agent1.outputs.priority }}`;
 
-            const response = await github.request("POST /models/chat/completions", {
-              model: "gpt-4o",
-              messages: [
-                {
-                  role: "system",
-                  content: `You are a senior .NET architect reviewing feature requests for a Razor Pages web application.
-            The tech stack is: .NET 10, Razor Pages, EF Core with SQL Server, MailKit, Azure Blob Storage, custom session-based auth with role hierarchy (Super Admin > Admin > Member Editor/Viewer > Stock Editor/Viewer).
-
-            Given the analyzed request, produce a JSON object with exactly these fields:
-            - "feasibility": A paragraph assessing feasibility — is it doable? What are the risks or dependencies?
-            - "architecture": A detailed architectural plan in Markdown format using the following structure:
-
-            ## Affected Components
-            (list files/layers that need changes)
-
-            ## Data Model Changes
-            (any new entities, properties, or migrations needed)
-
-            ## Implementation Steps
-            (numbered step-by-step plan)
-
-            ## Security Considerations
-            (role/permission implications)
-
-            ## Estimated Effort
-            (Small / Medium / Large with brief justification)
-
-            Return ONLY valid JSON, no markdown fences.`
-                },
-                {
-                  role: "user",
-                  content: `Title: ${title}\nDescription: ${description}\n\nAgent 1 Analysis:\n- Summary: ${summary}\n- Category: ${category}\n- Priority: ${priority}`
-                }
-              ]
+            const res = await fetch("https://models.inference.ai.azure.com/chat/completions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`
+              },
+              body: JSON.stringify({
+                model: "gpt-4o",
+                messages: [
+                  {
+                    role: "system",
+                    content: "You are a senior .NET architect reviewing feature requests for a Razor Pages web application. The tech stack is: .NET 10, Razor Pages, EF Core with SQL Server, MailKit, Azure Blob Storage, custom session-based auth with role hierarchy (Super Admin > Admin > Member Editor/Viewer > Stock Editor/Viewer). Given the analyzed request, produce a JSON object with exactly these fields: \"feasibility\": A paragraph assessing feasibility. \"architecture\": A detailed architectural plan in Markdown with sections: ## Affected Components, ## Data Model Changes, ## Implementation Steps, ## Security Considerations, ## Estimated Effort (Small/Medium/Large). Return ONLY valid JSON, no markdown fences."
+                  },
+                  {
+                    role: "user",
+                    content: `Title: ${title}\nDescription: ${description}\n\nAgent 1 Analysis:\n- Summary: ${summary}\n- Category: ${category}\n- Priority: ${priority}`
+                  }
+                ]
+              })
             });
 
-            const content = response.data.choices[0].message.content.trim();
+            if (!res.ok) {
+              const err = await res.text();
+              core.setFailed(`Agent 2 failed (${res.status}): ${err}`);
+              return;
+            }
+
+            const data = await res.json();
+            const content = data.choices[0].message.content.trim();
             console.log("Agent 2 raw output:", content);
 
             const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
