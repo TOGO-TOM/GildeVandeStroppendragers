@@ -7,7 +7,7 @@
     Creates the following Azure resources:
       - Resource Group
       - App Service Plan (Linux, B1)
-      - App Service (.NET 8) with System-Assigned Managed Identity
+      App Service (.NET 10) with System-Assigned Managed Identity
       - Azure SQL Server + Database
       - Azure Storage Account + Blob containers (backups, exports, logos)
       - Role assignment: Storage Blob Data Contributor for the App Service identity
@@ -110,12 +110,12 @@ Invoke-Az @("appservice", "plan", "create",
     "--output", "none") | Out-Null
 Write-Host "      Done." -ForegroundColor Green
 
-Write-Host "      Creating Web App '$AppName' (.NET 8)..." -ForegroundColor Cyan
+Write-Host "      Creating Web App '$AppName' (.NET 10)..." -ForegroundColor Cyan
 Invoke-Az @("webapp", "create",
     "--name", $AppName,
     "--resource-group", $ResourceGroup,
     "--plan", $PlanName,
-    "--runtime", "DOTNETCORE:8.0",
+    "--runtime", "DOTNETCORE:10.0",
     "--output", "none") | Out-Null
 Write-Host "      Done." -ForegroundColor Green
 

@@ -119,6 +119,15 @@ jobs:
 
           echo "Migrations applied successfully."
 
+      - name: Configure App Service for .NET 10
+        run: |
+          echo "Setting App Service runtime to .NET 10 (linux)..."
+          az webapp config set \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --linux-fx-version "DOTNETCORE|10.0"
+          echo "Runtime set to DOTNETCORE|10.0"
+
       - name: Deploy zip to App Service
         run: |
           az webapp deploy \
