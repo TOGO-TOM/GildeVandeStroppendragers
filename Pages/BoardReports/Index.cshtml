@@ -18,7 +18,7 @@
             <input id="searchInput" type="text" placeholder="Zoeken..." style="width:220px;" oninput="filterReports()" />
             @if (Model.CanWrite)
             {
-                <button class="btn btn-primary" onclick="openEditor()">+ @Localizer["NewBoardReport"]</button>
+                <button class="btn btn-accent" onclick="openEditor()">+ @Localizer["NewBoardReport"]</button>
             }
         </div>
     </div>
@@ -86,9 +86,9 @@
             <!-- Row 4: Agenda items (drag & drop with notes per item) -->
             <div class="form-group" style="margin-bottom:16px;">
                 <label>@Localizer["BoardReportAgenda"] — <span style="font-weight:400;color:var(--text-muted);">Sleep om te herschikken, klik + om toe te voegen. Elke punt heeft een notitieveld.</span></label>
-                <div style="display:flex;gap:8px;margin-bottom:8px;">
-                    <input id="agendaInput" placeholder="Nieuw agendapunt typen..." style="flex:1;padding:10px 14px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgendaItem();}" />
-                    <button class="btn btn-primary" type="button" onclick="addAgendaItem()">+ Toevoegen</button>
+                <div style="display:flex;gap:8px;margin-bottom:8px;align-items:stretch;">
+                    <input id="agendaInput" placeholder="Nieuw agendapunt typen..." style="flex:1;min-width:0;padding:10px 14px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgendaItem();}" />
+                    <button class="btn btn-accent" type="button" style="flex-shrink:0;white-space:nowrap;" onclick="addAgendaItem()">+ Toevoegen</button>
                 </div>
                 <div id="agendaList" class="agenda-drag-list">
                     <div class="agenda-empty" id="agendaEmpty">Nog geen agendapunten — typ hierboven en druk Enter</div>
@@ -104,8 +104,8 @@
             <input type="hidden" id="f_id" value="0" />
         </div>
         <div class="br-dialog-footer">
-            <button class="btn btn-primary" onclick="saveReport()">@Localizer["BoardReportSave"]</button>
-            <button class="btn btn-secondary" onclick="closeModal('editorModal')">Annuleren</button>
+            <button class="btn btn-accent" onclick="saveReport()">@Localizer["BoardReportSave"]</button>
+            <button class="btn btn-secondary" style="width:auto;margin:0;" onclick="closeModal('editorModal')">Annuleren</button>
         </div>
     </div>
 </div>
@@ -121,7 +121,7 @@
         <div class="br-dialog-footer">
             <button class="btn btn-icon" onclick="exportWord()">📄 @Localizer["BoardReportExportWord"]</button>
             <button class="btn btn-icon" onclick="exportPdf()">📕 @Localizer["BoardReportExportPdf"]</button>
-            <button class="btn btn-secondary" onclick="closeModal('viewModal')">Sluiten</button>
+            <button class="btn btn-secondary" style="width:auto;margin:0;" onclick="closeModal('viewModal')">Sluiten</button>
         </div>
     </div>
 </div>
@@ -136,7 +136,7 @@
         <div class="br-dialog-body"><p>@Localizer["BoardReportDeleteConfirm"]</p></div>
         <div class="br-dialog-footer">
             <button class="btn btn-danger" onclick="confirmDelete()">@Localizer["BoardReportDelete"]</button>
-            <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Annuleren</button>
+            <button class="btn btn-secondary" style="width:auto;margin:0;" onclick="closeModal('deleteModal')">Annuleren</button>
         </div>
     </div>
 </div>
@@ -652,5 +652,40 @@
     .status-draft { background:#e0e7ff; color:#3730a3; }
     .btn-danger-ghost { color:#dc2626 !important; }
     .btn-danger-ghost:hover { background:#fee2e2 !important; }
+
+    /* Reports data table */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .data-table thead tr {
+        border-bottom: 2px solid var(--border);
+        text-align: left;
+    }
+    .data-table th {
+        padding: 12px 16px;
+        font-weight: 700;
+        color: var(--text-muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+        white-space: nowrap;
+    }
+    .data-table td {
+        padding: 11px 16px;
+        color: var(--text);
+        vertical-align: middle;
+    }
+    .data-table tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background .12s;
+    }
+    .data-table tbody tr:hover {
+        background: var(--bg);
+    }
+    .data-table tbody tr:last-child {
+        border-bottom: none;
+    }
 </style>
 }
