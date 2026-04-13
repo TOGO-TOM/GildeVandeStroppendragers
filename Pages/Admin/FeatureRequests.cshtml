@@ -209,7 +209,11 @@ async function submitRequest(e) {
             statusEl.textContent = L.submitted;
             document.getElementById('reqTitle').value = '';
             document.getElementById('reqDescription').value = '';
-            setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = ''; }, 4000);
+            if (data.triggerError) {
+                statusEl.style.color = 'orange';
+                statusEl.textContent = L.submitted + ' ⚠️ ' + data.triggerError;
+            }
+            setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = ''; }, 8000);
         } else {
             statusEl.style.color = 'red';
             statusEl.textContent = data.error ?? L.saveFailed;
@@ -361,8 +365,9 @@ async function retrigger(id) {
                 ...(pageToken ? { 'Authorization': `Bearer ${pageToken}` } : {})
             }
         });
+        const d = await r.json().catch(() => ({}));
         if (r.ok) { loadRequests(); }
-        else { const d = await r.json().catch(() => ({})); alert(d.error ?? L.requestFailed); }
+        else { alert(d.error ?? L.requestFailed); }
     } catch { alert(L.requestFailed); }
 }
 

@@ -20,16 +20,30 @@ namespace AdminMembers.Services
             _logger = logger;
         }
 
-        public async Task<bool> TriggerAnalysisAsync(FeatureRequest request)
+        /// <summary>
+        /// Triggers the GitHub Actions workflow for AI analysis.
+        /// Returns (success, errorMessage) so the caller can surface a meaningful error.
+        /// </summary>
+        public async Task<(bool Success, string? Error)> TriggerAnalysisAsync(FeatureRequest request)
         {
             var settings = await _context.AiSettings.FirstOrDefaultAsync();
 
-            if (settings == null || string.IsNullOrEmpty(settings.GitHubToken)
-                || string.IsNullOrEmpty(settings.GitHubOwner)
-                || string.IsNullOrEmpty(settings.GitHubRepo))
+            if (settings == null)
             {
-                _logger.LogWarning("GitHub AI settings not configured. Cannot trigger analysis for request {Id}.", request.Id);
-                return false;
+                _logger.LogWarning("AI settings row missing. Cannot trigger analysis for request {Id}.", request.Id);
+                return (false, "AI settings not configured. Go to Settings to add GitHub owner, repo, and token.");
+            }
+
+            if (string.IsNullOrEmpty(settings.GitHubOwner) || string.IsNullOrEmpty(settings.GitHubRepo))
+            {
+                _logger.LogWarning("GitHub owner/repo not set. Cannot trigger analysis for request {Id}.", request.Id);
+                return (false, "GitHub owner or repository not configured in AI settings.");
+            }
+
+            if (string.IsNullOrEmpty(settings.GitHubToken))
+            {
+                _logger.LogWarning("GitHub token not set. Cannot trigger analysis for request {Id}.", request.Id);
+                return (false, "GitHub token not configured in AI settings.");
             }
 
             try
@@ -58,6 +72,7 @@ namespace AdminMembers.Services
                 httpRequest.Headers.UserAgent.ParseAdd("AdminMembers/1.0");
                 httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
+                _logger.LogInformation("Dispatching workflow to {Url} for request {Id}...", url, request.Id);
                 var response = await client.SendAsync(httpRequest);
 
                 if (response.IsSuccessStatusCode)
@@ -65,17 +80,27 @@ namespace AdminMembers.Services
                     request.Status = "Processing";
                     await _context.SaveChangesAsync();
                     _logger.LogInformation("GitHub Action triggered for feature request {Id}.", request.Id);
-                    return true;
+                    return (true, null);
                 }
 
                 var body = await response.Content.ReadAsStringAsync();
                 _logger.LogError("GitHub API returned {StatusCode}: {Body}", (int)response.StatusCode, body);
-                return false;
+
+                var errorMsg = (int)response.StatusCode switch
+                {
+                    401 => "GitHub token is invalid or expired. Update it in AI settings.",
+                    403 => "GitHub token lacks 'workflow' permission. Create a token with the 'repo' and 'workflow' scopes.",
+                    404 => $"Workflow not found at {settings.GitHubOwner}/{settings.GitHubRepo}. Check owner/repo in AI settings.",
+                    422 => "GitHub rejected the request. Ensure the 'main' branch and workflow file exist.",
+                    _ => $"GitHub API error {(int)response.StatusCode}: {body}"
+                };
+
+                return (false, errorMsg);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to trigger GitHub Action for feature request {Id}.", request.Id);
-                return false;
+                return (false, $"Network error: {ex.Message}");
             }
         }
     }

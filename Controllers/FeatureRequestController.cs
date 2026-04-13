@@ -78,14 +78,15 @@ namespace AdminMembers.Controllers
             await _context.SaveChangesAsync();
 
             // Trigger GitHub Action for AI analysis
-            var triggered = await _featureRequestService.TriggerAnalysisAsync(request);
+            var (triggered, triggerError) = await _featureRequestService.TriggerAnalysisAsync(request);
 
             return Ok(new
             {
                 success = true,
                 request.Id,
                 request.Status,
-                actionTriggered = triggered
+                actionTriggered = triggered,
+                triggerError = triggerError
             });
         }
 
@@ -114,8 +115,11 @@ namespace AdminMembers.Controllers
             if (request.Status != "Pending")
                 return BadRequest(new { error = "Only pending requests can be retriggered." });
 
-            var triggered = await _featureRequestService.TriggerAnalysisAsync(request);
-            return Ok(new { success = triggered, actionTriggered = triggered });
+            var (triggered, triggerError) = await _featureRequestService.TriggerAnalysisAsync(request);
+            if (!triggered)
+                return StatusCode(502, new { error = triggerError ?? "Failed to trigger AI analysis." });
+
+            return Ok(new { success = true, actionTriggered = true });
         }
 
         /// <summary>
