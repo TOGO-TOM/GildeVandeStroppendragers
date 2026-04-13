@@ -38,7 +38,7 @@ namespace AdminMembers.Services
 
                 var payload = new
                 {
-                    @ref = "main",
+                    @ref = "feature/ai-feature-requests",
                     inputs = new
                     {
                         request_id = request.Id.ToString(),
