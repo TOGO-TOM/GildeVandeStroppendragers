@@ -44,7 +44,7 @@ namespace AdminMembers.Services
                         request_id = request.Id.ToString(),
                         title = request.Title,
                         description = request.Description,
-                        submitted_by = request.SubmittedByUsername
+                        submitted_by = string.IsNullOrWhiteSpace(request.SubmittedByUsername) ? "Unknown" : request.SubmittedByUsername
                     }
                 };
 
