@@ -20,7 +20,18 @@ namespace AdminMembers.Services
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "application/vnd.ms-excel",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-outlook",
             "text/plain"
+        };
+
+        private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".pdf",
+            ".png", ".jpg", ".jpeg", ".gif", ".webp",
+            ".doc", ".docx",
+            ".xls", ".xlsx",
+            ".msg",
+            ".txt"
         };
 
         private const long MaxFileSizeBytes = 20 * 1024 * 1024; // 20 MB
@@ -63,8 +74,20 @@ namespace AdminMembers.Services
                 return (false, $"File exceeds the 20 MB limit.", null);
 
             var contentType = file.ContentType;
+            var extension = Path.GetExtension(file.FileName);
+
+            // Browsers may send .msg files as application/octet-stream — normalise
+            if (string.Equals(extension, ".msg", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(contentType, "application/octet-stream", StringComparison.OrdinalIgnoreCase))
+            {
+                contentType = "application/vnd.ms-outlook";
+            }
+
             if (!AllowedContentTypes.Contains(contentType))
                 return (false, $"File type '{contentType}' is not allowed.", null);
+
+            if (string.IsNullOrEmpty(extension) || !AllowedExtensions.Contains(extension))
+                return (false, $"File extension '{extension}' is not allowed.", null);
 
             if (_blob == null)
             {
