@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using AdminMembers.Data;
 using AdminMembers.Models;
 using AdminMembers.Services;
+using AdminMembers.Attributes;
 
 namespace AdminMembers.Controllers
 {
@@ -68,7 +69,7 @@ namespace AdminMembers.Controllers
                 }
                 catch (FileNotFoundException)
                 {
-                    _logger.LogWarning($"Logo blob {settings.LogoBlobName} not found in blob storage, falling back to database");
+                    _logger.LogWarning("Logo blob {BlobName} not found in blob storage, falling back to database", settings.LogoBlobName);
                 }
                 catch (Exception ex)
                 {
@@ -86,6 +87,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpPost]
+        [RequirePermission(Permission.ReadWrite)]
         public async Task<IActionResult> UpdateSettings([FromForm] string? companyName, [FromForm] IFormFile? logo)
         {
             try
@@ -141,7 +143,7 @@ namespace AdminMembers.Controllers
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.LogWarning(ex, $"Failed to delete old logo blob {settings.LogoBlobName}");
+                                    _logger.LogWarning(ex, "Failed to delete old logo blob {BlobName}", settings.LogoBlobName);
                                 }
                             }
 
@@ -151,7 +153,7 @@ namespace AdminMembers.Controllers
                             // Keep database copy as fallback
                             settings.LogoData = logoData;
                             
-                            _logger.LogInformation($"Logo uploaded to blob storage: {blobName}");
+                            _logger.LogInformation("Logo uploaded to blob storage: {BlobName}", blobName);
                         }
                         catch (Exception ex)
                         {
@@ -195,6 +197,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpDelete("logo")]
+        [RequirePermission(Permission.ReadWrite)]
         public async Task<IActionResult> DeleteLogo()
         {
             try
@@ -210,11 +213,11 @@ namespace AdminMembers.Controllers
                         {
                             var containerName = _configuration.GetValue<string>("AzureStorageBlob:LogoContainerName") ?? "logos";
                             await _blobStorageService.DeleteBlobAsync(containerName, settings.LogoBlobName);
-                            _logger.LogInformation($"Deleted logo blob {settings.LogoBlobName}");
+                            _logger.LogInformation("Deleted logo blob {BlobName}", settings.LogoBlobName);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, $"Failed to delete logo blob {settings.LogoBlobName}");
+                            _logger.LogError(ex, "Failed to delete logo blob {BlobName}", settings.LogoBlobName);
                         }
                     }
 
@@ -243,6 +246,7 @@ namespace AdminMembers.Controllers
             try
             {
                 var fields = await _context.CustomFields
+                    .AsNoTracking()
                     .OrderBy(f => f.DisplayOrder)
                     .ToListAsync();
 
@@ -256,6 +260,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpPost("custom-fields")]
+        [RequirePermission(Permission.ReadWrite)]
         public async Task<ActionResult<CustomField>> CreateCustomField([FromBody] CustomField field)
         {
             try
@@ -284,6 +289,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpPut("custom-fields/{id}")]
+        [RequirePermission(Permission.ReadWrite)]
         public async Task<IActionResult> UpdateCustomField(int id, [FromBody] CustomField field)
         {
             try
@@ -328,6 +334,7 @@ namespace AdminMembers.Controllers
         }
 
         [HttpDelete("custom-fields/{id}")]
+        [RequirePermission(Permission.ReadWrite)]
         public async Task<IActionResult> DeleteCustomField(int id)
         {
             try

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using AdminMembers.Data;
 using AdminMembers.Models;
 using AdminMembers.Services;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AdminMembers.Controllers
 {
@@ -136,7 +138,8 @@ namespace AdminMembers.Controllers
 
             // Check 1: dedicated environment variable / app setting
             var envSecret = Environment.GetEnvironmentVariable("FEATURE_REQUEST_WEBHOOK_SECRET");
-            if (!string.IsNullOrEmpty(envSecret) && webhookSecret == envSecret)
+            if (!string.IsNullOrEmpty(envSecret) && CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(webhookSecret), Encoding.UTF8.GetBytes(envSecret)))
             {
                 isValid = true;
             }
@@ -151,7 +154,10 @@ namespace AdminMembers.Controllers
                         ? settings.GitHubToken[..16]
                         : settings.GitHubToken;
 
-                    if (webhookSecret == shortSecret || webhookSecret == settings.GitHubToken)
+                    if (CryptographicOperations.FixedTimeEquals(
+                            Encoding.UTF8.GetBytes(webhookSecret), Encoding.UTF8.GetBytes(shortSecret)) ||
+                        CryptographicOperations.FixedTimeEquals(
+                            Encoding.UTF8.GetBytes(webhookSecret), Encoding.UTF8.GetBytes(settings.GitHubToken)))
                         isValid = true;
                 }
             }

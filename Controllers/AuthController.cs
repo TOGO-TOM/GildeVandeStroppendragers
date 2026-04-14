@@ -106,11 +106,11 @@ namespace AdminMembers.Controllers
             var username = Request.Headers["X-Username"].ToString();
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-            var success = await _authService.ChangePasswordAsync(id, newPassword, userId, username, ipAddress);
+            var (success, message) = await _authService.ChangePasswordAsync(id, newPassword, userId, username, ipAddress);
 
             if (!success)
             {
-                return NotFound(new { message = "User not found" });
+                return BadRequest(new { message = message ?? "User not found" });
             }
 
             return Ok(new { message = "Password changed successfully" });

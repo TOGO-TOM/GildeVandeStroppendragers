@@ -65,11 +65,11 @@ namespace AdminMembers.Pages.Account
             }
 
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            var ok = await _authService.ChangePasswordAsync(
+            var (ok, message) = await _authService.ChangePasswordAsync(
                 CurrentUser!.Id, NewPassword, CurrentUser!.Id, CurrentUser!.Username, ip);
 
             SuccessMessage = ok ? (string?)_localizer["PasswordUpdatedSuccessfully"] : null;
-            if (!ok) ErrorMessage = _localizer["PasswordUpdateFailed"];
+            if (!ok) ErrorMessage = message ?? (string?)_localizer["PasswordUpdateFailed"];
             return Page();
         }
     }

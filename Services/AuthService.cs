@@ -243,6 +243,7 @@ namespace AdminMembers.Services
         public async Task<List<UserDto>> GetAllUsersAsync()
         {
             var users = await _context.Users
+                .AsNoTracking()
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
                 .ToListAsync();
@@ -286,24 +287,27 @@ namespace AdminMembers.Services
             }
         }
 
-        public async Task<bool> ChangePasswordAsync(int userId, string newPassword, int changedByUserId, string changedByUsername, string ipAddress)
+        public async Task<(bool Success, string? Message)> ChangePasswordAsync(int userId, string newPassword, int changedByUserId, string changedByUsername, string ipAddress)
         {
             try
             {
+                var (policyOk, policyMsg) = _passwordPolicy.Validate(newPassword);
+                if (!policyOk) return (false, policyMsg);
+
                 var user = await _context.Users.FindAsync(userId);
-                if (user == null) return false;
+                if (user == null) return (false, "User not found");
 
                 user.PasswordHash = HashPassword(newPassword);
                 await _context.SaveChangesAsync();
 
                 await _auditLogService.LogActionAsync(changedByUserId, changedByUsername, "Password Changed", "User", userId, $"Password changed for user {user.Username}", ipAddress);
 
-                return true;
+                return (true, null);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error changing password for userId: {UserId}", userId);
-                return false;
+                return (false, "An error occurred while changing the password");
             }
         }
 
@@ -343,6 +347,7 @@ namespace AdminMembers.Services
         public async Task<List<User>> GetPendingUsersAsync()
         {
             return await _context.Users
+                .AsNoTracking()
                 .Where(u => !u.IsApproved)
                 .OrderBy(u => u.CreatedAt)
                 .ToListAsync();
@@ -399,7 +404,7 @@ namespace AdminMembers.Services
             }
         }
 
-        public async Task<bool> AdminResetPasswordAsync(int userId, string newPassword, int changedByUserId, string changedByUsername, string ipAddress)
+        public async Task<(bool Success, string? Message)> AdminResetPasswordAsync(int userId, string newPassword, int changedByUserId, string changedByUsername, string ipAddress)
         {
             return await ChangePasswordAsync(userId, newPassword, changedByUserId, changedByUsername, ipAddress);
         }

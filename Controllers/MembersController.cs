@@ -16,13 +16,15 @@ namespace AdminMembers.Controllers
         private readonly ILogger<MembersController> _logger;
         private readonly ExportService _exportService;
         private readonly AuditLogService _auditLogService;
+        private readonly IWebHostEnvironment _environment;
 
-        public MembersController(ApplicationDbContext context, ILogger<MembersController> logger, ExportService exportService, AuditLogService auditLogService)
+        public MembersController(ApplicationDbContext context, ILogger<MembersController> logger, ExportService exportService, AuditLogService auditLogService, IWebHostEnvironment environment)
         {
             _context = context;
             _logger = logger;
             _exportService = exportService;
             _auditLogService = auditLogService;
+            _environment = environment;
         }
 
         [HttpGet]
@@ -53,8 +55,8 @@ namespace AdminMembers.Controllers
         [HttpGet("debug")]
         public async Task<ActionResult> GetDebugInfo()
         {
-            // Only available in Development
-            if (!_logger.IsEnabled(LogLevel.Debug))
+            // Only available in Development environment
+            if (!_environment.IsDevelopment())
                 return NotFound();
 
             var memberCount = await _context.Members.CountAsync();

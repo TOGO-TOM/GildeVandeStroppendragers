@@ -124,8 +124,8 @@ namespace AdminMembers.Pages.Admin.Users
             }
 
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            var ok = await _authService.AdminResetPasswordAsync(userId, newPassword, CurrentUser!.Id, CurrentUser.Username, ip);
-            if (!ok) ErrorMessage = _localizer["FailedResetPassword"].Value;
+            var (ok, message) = await _authService.AdminResetPasswordAsync(userId, newPassword, CurrentUser!.Id, CurrentUser.Username, ip);
+            if (!ok) ErrorMessage = message ?? _localizer["FailedResetPassword"].Value;
             else SuccessMessage = _localizer["PasswordResetSuccess"].Value;
             return RedirectToPage();
         }
