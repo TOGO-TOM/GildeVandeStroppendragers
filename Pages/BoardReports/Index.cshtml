@@ -14,13 +14,18 @@
     <!-- Top bar: title + actions -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
         <h1 style="font-size:20px;font-weight:800;margin:0;">📋 @Localizer["BoardReports"]</h1>
-        <div style="display:flex;gap:8px;align-items:center;">
-            <input id="searchInput" type="text" placeholder="Zoeken..." style="width:220px;" oninput="filterReports()" />
-            @if (Model.CanWrite)
-            {
-                <button class="btn btn-accent" onclick="openEditor()">+ @Localizer["NewBoardReport"]</button>
-            }
+    </div>
+
+    <!-- Toolbar (consistent with Members module) -->
+    <div class="toolbar">
+        <div class="toolbar-search">
+            <input id="searchInput" type="text" placeholder="@Localizer["SearchPlaceholder"]" oninput="filterReports()" />
         </div>
+        @if (Model.CanWrite)
+        {
+            <div class="toolbar-divider"></div>
+            <button class="btn btn-accent btn-sm" onclick="openEditor()">+ @Localizer["NewBoardReport"]</button>
+        }
     </div>
 
     <!-- Reports list -->

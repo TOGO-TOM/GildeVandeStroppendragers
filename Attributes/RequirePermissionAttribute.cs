@@ -36,6 +36,30 @@ namespace AdminMembers.Attributes
             if (roles.Contains("Super Admin") || roles.Contains("Admin") || roles.Contains("Secretaris"))
                 return;
 
+            // API Key users: check permission level from X-User-Permissions header
+            if (roles.Contains("ApiKeyUser"))
+            {
+                var apiKeyPerm = context.HttpContext.Request.Headers
+                    .TryGetValue("X-User-Permissions", out var permValue)
+                    ? permValue.ToString() : "";
+
+                bool apiKeyAllowed = _requiredPermission switch
+                {
+                    Permission.Read => apiKeyPerm is "Read" or "ReadWrite",
+                    Permission.Write or Permission.ReadWrite => apiKeyPerm == "ReadWrite",
+                    _ => false
+                };
+
+                if (!apiKeyAllowed)
+                {
+                    context.Result = new ObjectResult(new { message = "API key has insufficient permissions" })
+                    {
+                        StatusCode = 403
+                    };
+                }
+                return;
+            }
+
             bool hasPermission = (_resource, _requiredPermission) switch
             {
                 (ResourceType.Member, Permission.Read) =>

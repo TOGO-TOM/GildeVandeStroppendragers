@@ -436,6 +436,22 @@ function openStockCard(el) {
 
     // Build info body
     const minStockDisplay = d.minstock ? `${d.minstock} ${d.unit}` : L.notSet;
+    const minStockEditHtml = canWrite
+        ? `<div id="minStockView">
+               <span>${minStockDisplay}</span>
+               <button class="btn btn-xs btn-icon" style="margin-left:6px;" onclick="toggleMinStockEdit(true)" title="${L.edit}">&#9998;</button>
+           </div>
+           <div id="minStockEdit" style="display:none;">
+               <div style="display:flex;gap:6px;align-items:center;">
+                   <input id="card_minstock" type="number" min="0" step="0.001" style="width:100px;" value="${d.minstock || ''}" placeholder="${L.notSet}" />
+                   <span style="font-size:12px;color:var(--text-muted);">${d.unit}</span>
+                   <button class="btn btn-xs btn-accent" onclick="saveMinStock()">&#10003;</button>
+                   <button class="btn btn-xs btn-icon" onclick="toggleMinStockEdit(false)">&times;</button>
+               </div>
+               <span id="minStockStatus" style="font-size:11px;color:var(--text-muted);"></span>
+           </div>`
+        : `<span>${minStockDisplay}</span>`;
+
     document.getElementById('stockCardBody').innerHTML = `
         <div style="text-align:center;padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:18px;">
             <div class="contact-avatar-lg" style="background:var(--primary-light,#ede9fe);color:var(--primary);">
@@ -450,7 +466,7 @@ function openStockCard(el) {
         </div>
         <div class="info-grid">
             <div class="info-block"><div class="info-label">${L.currentStockLabel}</div><div class="info-value" style="font-size:20px;font-weight:800;">${d.stock} ${d.unit}</div></div>
-            <div class="info-block"><div class="info-label">${L.minimumStockLabel}</div><div class="info-value">${minStockDisplay}</div></div>
+            <div class="info-block"><div class="info-label">${L.minimumStockLabel}</div><div class="info-value">${minStockEditHtml}</div></div>
             <div class="info-block"><div class="info-label">${L.description}</div><div class="info-value">${d.description || '—'}</div></div>
             <div class="info-block"><div class="info-label">${L.category}</div><div class="info-value">${d.category || '—'}</div></div>
             <div class="info-block"><div class="info-label">${L.createdOn}</div><div class="info-value">${d.created || '—'}</div></div>
@@ -506,6 +522,40 @@ function deleteFromCard() {
     const d = el.dataset;
     closeStockCard();
     deleteItem(d.id, d.name);
+}
+
+function toggleMinStockEdit(show) {
+    document.getElementById('minStockView').style.display = show ? 'none' : '';
+    document.getElementById('minStockEdit').style.display = show ? '' : 'none';
+}
+
+async function saveMinStock() {
+    const el = document.querySelector(`[data-id="${_currentStockId}"]`);
+    if (!el) return;
+    const d = el.dataset;
+    const val = document.getElementById('card_minstock').value;
+    const minStock = val ? parseFloat(val) : null;
+    const statusEl = document.getElementById('minStockStatus');
+    statusEl.textContent = L.saving;
+
+    const body = {
+        name: d.name,
+        description: d.description || null,
+        category: d.category || null,
+        unit: d.unit,
+        currentStock: parseFloat(d.stock) || 0,
+        minimumStock: minStock
+    };
+
+    try {
+        const r = await fetch(`/api/stock/${d.id}`, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify(body)
+        });
+        if (r.ok) { location.reload(); }
+        else { statusEl.textContent = ''; const data = await r.json().catch(() => ({})); alert(data.error ?? L.saveFailed); }
+    } catch { statusEl.textContent = ''; alert(L.requestFailed); }
 }
 
 // ?? Movement (inline in card) ?????????????

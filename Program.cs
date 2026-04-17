@@ -1,5 +1,6 @@
 using AdminMembers.Services;
 using AdminMembers.Middleware;
+using AdminMembers.Models;
 using AdminMembers.Data;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +45,7 @@ builder.Services.AddRazorPages()
     .AddJsonOptions(jsonOptions)
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
-builder.Services.AddControllers().AddJsonOptions(jsonOptions);
+builder.Services.AddControllers().AddJsonOptions(jsonOptions).AddXmlSerializerFormatters();
 builder.Services.AddMemoryCache();
 builder.Services.AddResponseCaching();
 builder.Services.AddResponseCompression(o => o.EnableForHttps = true);
@@ -91,6 +92,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TotpService>();
 builder.Services.AddScoped<MemberDocumentService>();
+builder.Services.AddScoped<ApiKeyService>();
 builder.Services.AddScoped<FeatureRequestService>();
 builder.Services.AddHostedService<AuditLogCleanupService>();
 
@@ -154,6 +156,7 @@ app.UseResponseCaching();
 app.UseSession();
 app.UseRouting();
 app.UseCors("AllowFrontend");
+app.UseApiKeyAuthenticationMiddleware();
 app.UseAuthenticationMiddleware();
 app.UseAuthorization();
 

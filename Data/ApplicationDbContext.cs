@@ -31,6 +31,7 @@ namespace AdminMembers.Data
         public DbSet<FeatureRequest> FeatureRequests { get; set; }
         public DbSet<BoardReport> BoardReports { get; set; }
         public DbSet<BoardReportAttendee> BoardReportAttendees { get; set; }
+        public DbSet<ApiKey> ApiKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -298,6 +299,17 @@ namespace AdminMembers.Data
                       .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasIndex(e => new { e.BoardReportId, e.MemberId }).IsUnique();
+            });
+
+            modelBuilder.Entity<ApiKey>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("ApiKeys");
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.KeyHash).IsRequired().HasMaxLength(64);
+                entity.Property(e => e.KeyPrefix).IsRequired().HasMaxLength(12);
+                entity.HasIndex(e => e.KeyHash).IsUnique();
+                entity.HasIndex(e => e.IsActive);
             });
 
             // Seed default roles
