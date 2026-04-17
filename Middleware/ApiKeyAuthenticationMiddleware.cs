@@ -13,7 +13,7 @@ namespace AdminMembers.Middleware
             _logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext context, ApiKeyService apiKeyService)
+        public async Task InvokeAsync(HttpContext context, ApiKeyService apiKeyService, AuditLogService auditLogService)
         {
             // Skip if Bearer token is already present
             if (context.Request.Headers.ContainsKey("Authorization"))
@@ -53,6 +53,12 @@ namespace AdminMembers.Middleware
 
                         // Prevent caching of API-key authenticated responses (key may appear in query string)
                         context.Response.Headers["Cache-Control"] = "no-store";
+
+                        // Audit log: API connection
+                        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                        var path = context.Request.Path.ToString();
+                        var method = context.Request.Method;
+                        await auditLogService.LogActionAsync(0, $"ApiKey:{safeName}", "API Connection", "API", apiKey.Id, $"{method} {path} via API key '{safeName}' ({permission})", ip);
                     }
                     else
                     {

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using AdminMembers.Data;
 using AdminMembers.Models;
 using AdminMembers.Attributes;
+using AdminMembers.Services;
 
 namespace AdminMembers.Controllers
 {
@@ -13,10 +14,12 @@ namespace AdminMembers.Controllers
     public class PublicApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly AuditLogService _auditLogService;
 
-        public PublicApiController(ApplicationDbContext context)
+        public PublicApiController(ApplicationDbContext context, AuditLogService auditLogService)
         {
             _context = context;
+            _auditLogService = auditLogService;
         }
 
         [HttpGet]
@@ -75,6 +78,10 @@ namespace AdminMembers.Controllers
                 })
                 .ToListAsync();
 
+            var username = Request.Headers["X-Username"].ToString();
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            await _auditLogService.LogActionAsync(0, username, "API Read", "Member", null, $"Listed members (page {page}, pageSize {pageSize}, role: {role ?? "all"}, returned {data.Count}/{total})", ip);
+
             return Ok(new PublicMembersListResponse { Data = data, Total = total, Page = page, PageSize = pageSize });
         }
 
@@ -122,6 +129,10 @@ namespace AdminMembers.Controllers
 
             if (result == null)
                 return NotFound(new { error = "Member not found" });
+
+            var username = Request.Headers["X-Username"].ToString();
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            await _auditLogService.LogActionAsync(0, username, "API Read", "Member", id, $"Read member #{id} ({result.FirstName} {result.LastName})", ip);
 
             return Ok(result);
         }
