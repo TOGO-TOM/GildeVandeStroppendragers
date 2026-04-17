@@ -26,6 +26,7 @@ namespace AdminMembers.Pages
         public AppSettings? GeneralSettings { get; set; }
         public bool HasLogo { get; set; }
         public string? AuthToken { get; set; }
+        public bool IsSuperAdmin => CurrentUser?.Roles?.Contains("Super Admin") == true;
 
         public async Task<IActionResult> OnGetAsync()
         {

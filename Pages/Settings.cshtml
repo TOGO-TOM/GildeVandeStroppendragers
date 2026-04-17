@@ -32,6 +32,12 @@
                     <span class="nav-icon">&#128100;</span> @Localizer["Users"]
                 </a>
             }
+            @if (Model.IsSuperAdmin)
+            {
+                <a class="settings-nav-item" href="#" onclick="showSection('api',this)">
+                    <span class="nav-icon">&#128273;</span> API
+                </a>
+            }
         </div>
 
         <!-- CONTENT -->
@@ -245,11 +251,133 @@
                 </div>
             }
 
-        </div>
-    </div>
-</div>
+                    @if (Model.IsSuperAdmin)
+                    {
+                        <div id="sec-api" class="settings-section">
 
-<!-- CUSTOM FIELD MODAL -->
+                            <!-- API Keys Management -->
+                            <div class="card">
+                                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span class="card-title">&#128273; API Keys</span>
+                                    <button class="btn btn-accent btn-sm" onclick="showApiCreateModal()">&#43; Nieuwe API Key</button>
+                                </div>
+                                <div class="card-body" style="padding:0;">
+                                    <div id="apiKeysList" style="min-height:60px;">
+                                        <div style="padding:30px;text-align:center;color:var(--text-muted);">Laden...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- API Usage Help -->
+                            <div class="card" style="margin-top:16px;">
+                                <div class="card-header">
+                                    <span class="card-title">&#10067; Hoe gebruik je de API?</span>
+                                </div>
+                                <div class="card-body" style="line-height:1.7;">
+
+                                    <div class="settings-row">
+                                        <div>
+                                            <div class="settings-row-label">&#128274; Authenticatie</div>
+                                            <div class="settings-row-desc">Elke API-aanvraag moet een geldige API-sleutel bevatten.</div>
+                                        </div>
+                                    </div>
+                                    <div style="padding:0 16px 16px;">
+                                        <ul style="margin:0 0 0 16px;font-size:13px;line-height:2;">
+                                            <li><strong>Header (aanbevolen):</strong> <code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;">X-Api-Key: jouw-api-sleutel</code></li>
+                                            <li><strong>Query parameter:</strong> <code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;">?apikey=jouw-api-sleutel</code></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="settings-row">
+                                        <div>
+                                            <div class="settings-row-label">&#128225; Endpoints</div>
+                                            <div class="settings-row-desc">Beschikbare API endpoints voor externe toegang.</div>
+                                        </div>
+                                    </div>
+                                    <div style="padding:0 16px 16px;">
+                                        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                                            <thead>
+                                                <tr style="text-align:left;border-bottom:2px solid var(--border);">
+                                                    <th style="padding:8px;">Endpoint</th>
+                                                    <th style="padding:8px;">Beschrijving</th>
+                                                    <th style="padding:8px;">Permissie</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr style="border-bottom:1px solid var(--border);">
+                                                    <td style="padding:8px;"><code>GET /api/public/members</code></td>
+                                                    <td style="padding:8px;">Lijst van alle leden (gepagineerd)</td>
+                                                    <td style="padding:8px;"><span class="badge badge-green">Read</span></td>
+                                                </tr>
+                                                <tr style="border-bottom:1px solid var(--border);">
+                                                    <td style="padding:8px;"><code>GET /api/public/members/{id}</code></td>
+                                                    <td style="padding:8px;">Details van een specifiek lid</td>
+                                                    <td style="padding:8px;"><span class="badge badge-green">Read</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="settings-row">
+                                        <div>
+                                            <div class="settings-row-label">&#128196; Output formaten</div>
+                                            <div class="settings-row-desc">Gebruik de <code>Accept</code> header om het formaat te kiezen.</div>
+                                        </div>
+                                    </div>
+                                    <div style="padding:0 16px 16px;">
+                                        <ul style="margin:0 0 0 16px;font-size:13px;line-height:2;">
+                                            <li><code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;">Accept: application/json</code> &mdash; JSON (standaard)</li>
+                                            <li><code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;">Accept: application/xml</code> &mdash; XML</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="settings-row">
+                                        <div>
+                                            <div class="settings-row-label">&#128202; Excel / Power Query</div>
+                                            <div class="settings-row-desc">Stappen om de API in Excel te gebruiken via Power Query.</div>
+                                        </div>
+                                    </div>
+                                    <div style="padding:0 16px 16px;">
+                                        <ol style="margin:0 0 0 16px;font-size:13px;line-height:2.2;">
+                                            <li>Open Excel &rarr; <strong>Gegevens</strong> &rarr; <strong>Gegevens ophalen</strong> &rarr; <strong>Van web</strong></li>
+                                            <li>Kies <strong>Geavanceerd</strong></li>
+                                            <li>Voer de URL in: <code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;">https://jouw-domein/api/public/members</code></li>
+                                            <li>Voeg een HTTP-header toe: <code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;">X-Api-Key</code> met je API-sleutel</li>
+                                            <li>Klik op <strong>OK</strong> en transformeer de data naar een tabel</li>
+                                        </ol>
+                                    </div>
+
+                                    <div class="settings-row">
+                                        <div>
+                                            <div class="settings-row-label">&#128214; Paginering &amp; filters</div>
+                                            <div class="settings-row-desc">Optionele query parameters voor de ledenlijst.</div>
+                                        </div>
+                                    </div>
+                                    <div style="padding:0 16px 16px;">
+                                        <ul style="margin:0 0 0 16px;font-size:13px;line-height:2;">
+                                            <li><code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;">?page=1&amp;pageSize=50</code> &mdash; pagina 1 met 50 resultaten</li>
+                                            <li><code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;">?role=Lid</code> &mdash; filter op rol</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="settings-row" style="border-bottom:none;">
+                                        <div>
+                                            <div class="settings-row-label">&#9888;&#65039; Rechten</div>
+                                            <div class="settings-row-desc"><strong>Read</strong> = alleen gegevens ophalen (GET) &bull; <strong>ReadWrite</strong> = ophalen en wijzigen</div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOM FIELD MODAL -->
 <div id="fieldModal" class="modal" onclick="if(event.target===this)hideModal('fieldModal')">
     <div class="modal-box modal-box-sm">
         <div class="modal-head">
@@ -365,7 +493,59 @@
     </div>
 </div>
 
-@section Scripts {
+<!-- API KEY CREATE MODAL -->
+@if (Model.IsSuperAdmin)
+{
+<div id="apiCreateModal" class="modal" onclick="if(event.target===this)hideModal('apiCreateModal')">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-head">
+            <h3>&#128273; Nieuwe API Key</h3>
+            <button class="modal-close-btn" onclick="hideModal('apiCreateModal')">&times;</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+            <div class="form-group">
+                <label>Naam *</label>
+                <input type="text" id="akName" placeholder="Bijv. Excel koppeling" style="width:100%;" />
+            </div>
+            <div class="form-group">
+                <label>Permissie</label>
+                <select id="akPermission" style="width:100%;">
+                    <option value="Read">Read (alleen lezen)</option>
+                    <option value="ReadWrite">ReadWrite (lezen + schrijven)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Vervaldatum (optioneel)</label>
+                <input type="date" id="akExpires" style="width:100%;" />
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span id="akStatus" style="font-size:12px;color:var(--text-muted);flex:1;"></span>
+            <button class="btn btn-icon" onclick="hideModal('apiCreateModal')">Annuleren</button>
+            <button class="btn btn-accent" onclick="createApiKey()">&#10003; Aanmaken</button>
+        </div>
+    </div>
+</div>
+
+<div id="apiRawKeyModal" class="modal" onclick="if(event.target===this)hideModal('apiRawKeyModal')">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-head">
+            <h3>&#9989; API Key aangemaakt</h3>
+            <button class="modal-close-btn" onclick="hideModal('apiRawKeyModal')">&times;</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+            <div style="color:var(--danger);font-weight:600;">&#9888;&#65039; Kopieer deze sleutel nu! Hij wordt maar &eacute;&eacute;n keer getoond.</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <input id="rawKeyDisplay" readonly style="flex:1;font-family:monospace;font-size:13px;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);" />
+                <button class="btn btn-accent btn-sm" onclick="copyApiRawKey()">&#128203; Kopieer</button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-icon" onclick="hideModal('apiRawKeyModal')">Sluiten</button>
+        </div>
+    </div>
+</div>
+}
 <script>
 const pageToken = '@Model.AuthToken';
 const L = {
@@ -382,6 +562,8 @@ window.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         hideModal('fieldModal');
         hideModal('exportModal');
+        hideModal('apiCreateModal');
+        hideModal('apiRawKeyModal');
     }
 });
 
@@ -400,6 +582,10 @@ function showSection(id, el) {
         requestAnimationFrame(() => { target.style.opacity = '1'; target.style.transform = 'translateY(0)'; });
     }, 160);
     el.classList.add('active');
+    if (id === 'api' && !window._apiKeysLoaded) {
+        window._apiKeysLoaded = true;
+        setTimeout(loadApiKeys, 200);
+    }
 }
 
 // ?? Logo preview ??????????????????????????
@@ -571,5 +757,115 @@ async function runExport() {
         alert(e.message ?? '@Localizer["ExportFailed"]');
     }
 }
+
+// ── API Keys ─────────────────────────────
+function showApiCreateModal() {
+    document.getElementById('akName').value = '';
+    document.getElementById('akPermission').value = 'Read';
+    document.getElementById('akExpires').value = '';
+    document.getElementById('akStatus').textContent = '';
+    showModal('apiCreateModal');
+}
+
+function loadApiKeys() {
+    const el = document.getElementById('apiKeysList');
+    if (!el) return;
+    fetch('/api/admin/apikeys', {
+        headers: { 'Authorization': 'Bearer ' + pageToken }
+    })
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(keys => renderApiKeys(keys))
+    .catch(() => { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--danger);">Fout bij laden van API keys.</div>'; });
+}
+
+function renderApiKeys(keys) {
+    const el = document.getElementById('apiKeysList');
+    if (!keys.length) {
+        el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);">Nog geen API keys aangemaakt.</div>';
+        return;
+    }
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+    html += '<thead><tr style="text-align:left;border-bottom:2px solid var(--border);">';
+    html += '<th style="padding:10px 14px;">Naam</th><th style="padding:10px 14px;">Prefix</th><th style="padding:10px 14px;">Permissie</th><th style="padding:10px 14px;">Status</th><th style="padding:10px 14px;">Vervalt</th><th style="padding:10px 14px;"></th>';
+    html += '</tr></thead><tbody>';
+    keys.forEach(k => {
+        const badge = k.IsActive
+            ? '<span class="badge badge-green">Actief</span>'
+            : '<span class="badge badge-red">Ingetrokken</span>';
+        const expires = k.ExpiresAt ? new Date(k.ExpiresAt).toLocaleDateString('nl-BE') : '\u2014';
+        html += '<tr style="border-bottom:1px solid var(--border);">';
+        html += '<td style="padding:10px 14px;font-weight:600;">' + escApi(k.Name) + '</td>';
+        html += '<td style="padding:10px 14px;font-family:monospace;">' + escApi(k.KeyPrefix) + '...</td>';
+        html += '<td style="padding:10px 14px;">' + escApi(k.Permission) + '</td>';
+        html += '<td style="padding:10px 14px;">' + badge + '</td>';
+        html += '<td style="padding:10px 14px;">' + expires + '</td>';
+        html += '<td style="padding:10px 14px;text-align:right;display:flex;gap:6px;justify-content:flex-end;">';
+        if (k.IsActive) html += '<button class="btn btn-danger btn-sm" onclick="revokeApiKey(' + k.Id + ')">Intrekken</button>';
+        html += '<button class="btn btn-danger btn-sm" style="opacity:0.7;" onclick="deleteApiKey(' + k.Id + ')">&#128465; Verwijderen</button>';
+        html += '</td></tr>';
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+
+function escApi(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+async function createApiKey() {
+    const name = document.getElementById('akName').value.trim();
+    const statusEl = document.getElementById('akStatus');
+    if (!name) { statusEl.textContent = 'Naam is verplicht.'; return; }
+    const body = {
+        name,
+        permission: document.getElementById('akPermission').value,
+        expiresAt: document.getElementById('akExpires').value || null
+    };
+    statusEl.textContent = L.saving;
+    try {
+        const r = await fetch('/api/admin/apikeys', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + pageToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!r.ok) { const err = await r.json().catch(() => ({})); statusEl.textContent = err.error || L.saveFailed; return; }
+        const result = await r.json();
+        hideModal('apiCreateModal');
+        document.getElementById('rawKeyDisplay').value = result.Key;
+        showModal('apiRawKeyModal');
+        loadApiKeys();
+    } catch { statusEl.textContent = L.requestFailed; }
+}
+
+function copyApiRawKey() {
+    const input = document.getElementById('rawKeyDisplay');
+    input.select();
+    navigator.clipboard.writeText(input.value);
+}
+
+async function revokeApiKey(id) {
+    if (!confirm('Weet je zeker dat je deze key wilt intrekken?')) return;
+    try {
+        const r = await fetch('/api/admin/apikeys/' + id, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + pageToken }
+        });
+        if (r.ok) loadApiKeys();
+        else alert(L.requestFailed);
+    } catch { alert(L.requestFailed); }
+}
+
+async function deleteApiKey(id) {
+    if (!confirm('Weet je zeker dat je deze key permanent wilt verwijderen?')) return;
+    try {
+        const r = await fetch('/api/admin/apikeys/' + id + '/permanent', {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + pageToken }
+        });
+        if (r.ok) loadApiKeys();
+        else alert(L.requestFailed);
+    } catch { alert(L.requestFailed); }
+}
+
+// Load API keys when section becomes visible
+window._apiKeysLoaded = false;
 </script>
 }
