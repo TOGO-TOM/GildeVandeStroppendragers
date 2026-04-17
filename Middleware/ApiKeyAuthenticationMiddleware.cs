@@ -1,4 +1,5 @@
 using AdminMembers.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AdminMembers.Middleware
 {
@@ -13,7 +14,7 @@ namespace AdminMembers.Middleware
             _logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext context, ApiKeyService apiKeyService, AuditLogService auditLogService)
+        public async Task InvokeAsync(HttpContext context, ApiKeyService apiKeyService)
         {
             // Skip if Bearer token is already present
             if (context.Request.Headers.ContainsKey("Authorization"))
@@ -54,11 +55,23 @@ namespace AdminMembers.Middleware
                         // Prevent caching of API-key authenticated responses (key may appear in query string)
                         context.Response.Headers["Cache-Control"] = "no-store";
 
-                        // Audit log: API connection
-                        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-                        var path = context.Request.Path.ToString();
-                        var method = context.Request.Method;
-                        await auditLogService.LogActionAsync(0, $"ApiKey:{safeName}", "API Connection", "API", apiKey.Id, $"{method} {path} via API key '{safeName}' ({permission})", ip);
+                        // Audit log: API connection — use a separate scope to avoid DbContext conflicts
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                using var scope = context.RequestServices.CreateScope();
+                                var auditService = scope.ServiceProvider.GetRequiredService<AuditLogService>();
+                                var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                                var path = context.Request.Path.ToString();
+                                var method = context.Request.Method;
+                                await auditService.LogActionAsync(0, $"ApiKey:{safeName}", "API Connection", "API", apiKey.Id, $"{method} {path} via API key '{safeName}' ({permission})", ip);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to write API connection audit log");
+                            }
+                        });
                     }
                     else
                     {
